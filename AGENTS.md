@@ -4,20 +4,22 @@
 
 - La raiz todavia no contiene la implementacion nueva. Hoy este repo es principalmente documental mas el legado en `old-version/`.
 - No hay manifests ni toolchain ejecutable en la raiz todavia: sin `package.json`, `pyproject.toml`, `requirements.txt`, workflows CI, `opencode.json` ni `AGENTS.md` previo.
-- `README.md` en la raiz no es fuente util ahora mismo: solo dice `Pending`.
+- `README.md` en la raiz es un resumen ejecutivo del proyecto y su estado actual, no una especificacion tecnica completa.
 
 ## Fuentes de verdad
 
 Lee en este orden antes de asumir nada:
 
-1. `SPEC.md`
-2. `BACKLOG.md`
-3. `ISSUES.md`
-4. `SPRINTS.md`
-5. `old-version/README.md`
-6. `old-version/api-build.R`
+1. `README.md`
+2. `SPEC.md`
+3. `docs/project/BACKLOG.md`
+4. `docs/project/ISSUES.md`
+5. `docs/project/SPRINTS.md`
+6. `docs/analysis/README.md`
+7. `old-version/README.md`
+8. `old-version/api-build.R`
 
-Usa los docs de la raiz para el sistema nuevo y `old-version/` solo como referencia funcional y de reglas.
+Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo como referencia funcional y de reglas.
 
 ## Alcance del proyecto nuevo
 
@@ -43,9 +45,9 @@ Usa los docs de la raiz para el sistema nuevo y `old-version/` solo como referen
 ## Que no asumir
 
 - No inventes comandos de build, test, lint o typecheck para la raiz: hoy no existen en el repo.
-- No asumas que la estructura `backend/` y `frontend/` ya existe; en este momento solo esta definida en `SPEC.md` y `BACKLOG.md`.
+- No asumas que la estructura `backend/` y `frontend/` ya existe; en este momento solo esta definida en `SPEC.md` y `docs/project/BACKLOG.md`.
 - No tomes `old-version/` como plantilla de arquitectura; solo usalo para levantar comportamiento, datos y reglas.
-- No uses `README.md` de la raiz como contexto tecnico hasta que deje de ser placeholder.
+- No uses `docs/sessions/SESSIONS.md` como fuente de verdad tecnica; solo guarda referencias de sesiones previas.
 
 ## Restricciones importantes para futuras sesiones
 
