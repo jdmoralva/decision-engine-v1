@@ -1,0 +1,2 @@
+TIPODOC,CODDOC,Cliente,Perfil,Sunedu,Sueldo,Deuda,Ingreso,Oferta,Periodo,FechaEvaluacion,HoraEvaluacion,UserEvaluacion,Registro
+DNI,08694443,NO CLIENTE,PERFIL 1,CON SUNEDU,DEP,,6000,1. SOLO PLD,202404,2024-04-05,18:28:47,Jorge Morales,1

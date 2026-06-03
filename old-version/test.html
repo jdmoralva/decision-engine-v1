@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+    <title>Test</title>
+  </head>
+  <body>
+    <h1 id="res"></h1>
+  </body>
+  <script>
+    async function getData() {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      const response = await fetch("http://localhost:4870/hello", {
+        method: "GET", headers: headers});
+      const data = await response.json();
+      document.getElementById('res').textContent = JSON.stringify(data[0]);
+      console.log(data)
+    };
+  </script>
+</html>

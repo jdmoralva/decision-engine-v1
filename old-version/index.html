@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>API Test</title>
+    <link rel="stylesheet" href="/css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js"></script>
+  </head>
+  <body>
+    <div id="header">
+      <h1 style="width: 100%;"> ESTRATEGIA PLD </h1>
+      <img src="https://www.pichincha.pe/themes/custom/financiero/images/logo-bp_03-07-23.svg?v=041022"
+       style="width: 200px; height: auto; background-color: white; padding: 10px;">
+    </div>
+    <div style="display: flex; margin-top: 10vh;">
+      <div id="sidebar">
+        <ul>
+          <li>Trámite Regular</li>
+          <li style="background-color: #FFDD00;"><a href="/PLD">Consulta</a></li>
+          <li><a href="/Bandeja">Solicitudes</a></li>
+          <li>Cobranzas</li>
+          <li><a href="/Campanias">Campañas</a></li>
+          <li><a href="/Aplicacion">Aplicación</a></li>
+        </ul>
+      </div>
+      <div id="content">
+        <div id="info_inicial">
+          <h2 style="width: 100%;"> Consulta de Clientes </h2>
+          <p id="user" style="font-size: 15px; text-align: right; width: 100%;"></p>
+        </div>
+        <form id="myForm">
+          <label for="tipoDoc">Cliente:</label>
+          <select id="tipoDoc" name="tipoDoc">
+            <option value="DNI">DNI</option>
+            <option value="CEX">CEX</option>
+          </select>
+          <input type="text" id="codDoc" name="codDoc" placeholder="Número de Documento">
+          <input type="submit" value="Consultar" id="submitBtn">
+          <input type="reset" value="Refresh" id="refreshBtn">
+        </form>
+        <form>
+          <label>File:</label>
+          <input type="file" id="fileInput" value="Seleccione">
+          <input type="submit" value="Cargar" id="uploadFile">
+          <input type="submit" value="Descargar" id="downloadFile" onclick="download_file()">
+        </form>
+        <br>
+        <div id="output1" style="font-weight: bold;"></div>
+        <br>
+        <div id="result">
+          <div id="output2" style="width: 100%;"></div>
+          <div id="output3" style="width: 100%;"></div>
+          <div id="output4" style="width: 100%;"></div>
+        </div>
+        <br><br>
+        <div id="output5" style="font-weight: bold;"></div>
+        <br>
+        <div id="output6" style="width: 100%;"></div>
+        <br><br>
+        <div id="resumen" style="font-weight: bold;"></div>
+        <br>
+        <div style="display: flex;">
+          <div id="resumen1" style="width: 400px;"></div>
+          <div style="width: 70px;"></div>
+          <div>
+            <div id="validaIngreso" style="text-align: left;"></div>
+            <br>
+            <div id="Resultado" style="width: 400px;"></div>
+            <p id="Respuesta" style="display: none;"></p>
+          </div>
+          <div>
+            <p id="Alerta1"></p>
+            <p id="Alerta2"></p>
+            <p id="Alerta3"></p> 
+          </div>
+        </div>
+        <br><br>
+        <div id="Envio" style="font-weight: bold;"></div>
+        <br>
+        <div style="display: flex;">
+          <div id="DataSol" style="width: 400px;"></div>
+          <div style="width: 70px;"></div>
+          <div>
+            <div id="EnvioSol" style="text-align: left;"></div>
+            <br>
+            <p id="RespuestaSol"></p>
+            <p id="Alerta4"></p>
+            <p id="Alerta5"></p>
+            <p id="Alerta6"></p> 
+          </div>
+        </div>
+        <div id="indice" style="display: none"></div>
+        <div id="registro1" style="color: navy;"></div>
+      </div>
+    </div>
+  </body>
+</html>

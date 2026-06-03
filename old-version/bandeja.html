@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>API Test</title>
+    <link rel="stylesheet" href="/css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js"></script>
+  </head>
+  <body>
+    <div id="header">
+      <h1 style="width: 100%;"> ESTRATEGIA PLD </h1>
+      <img src="https://www.pichincha.pe/themes/custom/financiero/images/logo-bp_03-07-23.svg?v=041022"
+       style="width: 200px; height: auto; background-color: white; padding: 10px;">
+    </div>
+    <div style="display: flex; margin-top: 10vh;">
+      <div id="sidebar">
+        <ul>
+          <li>Trámite Regular</li>
+          <li><a href="/PLD">Consulta</a></li>
+          <li style="background-color: #FFDD00;"><a href="/Bandeja">Solicitudes</a></li>
+          <li>Cobranzas</li>
+          <li><a href="/Campanias">Campañas</a></li>
+          <li><a href="/Aplicacion">Aplicación</a></li>
+        </ul>
+      </div>
+      <div id="content">
+        <div id="info_inicial">
+          <h2 style="width: 100%;"> Bandeja de Solicitudes </h2>
+          <p id="user" style="font-size: 15px; text-align: right; width: 100%;"></p>
+        </div>
+        <form id="myForm">
+          <label for="tipoDoc">Periodo:</label>
+          <input type="text" id="periodo" name="periodo" placeholder="YYYYMM">
+          <input type="submit" value="Consultar" id="submitBanTN">
+          <input type="reset" value="Refresh" id="refreshBtn">
+        </form>
+        <br>
+        <div style="display: flex;">
+          <div id="Bandeja" style="font-weight: bold; width: 100%;"></div>
+          <div id="DescargaBtn" style="width: 100%; text-align: right;"></div>
+        </div>
+        <br>
+        <div id="Detalle" style="width: 100%;"></div>
+        <br>
+        <div id='Resultado'></div>
+      </div>
+    </div>
+  </body>
+</html>

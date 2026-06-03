@@ -1,0 +1,80 @@
+/* CSS */
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+#header {
+  background-color: #FFDD00;
+  color: #10255C;
+  padding: 20px;
+  text-align: left;
+  height: 5vh;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+}
+#sidebar {
+  width: 115px;
+  background-color: #f1f1f1;
+  padding: 20px;
+  min-height: 83vh;
+  height: auto;
+}
+#sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+#sidebar ul li {
+  margin-bottom: 10px;
+}
+#sidebar ul li a {
+  text-decoration: none;
+  padding: 5px;
+  color: #10255C;
+  margin: 10;
+}
+#sidebar ul li:focus,
+#sidebar ul li:active {
+  background-color: #FFDD00;
+  color: #10255C;
+}
+#content {
+  flex-grow: 1;
+  padding: 20px;
+}
+#user {
+  text-align: right;
+}
+#info_inicial {
+  display: flex;
+}
+#result {
+  display: flex;
+}
+#grabarSol {
+    font-size: 18px; 
+  }
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+th {
+  background-color: #f2f2f2;
+}
+.horizontal-table {
+  display: flex;
+}
+.horizontal-table th, .horizontal-table td {
+  flex: 1;
+  text-align: center;
+}

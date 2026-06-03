@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <title>API Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      #header {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        text-align: left;
+        height: 5vh;
+        display: flex;
+        align-items: center;
+      }
+      #sidebar {
+        width: 100px;
+        background-color: #f1f1f1;
+        padding: 20px;
+        height: 100vh;
+      }
+      #content {
+        flex-grow: 1;
+        padding: 20px;
+      }
+      #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+      #sidebar ul li {
+        margin-bottom: 10px;
+      }
+      #sidebar ul li a {
+        text-decoration: none;
+        padding: 5px;
+        color: #333;
+      }
+      #sidebar ul li:focus,
+      #sidebar ul li:active {
+        background-color: #FFBA26;
+        color: #fff;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      function convertFormToJson() {
+        event.preventDefault();
+        var form = document.getElementById("myForm");
+        var jsonObject = {};
+        for (var i = 0; i < form.elements.length -1; i++) {
+          var element = form.elements[i];
+          if (element.name === "age") {
+            jsonObject[element.name] = parseInt(element.value, 10);
+          } else {
+            jsonObject[element.name] = element.value;
+          }
+        }
+        var outputDiv = document.getElementById("output");
+        outputDiv.innerHTML = jsonObject.first_name + " " + jsonObject.last_name + " is " + 
+          jsonObject.age + " years old. " + convertJsonToText(jsonObject);
+        return jsonObject;
+      }
+      function convertJsonToText(jsonObject) {
+        var jsonText = JSON.stringify(jsonObject);
+        return jsonText;
+      }
+    </script>
+    <script>
+      $(document).ready(function() {
+        $.getJSON("/User", function(data) {
+          var parsedData = JSON.parse(data[0]);
+          var userSpan = document.getElementById("user");
+          userSpan.innerHTML = "Bienvenido: " + parsedData.username;
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>Bienvenido a la página principal</h1>
+    </div>
+    <div style="display: flex;">
+      <div id="sidebar">
+        <ul>
+          <li><a href="/API">Inicio</a></li>
+          <li style="background-color: #FFBA26;"><a href="/Page1">Página 1</a></li>
+          <li><a href="pagina2.html">Página 2</a></li>
+          <li><a href="pagina3.html">Página 3</a></li>
+          <li><a href="pagina4.html">Página 4</a></li>
+        </ul>
+      </div>
+      <div id="content">
+        <span id="user"></span>
+        <p>Cliente:</p>
+        <form id="myForm">
+          <input type="text" name="first_name" placeholder="First Name">
+          <input type="text" name="last_name" placeholder="Last Name">
+          <input type="number" name="age" placeholder="Age">
+          <input type="submit" value="Submit" onclick="convertFormToJson();">
+        </form>
+        <div id="output"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,2 @@
+TIPODOC,CODDOC,Campania,MontoSol,Cliente,Perfil,Segmento,Sueldo,Ingreso,RCI,Oferta,Cuota,Plazo,Tasa,FechaSolicitud,HoraSolicitud,UserSolicitud,Registro,Comentario
+DNI,08694443,1. SOLO PLD,4000,NO CLIENTE,PERFIL 1,CS_DEP,DEP,"5,000",40.1%,"40,000","1,130",48,17.0%,2024-04-05,18:41:57,Jorge Morales,1,cliente
