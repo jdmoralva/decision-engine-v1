@@ -38,33 +38,35 @@ El MVP del nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes
 - actualizacion de estado de solicitud
 - exportacion de resultados de bandeja
 - carga y descarga de archivos ZIP adjuntos a la solicitud
+- visualizacion de archivos cargados
 - trazabilidad operativa y auditoria
 - explicacion asistida de la evaluacion mediante inteligencia artificial
 - resumen del caso y sugerencias de siguientes pasos generados por IA
 
 ### 1.2 Vision futura de la plataforma
 
-Aunque el MVP se limita a `PLD`, la arquitectura del nuevo sistema debe quedar preparada para soportar otros tipos de prestamo en el futuro.
+Aunque el MVP se limita a `PLD`, la arquitectura del nuevo sistema debe quedar preparada para soportar otros tipos de prestamo en el futuro (hipotecarios, descuento por planillas, etc.).
 
 Esto implica que los componentes compartidos deben diseniarse de forma reutilizable para:
 
 - multiples productos de prestamo
-- distintos conjuntos de reglas
+- distintos conjuntos de reglas parametrizables
 - variantes de formularios y validaciones por producto
 - evolucion independiente de parametros y politicas por tipo de prestamo
+- distintos dashboards de monitoreo operativo
 
 ### 1.3 Capacidades AI del MVP y evolucion
 
 El sistema incorpora IA bajo un modelo puramente asistivo (copiloto).
 
 #### Incluido en el MVP:
+- **Bandeja inteligente:** priorizacion automatica de solicitudes basada en IA.
+- **Copiloto de registro:** asistencia en la redaccion de comentarios y chequeo de consistencia de la solicitud.
 - **Explicacion de evaluacion:** traduccion de la salida estructurada del motor (RCI, limites, bloqueos) a lenguaje natural claro para el analista.
-- **Resumen de caso:** un briefing conciso de los indicadores clave del cliente.
+- **Resumen de caso:** un briefing conciso de los indicadores clave y fortalezas del cliente.
 - **Sugerencias de accion:** recomendaciones sobre que datos ajustar o que paso operativo seguir ante un bloqueo o alerta.
 
 #### Excluido del MVP (Fases futuras):
-- **Bandeja inteligente:** priorizacion automatica de solicitudes basada en IA.
-- **Copiloto de registro:** asistencia en la redaccion de comentarios y chequeo de consistencia de la solicitud.
 - **Copiloto de reglas:** herramienta para que negocio simule y entienda el impacto de cambios en las politicas.
 - **Decisiones automaticas:** la IA nunca tomara la decision de aprobar o rechazar directamente.
 
@@ -128,6 +130,7 @@ Responsabilidades del frontend:
 - visualizacion de resultados
 - bandeja de solicitudes
 - exportacion de datos
+- carga y descarga de archivos ZIP
 - manejo de estados de carga, error y permisos
 
 ### 2.4 Backend recomendado
@@ -147,6 +150,7 @@ Responsabilidades del backend:
 - orquestar casos de uso
 - persistir informacion
 - invocar el motor de decisiones
+- invocar asistencia con IA
 - registrar auditoria
 
 ### 2.5 Motor de decisiones
@@ -161,6 +165,7 @@ Responsabilidades:
 - aplicar reglas de bloqueo
 - generar alertas y observaciones
 - versionar resultados
+- registrar auditoria
 
 En el MVP, `PLD` sera el primer conjunto de reglas implementado, pero el contrato del motor debe permitir agregar otros productos sin redefinir la base del modulo.
 
@@ -172,6 +177,7 @@ Se recomienda un despliegue inicial simple:
 
 - frontend estatico servido por Nginx o equivalente
 - backend FastAPI detras de reverse proxy
+- funciones async para soportar consultas concurrentes o paralelas
 - SQLite en entorno inicial o de desarrollo
 - SQL Server como opcion de entorno productivo
 
@@ -262,9 +268,9 @@ Eliminar dependencia de listas de IP como mecanismo principal de acceso y reempl
 
 Orden de preferencia:
 
-1. SSO corporativo mediante OIDC o Azure AD
+1. Login interno temporal con sesiones seguras 
 2. Integracion con Active Directory o LDAP
-3. Login interno temporal con sesiones seguras
+3. SSO corporativo mediante OIDC o Azure AD
 
 ### 4.3 Autorizacion
 
@@ -277,10 +283,12 @@ Se recomienda RBAC con roles base:
 
 Permisos de referencia:
 
-- `analista`: consultar, evaluar, registrar solicitud
-- `evaluador`: cambiar estado, revisar solicitudes
-- `supervisor`: anular, aprobar, observar, rechazar
+- `analista`: consultar, registrar solicitud, anular solicitud
+- `evaluador`: consultar, anular solicitud, aprobar, observar, rechazar
+- `supervisor`: consultar, cambiar estado, romper reglas del motor
 - `admin`: mantenimiento, parametros, auditoria, usuarios
+
+Cada rol debe tener niveles de autonomia diferenciados para la aprobación de solicitudes por montos de prestamo, resultado del motor de decisiones, entre otros.
 
 ### 4.4 Controles tecnicos obligatorios
 
@@ -292,6 +300,7 @@ Permisos de referencia:
 - logs estructurados
 - almacenamiento seguro de secretos
 - proteccion contra CSRF si se usan cookies de sesion
+. proteccion contra SQL injection
 - encabezados de seguridad HTTP
 
 ### 4.5 Auditoria
@@ -306,6 +315,7 @@ Toda accion sensible debe registrar:
 - fecha y hora
 - IP origen
 - identificador de request
+- trazabilidad IA si aplica
 
 ---
 
@@ -331,6 +341,7 @@ El motor debe ser:
 - parametrizable
 - versionable
 - extensible mediante pipeline de etapas intercambiables
+- utilizar funciones async para peticiones múltiples
 
 ### 5.3 Contrato de entrada sugerido
 
@@ -338,6 +349,7 @@ El motor debe ser:
 {
   "tipo_documento": "DNI",
   "numero_documento": "12345678",
+  "producto": "PLD",
   "campana": "PLD_48M",
   "marca_cliente": "CLIENTE",
   "perfil": "PERFIL 2",
@@ -411,13 +423,15 @@ Cada evento contiene:
 
 La informacion de `ParametrosPLD-v3.xlsx` debe migrarse a una fuente versionada y controlada.
 
-Opcion recomendada:
+Opciones recomendadas:
 
 - tablas de parametros en base de datos
+- Interface de creacion de dimensiones y reglas de negocio
+- UI de creacion de pipeline drag and drop
 
 Opcion complementaria:
 
-- importador administrativo desde Excel para cargar o actualizar parametros
+- importador administrativo desde Excel para cargar o actualizar parametros según un formato establecido
 
 ### 5.8 Versionado de reglas
 
@@ -439,7 +453,7 @@ Las reglas de negocio se almacenan en base de datos y son gestionables mediante 
 - **Testing sandbox:** entorno aislado donde el administrador puede probar una regla o conjunto de reglas contra casos historicos antes de activarla.
 - **Approval workflow:** los cambios a reglas en produccion requieren aprobacion de un supervisor antes de su activacion.
 
-#### UI Administrativa (futuro):
+#### UI Administrativa:
 - CRUD de reglas con editor estructurado (condiciones, acciones, parametros)
 - Vista de versionado y comparacion de cambios entre versiones
 - Simulador de reglas con casos de prueba
