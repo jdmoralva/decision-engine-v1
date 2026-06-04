@@ -38,7 +38,6 @@ Decisiones funcionales ya cerradas:
 - La migracion de historicos queda **descartada**; se inicia con base limpia
 - Los roles operativos (analista, evaluador, supervisor, admin) seran definidos con matriz de permisos en ISSUE-001
 - Las reglas de aprobacion y rechazo posteriores al registro seran documentadas en ISSUE-001
-- Sin pendientes funcionales abiertos en este momento
 
 El proyecto se encuentra en fase de definicion y preparacion tecnica, listo para iniciar el Sprint 1.
 
