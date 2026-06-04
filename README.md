@@ -17,8 +17,7 @@ El objetivo es reemplazar la solucion legacy de `old-version/`, un monolito en `
 - capa AI asistiva para explicacion de evaluaciones, resumen de casos y sugerencias de accion
 
 `PLD` significa `Prestamo de Libre Disponibilidad` y constituye el primer producto del MVP.
-La arquitectura objetivo esta disenada para soportar otros tipos de prestamo en el futuro sin rehacer la plataforma base.
-El modulo de `Cobranzas` presente en `old-version/` queda fuera de alcance salvo instruccion explicita.
+La arquitectura objetivo esta disenada para soportar otros tipos de prestamo en el futuro sin rehacer la plataforma base. El modulo de `Cobranzas` presente en `old-version/` queda fuera de alcance salvo instruccion explicita.
 
 ## Estado Actual
 
