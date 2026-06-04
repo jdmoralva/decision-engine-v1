@@ -24,7 +24,7 @@ Hoy la raiz del repositorio no contiene todavia la implementacion nueva.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `SPEC.md` define la especificacion tecnica de la nueva plataforma y de su MVP inicial PLD
+- `SPEC.md` define la especificacion tecnica de la nueva plataforma, su MVP inicial PLD y las especificaciones exactas del entorno de desarrollo (librerias, versiones y configuraciones basicas)
 - `docs/project/BACKLOG.md` traduce la especificacion a trabajo ejecutable
 - `docs/project/ISSUES.md` organiza el backlog en issues operativos
 - `docs/project/SPRINTS.md` propone la secuencia de ejecucion del MVP

@@ -112,12 +112,15 @@ Levantar el backend base con FastAPI, configuracion por entorno y endpoint de sa
 - proyecto FastAPI funcional
 - configuracion base por entorno
 - endpoint `health`
+- archivo `requirements.txt` y `pyproject.toml` segun SPEC.md Seccion 2.7
 
 ### Criterios de aceptacion
 
 - el backend levanta localmente
 - el endpoint `health` responde correctamente
 - existe estructura base para configuracion por entorno
+- las versiones de FastAPI, Pydantic (v2) y demas paquetes son las definidas en SPEC.md Seccion 2.7.2
+- el linter `ruff` esta integrado y pasa sin advertencias en la inicializacion
 
 ---
 
@@ -138,11 +141,13 @@ Crear la aplicacion frontend base con React, TypeScript y Vite.
 - app frontend inicial
 - pagina base funcional
 - configuracion de arranque local
+- archivo `package.json` base segun SPEC.md Seccion 2.7
 
 ### Criterios de aceptacion
 
 - el frontend levanta localmente
 - existe una pagina inicial navegable
+- las dependencias de React, TypeScript, React Query y Tailwind CSS coinciden con SPEC.md Seccion 2.7.4
 
 ---
 
@@ -684,3 +689,93 @@ Dejar definida la estrategia tecnica para incorporar otros tipos de prestamo sob
 
 - la estrategia evita hardcode estructural de PLD en modulos compartidos
 - queda claro como introducir nuevos productos sin romper contratos base ni seguridad compartida
+
+---
+
+## ISSUE-027 - Definir politicas de seguridad y contratos AI
+
+- Tipo: Security / Architecture
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 1`
+- Backlog origen: `E12-T1`, `E12-T2`
+- Dependencias: `ISSUE-001`, `ISSUE-006`
+
+### Objetivo
+Definir que datos pueden procesarse, que politicas de privacidad aplican y estructurar las tablas de auditoria AI.
+
+### Entregables
+- documento de politicas de datos AI
+- modelos SQLAlchemy para `ai_interactions` y `ai_prompt_templates`
+- migracion de base de datos asociada
+
+### Criterios de aceptacion
+- la base SQLite puede generar las tablas de interaccion de IA
+- queda explicito que datos del cliente se omiten o anonimizan antes de enviar al modelo
+
+---
+
+## ISSUE-028 - Implementar servicio base de conexion a LLM
+
+- Tipo: Backend / Platform
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 2`
+- Backlog origen: `E12-T3`
+- Dependencias: `ISSUE-004`, `ISSUE-027`
+
+### Objetivo
+Crear el cliente de integracion con el proveedor del modelo de lenguaje, aislando fallas y reintentos.
+
+### Entregables
+- clase cliente `AIModelClient`
+- variables de entorno configuradas
+- pruebas unitarias de integracion
+
+### Criterios de aceptacion
+- el backend puede conectarse de manera exitosa con el LLM usando configuracion externa
+- un fallo de red o timeout del LLM no bloquea el arranque o ejecucion de calculos deterministas
+
+---
+
+## ISSUE-029 - Desarrollar el servicio de explicacion de evaluacion PLD
+
+- Tipo: Backend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 3`
+- Backlog origen: `E12-T4`, `E12-T5`
+- Dependencias: `ISSUE-014`, `ISSUE-028`
+
+### Objetivo
+Implementar el endpoint que traduce una evaluacion PLD a texto explicativo y sugerencias.
+
+### Entregables
+- plantilla de prompt para explicacion PLD
+- endpoint `POST /api/v1/pld/evaluaciones/{evaluation_id}/explain`
+- persistencia de la interaccion en `ai_interactions`
+
+### Criterios de aceptacion
+- el endpoint devuelve la explicacion en JSON
+- toda invocacion exitosa se registra en base de datos para auditoria
+- el prompt restringe la alucinacion forzando el uso exclusivo de los datos inyectados
+
+---
+
+## ISSUE-030 - Implementar panel de explicacion AI en frontend
+
+- Tipo: Frontend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 4`
+- Backlog origen: `E12-T6`
+- Dependencias: `ISSUE-018`, `ISSUE-029`
+
+### Objetivo
+Mostrar al analista de credito la explicacion y sugerencias del caso de forma clara e interactiva.
+
+### Entregables
+- componente `EvaluationAIExplanationPanel`
+- integracion en el flujo post-evaluacion
+- disclaimers y controles de error
+
+### Criterios de aceptacion
+- tras una evaluacion exitosa, el panel muestra la explicacion generada por IA
+- los textos AI estan visualmente diferenciados de los datos duros calculados por el motor
+- ante caidas de red del modulo AI, el analista puede re-intentar la explicacion sin tener que volver a calcular la evaluacion

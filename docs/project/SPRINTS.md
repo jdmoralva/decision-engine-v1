@@ -31,6 +31,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-004` Inicializar backend con FastAPI
 - `ISSUE-005` Inicializar frontend con React y TypeScript
 - `ISSUE-006` Diseñar modelo de datos inicial
+- `ISSUE-027` Definir politicas de seguridad y contratos AI
 
 ### Resultado esperado
 
@@ -40,6 +41,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - backend y frontend levantando localmente
 - modelo de datos inicial definido
 - decision inicial sobre como mantener la plataforma extensible a otros tipos de prestamo
+- politicas de datos AI aprobadas y base de base de datos AI diseñada
 
 ### Riesgos del sprint
 
@@ -64,6 +66,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-008` Definir e implementar autenticacion base
 - `ISSUE-009` Definir permisos e implementar RBAC
 - `ISSUE-010` Crear modulo aislado del motor de decisiones
+- `ISSUE-028` Implementar servicio base de conexion a LLM
 
 ### Resultado esperado
 
@@ -72,6 +75,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - autenticacion y autorizacion base implementadas
 - motor desacoplado creado como modulo reusable
 - base tecnica lista para soportar otros productos sin rehacer componentes compartidos
+- servicio cliente LLM integrado y testeado en backend
 
 ### Riesgos del sprint
 
@@ -95,12 +99,14 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-012` Crear suite de regresion del motor
 - `ISSUE-013` Implementar API de consulta PLD
 - `ISSUE-014` Implementar API de evaluacion PLD
+- `ISSUE-029` Desarrollar el servicio de explicacion de evaluacion PLD
 
 ### Resultado esperado
 
 - motor PLD funcional y probado
 - consulta PLD disponible por API
 - evaluacion PLD disponible por API
+- explicador de evaluaciones AI operativo por API
 
 ### Riesgos del sprint
 
@@ -124,12 +130,14 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-016` Implementar bandeja y mantenimiento de solicitudes
 - `ISSUE-017` Construir base del frontend y manejo de sesion
 - `ISSUE-018` Implementar UI de consulta y evaluacion PLD
+- `ISSUE-030` Implementar panel de explicacion AI en frontend
 
 ### Resultado esperado
 
 - registro de solicitud funcional
 - bandeja operativa base disponible por API
 - frontend permite consultar y evaluar
+- panel de explicacion y sugerencias AI integrado en el flujo de evaluacion de la UI
 
 ### Riesgos del sprint
 
@@ -212,9 +220,11 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 El camino critico recomendado es:
 
 1. `ISSUE-001`
+1a. `ISSUE-027` (Politica AI)
 2. `ISSUE-002`
 3. `ISSUE-003`
 4. `ISSUE-004`
+4a. `ISSUE-028` (Cliente LLM)
 5. `ISSUE-006`
 6. `ISSUE-007`
 7. `ISSUE-008`
@@ -224,10 +234,12 @@ El camino critico recomendado es:
 11. `ISSUE-012`
 12. `ISSUE-013`
 13. `ISSUE-014`
+13a. `ISSUE-029` (Explicador AI por API)
 14. `ISSUE-015`
 15. `ISSUE-016`
 16. `ISSUE-017`
 17. `ISSUE-018`
+17a. `ISSUE-030` (UI de explicacion AI)
 18. `ISSUE-019`
 19. `ISSUE-020`
 20. `ISSUE-021`

@@ -166,13 +166,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E2-T1`
-  - Aceptacion: backend levanta localmente con endpoint `health`.
+  - Aceptacion: backend levanta localmente con endpoint `health` utilizando las versiones e imports estipulados en SPEC.md (Seccion 2.7.2). Incluye ruff y pyproject.toml base.
 
 - [ ] `E2-T3` Inicializar frontend con React, TypeScript y Vite.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T3`, `E2-T1`
-  - Aceptacion: frontend levanta localmente con pagina base.
+  - Aceptacion: frontend levanta localmente con pagina base utilizando las dependencias e integraciones de SPEC.md (Seccion 2.7.4).
 
 - [ ] `E2-T4` Configurar linting, formateo y chequeos basicos para frontend y backend.
   - Prioridad: `P1`
@@ -794,6 +794,73 @@ Tareas:
 
 ---
 
+## E12. Capacidades AI asistivas
+
+Prioridad: `P1`
+
+### Historia E12-H1. Fundaciones AI y Arquitectura
+
+Resultado esperado:
+- la arquitectura de la aplicacion soporta la integracion de LLMs de manera segura, aislada y auditable
+
+Tareas:
+- [ ] `E12-T1` Definir politicas de seguridad y privacidad de datos para la capa de IA (minimizar/anonimizar datos sensibles).
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T3`
+  - Aceptacion: existe un documento de politicas aprobado que define que datos del cliente pueden enviarse al LLM.
+- [ ] `E12-T2` Diseñar e implementar el modelo de datos para `ai_interactions` y `ai_prompt_templates`.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E3-T3`
+  - Aceptacion: la base SQLite cuenta con las tablas necesarias y sus relaciones con evaluaciones y solicitudes.
+- [ ] `E12-T3` Implementar modulo backend cliente para conexion con LLM (OpenAI SDK, Azure OpenAI o local) con manejo de timeouts, reintentos y fallback.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E2-T2`
+  - Aceptacion: servicio backend realiza llamadas de prueba al modelo de forma segura usando variables de entorno.
+
+### Historia E12-H2. Explicacion de evaluacion PLD (MVP)
+
+Resultado esperado:
+- el sistema genera explicaciones textuales precisas a partir de la salida estructurada de la evaluacion PLD
+
+Tareas:
+- [ ] `E12-T4` Diseñar prompts del sistema y plantillas estructuradas de contexto para el flujo de explicacion.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E12-T1`, `E5-T1`
+  - Aceptacion: prompts escritos y probados que inyectan de forma estricta los indicadores del motor y restringen la alucinacion.
+- [ ] `E12-T5` Implementar el endpoint `POST /api/v1/pld/evaluaciones/{evaluation_id}/explain`.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E6-T4`, `E12-T3`, `E12-T4`
+  - Aceptacion: el endpoint consume la evaluacion, genera la explicacion, la persiste en `ai_interactions` y retorna el JSON correspondiente.
+- [ ] `E12-T6` Desarrollar el componente UI en el frontend para visualizar la explicacion del caso y las sugerencias de accion.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E7-T5`, `E12-T5`
+  - Aceptacion: panel colapsable visible tras evaluar, con texto claro, disclaimers y boton de re-intento ante errores de API.
+
+### Historia E12-H3. Asistencia al registro e interacciones futuras (Post-MVP)
+
+Resultado esperado:
+- capacidades AI adicionales preparadas en backlog para fases subsiguientes
+
+Tareas:
+- [ ] `E12-T7` Desarrollar logica de asistencia en el registro (consistencia de comentarios, alertas de omision).
+  - Prioridad: `P2`
+  - Estimacion: `M`
+  - Dependencias: `E6-T6`, `E12-T3`
+  - Aceptacion: endpoint `POST /api/v1/pld/solicitudes/{request_id}/assist` devuelve advertencias operativas si el comentario no sustenta adecuadamente el desvio.
+- [ ] `E12-T8` Desarrollar briefing automatizado de bandeja de solicitudes.
+  - Prioridad: `P2`
+  - Estimacion: `M`
+  - Dependencias: `E6-T8`, `E12-T3`
+  - Aceptacion: endpoint `POST /api/v1/pld/bandeja/summary` genera resumen de la bandeja operativa para supervisores.
+
+---
+
 ## 4. Backlog minimo del MVP
 
 Las siguientes tareas forman el camino minimo para entregar el MVP:
@@ -847,6 +914,12 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E9-T4`
 - `E10-T1`
 - `E10-T2`
+- `E12-T1`
+- `E12-T2`
+- `E12-T3`
+- `E12-T4`
+- `E12-T5`
+- `E12-T6`
 
 ---
 
@@ -874,6 +947,8 @@ Tareas candidatas para una segunda fase:
 - `E10-T3`
 - `E10-T4`
 - `E10-T5`
+- `E12-T7`
+- `E12-T8`
 
 ---
 

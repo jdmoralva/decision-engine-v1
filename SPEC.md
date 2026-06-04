@@ -2,7 +2,7 @@
 
 ## 0. Proposito del documento
 
-Este documento define la especificacion tecnica inicial para construir una nueva version del sistema legado contenido en `old-version/`, como una plataforma de gestion y decision para productos de prestamo.
+Este documento define la especificacion tecnica inicial para construir una nueva version del sistema legado contenido en `old-version/`, como una plataforma de gestion y decision "AI-Powered" para productos de prestamo, incorporando capacidades de inteligencia artificial de manera asistiva y auditable.
 
 El objetivo es reemplazar la implementacion monolitica en R + HTML/jQuery por una solucion moderna, segura, mantenible y extensible, con backend en Python y persistencia soportada inicialmente sobre SQLite, con opcion de migracion a SQL Server.
 
@@ -38,6 +38,8 @@ El MVP del nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes
 - actualizacion de estado de solicitud
 - exportacion de resultados de bandeja
 - trazabilidad operativa y auditoria
+- explicacion asistida de la evaluacion mediante inteligencia artificial
+- resumen del caso y sugerencias de siguientes pasos generados por IA
 
 ### 1.2 Vision futura de la plataforma
 
@@ -50,7 +52,22 @@ Esto implica que los componentes compartidos deben diseniarse de forma reutiliza
 - variantes de formularios y validaciones por producto
 - evolucion independiente de parametros y politicas por tipo de prestamo
 
-### 1.3 Excluido del nuevo sistema
+### 1.3 Capacidades AI del MVP y evolucion
+
+El sistema incorpora IA bajo un modelo puramente asistivo (copiloto).
+
+#### Incluido en el MVP:
+- **Explicacion de evaluacion:** traduccion de la salida estructurada del motor (RCI, limites, bloqueos) a lenguaje natural claro para el analista.
+- **Resumen de caso:** un briefing conciso de los indicadores clave del cliente.
+- **Sugerencias de accion:** recomendaciones sobre que datos ajustar o que paso operativo seguir ante un bloqueo o alerta.
+
+#### Excluido del MVP (Fases futuras):
+- **Bandeja inteligente:** priorizacion automatica de solicitudes basada en IA.
+- **Copiloto de registro:** asistencia en la redaccion de comentarios y chequeo de consistencia de la solicitud.
+- **Copiloto de reglas:** herramienta para que negocio simule y entienda el impacto de cambios en las politicas.
+- **Decisiones automaticas:** la IA nunca tomara la decision de aprobar o rechazar directamente.
+
+### 1.4 Excluido del nuevo sistema
 
 No forma parte de esta primera version:
 
@@ -87,11 +104,12 @@ La nueva arquitectura debe cumplir los siguientes principios:
 
 ### 2.2 Arquitectura propuesta
 
-Se propone una arquitectura modular de tres bloques:
+Se propone una arquitectura modular de cuatro bloques:
 
 1. `frontend web`
 2. `backend API`
 3. `motor de decisiones`
+4. `asistente AI (modulo asistivo)`
 
 Los modulos compartidos de esta arquitectura no deben asumir que `PLD` sera el unico producto del sistema.
 
@@ -146,6 +164,8 @@ Responsabilidades:
 - versionar resultados
 
 En el MVP, `PLD` sera el primer conjunto de reglas implementado, pero el contrato del motor debe permitir agregar otros productos sin redefinir la base del modulo.
+
+El motor de decisiones es **100% determinista** y no utiliza IA. El modulo AI consume la salida estructurada de este motor para generar explicaciones, garantizando que el calculo matematico y las politicas duras sean siempre auditablemente exactas y reproducibles.
 
 ### 2.6 Despliegue inicial
 
@@ -378,6 +398,16 @@ Cada evaluacion debe almacenar:
 - timestamp
 - usuario que ejecuto la evaluacion
 
+### 5.8 Estrategia AI e Integracion
+
+La capa AI se implementa como un servicio del backend que interactua con LLMs mediante tecnicas de *grounding* estricto.
+
+#### Principios de Diseno AI:
+1. **No-Autonomia:** La IA recomienda y explica; la decision final es del usuario y el calculo es del motor determinista.
+2. **Grounding estricto:** El prompt se alimenta unicamente de la ficha del cliente, las reglas aplicadas y el resultado del motor. No se permite que el modelo infiera datos que no esten explicitamente en el payload.
+3. **Explicabilidad auditable:** Toda respuesta generada por la IA debe poder rastrearse al prompt, modelo, datos de entrada y version de reglas utilizadas.
+4. **Aislamiento:** Si el servicio de IA falla o se desactiva, el flujo principal de consulta, evaluacion y registro de solicitudes determinista debe seguir funcionando al 100%.
+
 ---
 
 ## 6. Modelo de datos inicial sugerido
@@ -390,6 +420,7 @@ Separar correctamente:
 - datos maestros
 - parametros del motor
 - eventos operativos
+- interacciones y trazas de la IA
 - solicitudes
 - historial de estados
 - trazabilidad
@@ -410,6 +441,8 @@ Separar correctamente:
 - `credit_requests`
 - `credit_request_status_history`
 - `audit_logs`
+- `ai_interactions`
+- `ai_prompt_templates`
 
 ### 6.3 Campos minimos esperados
 
@@ -448,6 +481,18 @@ Separar correctamente:
 - `parameter_version`
 - `executed_by`
 - `executed_at`
+
+#### `ai_interactions`
+- `id` (UUID)
+- `user_id` (FK a `users`)
+- `evaluation_id` (FK a `pld_evaluations`, opcional)
+- `request_id` (FK a `credit_requests`, opcional)
+- `context_type` (VARCHAR: 'evaluation_explanation', 'request_check', 'sprint_briefing')
+- `prompt_template_version` (VARCHAR)
+- `input_payload` (JSON: datos de entrada estructurados pasados al modelo)
+- `model_name` (VARCHAR: identificador del LLM usado)
+- `response_text` (TEXT: salida generada por la IA)
+- `created_at` (TIMESTAMP)
 
 ### 6.4 Compatibilidad de motor de base de datos
 
