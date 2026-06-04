@@ -37,6 +37,7 @@ El MVP del nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes
 - anulacion de solicitud
 - actualizacion de estado de solicitud
 - exportacion de resultados de bandeja
+- carga y descarga de archivos ZIP adjuntos a la solicitud
 - trazabilidad operativa y auditoria
 - explicacion asistida de la evaluacion mediante inteligencia artificial
 - resumen del caso y sugerencias de siguientes pasos generados por IA
@@ -76,15 +77,13 @@ No forma parte de esta primera version:
 - endpoints equivalentes a `get_data`, `envio_sol1`, `envio_sol2`, `envio_sol3`, `bandeja_sol1`, `bandeja_sol2`
 - dependencia de HTML generado por backend
 - autenticacion basada en IP como mecanismo principal
+- migracion de historicos desde la base de datos del sistema legado
 
-### 1.4 Pendiente de confirmacion funcional
+### 1.5 Pendiente de confirmacion funcional
 
 Los siguientes temas quedan abiertos hasta definicion del usuario o negocio:
 
-- inclusion o eliminacion del flujo de carga y descarga de archivos ZIP
-- necesidad de migrar historicos de la base actual
-- definicion exacta de roles operativos
-- reglas de aprobacion y rechazo posteriores al registro
+- (sin pendientes en este momento)
 
 ---
 
@@ -331,6 +330,7 @@ El motor debe ser:
 - independiente de FastAPI
 - parametrizable
 - versionable
+- extensible mediante pipeline de etapas intercambiables
 
 ### 5.3 Contrato de entrada sugerido
 
@@ -367,17 +367,47 @@ El motor debe ser:
 }
 ```
 
-### 5.5 Componentes internos del motor
+### 5.5 Arquitectura de Pipeline de Etapas
 
-- normalizador de entrada
-- validador de precondiciones
-- evaluador de elegibilidad
-- calculador de oferta
-- evaluador de restricciones
-- generador de alertas
-- ensamblador de respuesta
+El motor se organiza como un pipeline secuencial de etapas independientes. Cada etapa recibe un contexto, lo procesa y lo pasa a la siguiente. Esto permite probar, modificar o reemplazar etapas sin afectar al resto.
 
-### 5.6 Parametrizacion
+#### Etapas del pipeline
+
+1. **Preprocessing:** Normaliza datos de entrada, enriquece con informacion historica del cliente y calcula campos derivados (ingreso revisado, deuda total ajustada).
+2. **Eligibility:** Aplica reglas duras de elegibilidad (ingreso minimo, edad maxima, documentacion requerida). Si falla, se detiene el pipeline con rechazo.
+3. **Scoring Layer:** Calcula indicadores financieros (RCI, capacidad de pago, score de riesgo), asigna segmento y perfil de cliente.
+4. **Decision Strategy:** Aplica la estrategia de negocio (aprobacion, rechazo, referencia a supervisor) segun las reglas de producto, el segmento y los scores calculados.
+5. **Post-processing:** Genera alertas operativas, formatea la respuesta y emite eventos de decision al event store.
+
+Cada etapa implementa una interfaz comun (`DecisionStage`) que expone:
+- `name`: identificador unico de la etapa
+- `execute(context: DecisionContext) -> DecisionContext`: metodo de ejecucion
+- `rollback(context: DecisionContext) -> None`: metodo de reversion opcional
+
+El pipeline se configura por producto mediante una estrategia (`pipeline_strategy`) que define que etapas ejecutar y en que orden.
+
+### 5.6 Event Sourcing de Decisiones
+
+Cada decision generada por el motor se persiste como un **evento inmutable** en un event store. Esto proporciona trazabilidad total, capacidad de reproduccion (replay) y auditoria forense.
+
+Tipos de evento:
+- `EVALUATION_REQUESTED`: se inicia una evaluacion
+- `ELIGIBILITY_PASSED` / `ELIGIBILITY_FAILED`: resultado de elegibilidad
+- `SCORING_COMPLETED`: scores calculados
+- `DECISION_MADE`: decision final (aprobado, rechazado, referido)
+- `REQUEST_REGISTERED`: solicitud creada
+- `REQUEST_STATUS_CHANGED`: cambio de estado operativo
+
+Cada evento contiene:
+- `event_id` (UUID)
+- `aggregate_id` (UUID de la entidad raiz: evaluacion o solicitud)
+- `event_type` (string)
+- `event_data` (JSON con datos del momento)
+- `version` (int, incrementa por agregado)
+- `created_by` (FK a users)
+- `created_at` (timestamp)
+
+### 5.7 Parametrizacion
 
 La informacion de `ParametrosPLD-v3.xlsx` debe migrarse a una fuente versionada y controlada.
 
@@ -389,7 +419,7 @@ Opcion complementaria:
 
 - importador administrativo desde Excel para cargar o actualizar parametros
 
-### 5.7 Versionado de reglas
+### 5.8 Versionado de reglas
 
 Cada evaluacion debe almacenar:
 
@@ -398,7 +428,24 @@ Cada evaluacion debe almacenar:
 - timestamp
 - usuario que ejecuto la evaluacion
 
-### 5.8 Estrategia AI e Integracion
+### 5.9 Business Rules Management System (BRMS)
+
+Las reglas de negocio se almacenan en base de datos y son gestionables mediante una interfaz administrativa con control de versiones.
+
+#### Componentes del BRMS:
+- **Rule catalog:** repositorio central de todas las reglas, clasificadas por tipo (eligibilidad, scoring, estrategia, bloqueo) y por producto.
+- **Rule versions:** cada modificacion crea una nueva version. Las reglas activas se determinan por producto + fecha efectiva.
+- **Rule sets:** agrupaciones de reglas que se activan/desactivan como unidad para un producto y periodo determinado.
+- **Testing sandbox:** entorno aislado donde el administrador puede probar una regla o conjunto de reglas contra casos historicos antes de activarla.
+- **Approval workflow:** los cambios a reglas en produccion requieren aprobacion de un supervisor antes de su activacion.
+
+#### UI Administrativa (futuro):
+- CRUD de reglas con editor estructurado (condiciones, acciones, parametros)
+- Vista de versionado y comparacion de cambios entre versiones
+- Simulador de reglas con casos de prueba
+- Dashboard de reglas activas por producto
+
+### 5.10 Estrategia AI e Integracion
 
 La capa AI se implementa como un servicio del backend que interactua con LLMs mediante tecnicas de *grounding* estricto.
 
@@ -443,6 +490,10 @@ Separar correctamente:
 - `audit_logs`
 - `ai_interactions`
 - `ai_prompt_templates`
+- `decision_events`
+- `rule_sets`
+- `rule_versions`
+- `pipeline_strategies`
 
 ### 6.3 Campos minimos esperados
 
@@ -494,6 +545,45 @@ Separar correctamente:
 - `response_text` (TEXT: salida generada por la IA)
 - `created_at` (TIMESTAMP)
 
+#### `decision_events`
+- `event_id` (UUID, PK)
+- `aggregate_id` (UUID)
+- `aggregate_type` (VARCHAR: 'evaluation', 'credit_request')
+- `event_type` (VARCHAR)
+- `event_data` (JSON)
+- `version` (INT)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
+Indices:
+- `(aggregate_id, version)` unico
+- `(aggregate_type, created_at)` para consultas por periodo
+
+#### `rule_sets`
+- `id` (UUID, PK)
+- `loan_product_code` (FK a `loan_products`)
+- `name` (VARCHAR)
+- `description` (TEXT)
+- `effective_from` (TIMESTAMP)
+- `effective_to` (TIMESTAMP, nullable)
+- `is_active` (BOOLEAN)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
+#### `rule_versions`
+- `id` (UUID, PK)
+- `rule_set_id` (FK a `rule_sets`)
+- `version_number` (INT)
+- `rule_type` (VARCHAR: 'eligibility', 'scoring', 'strategy', 'blocking')
+- `condition_expression` (JSON: definicion estructurada de la condicion)
+- `action_expression` (JSON: definicion estructurada de la accion)
+- `parameters` (JSON: valores parametrizables de la regla)
+- `status` (VARCHAR: 'draft', 'active', 'deprecated')
+- `change_notes` (TEXT)
+- `approved_by` (FK a `users`, nullable)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
 ### 6.4 Compatibilidad de motor de base de datos
 
 El modelo debe evitar:
@@ -539,23 +629,34 @@ El MVP puede tener tablas y servicios especificos de PLD, pero no debe impedir l
 
 #### Flujo PLD
 
-- `POST /api/v1/pld/consultas`
-- `POST /api/v1/pld/evaluaciones`
-- `POST /api/v1/pld/solicitudes`
-- `GET /api/v1/pld/solicitudes`
-- `GET /api/v1/pld/solicitudes/{request_id}`
-- `POST /api/v1/pld/solicitudes/{request_id}/anular`
-- `POST /api/v1/pld/solicitudes/{request_id}/estado`
-- `GET /api/v1/pld/solicitudes/export`
+- `POST /api/v1/loans/{product_code}/consultas`
+- `POST /api/v1/loans/{product_code}/evaluaciones`
+- `POST /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/explain`
+- `POST /api/v1/loans/{product_code}/solicitudes`
+- `GET /api/v1/loans/{product_code}/solicitudes`
+- `GET /api/v1/loans/{product_code}/solicitudes/{request_id}`
+- `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/anular`
+- `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/estado`
+- `GET /api/v1/loans/{product_code}/solicitudes/export`
+- `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/assist`
+- `POST /api/v1/loans/{product_code}/bandeja/summary`
 
 #### Consideracion futura de API
 
-Aunque el MVP expone endpoints especificos para `PLD`, la API interna y sus contratos base deben quedar listos para incorporar otros productos de prestamo sin redisenar autenticacion, auditoria, manejo de errores ni capacidades compartidas.
+Aunque el MVP expone endpoints bajo el segmento `{product_code}`, la API interna y sus contratos base deben quedar listos para incorporar otros productos de prestamo sin redisenar autenticacion, auditoria, manejo de errores ni capacidades compartidas.
 
 #### Administracion futura
 
-- `GET /api/v1/pld/parametros`
-- `POST /api/v1/pld/parametros/import`
+- `GET /api/v1/loans/{product_code}/parametros`
+- `POST /api/v1/loans/{product_code}/parametros/import`
+- `GET /api/v1/loans/{product_code}/rule-sets`
+- `POST /api/v1/loans/{product_code}/rule-sets`
+- `GET /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/versions`
+- `POST /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/versions`
+- `PUT /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/activate`
+- `POST /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/sandbox-test`
+- `GET /api/v1/events?aggregate_type={type}&aggregate_id={id}`
+- `GET /api/v1/events/{aggregate_id}/timeline`
 - `GET /api/v1/audit`
 
 ### 7.3 Errores esperados
@@ -706,13 +807,10 @@ Para cada caso de uso se recomienda:
 
 ### 9.4 Migracion de datos
 
-Decision pendiente:
+Decision tomada:
 
-- iniciar con base limpia
-- migrar historicos seleccionados
-- migrar historico completo
-
-Si se migra historial, debe hacerse con scripts versionados y auditables.
+- se inicia con base limpia (sin migracion historica)
+- los historicos del sistema legado se conservan unicamente como referencia en `old-version/API_DB.db`
 
 ---
 

@@ -102,13 +102,19 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`
-  - Aceptacion: quedan resueltas al menos autenticacion, frontend, ZIP, historicos y modo de despliegue del motor.
+  - Aceptacion: quedan resueltas al menos autenticacion, frontend y modo de despliegue del motor. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada.
 
 - [ ] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T1`, `E1-T2`
   - Aceptacion: existe una separacion explicita entre reglas, datos y flujos especificos de PLD frente a capacidades de plataforma reutilizables.
+
+- [ ] `E1-T7` Definir roles operativos y reglas de aprobacion/rechazo posteriores al registro.
+  - Prioridad: `P0`
+  - Estimacion: `M`
+  - Dependencias: `E1-T1`, `E1-T2`
+  - Aceptacion: roles definidos con matriz de permisos (analista, evaluador, supervisor, admin). Reglas de aprobacion/rechazo documentadas con criterios, responsable y momento del flujo.
 
 ### Historia E1-H2. Definir contratos iniciales
 
@@ -436,7 +442,7 @@ Tareas:
   - Dependencias: `E1-T4`, `E3-T3`
   - Aceptacion: servicio retorna datos de cliente y campanas en contrato estable.
 
-- [ ] `E6-T2` Implementar endpoint `POST /api/v1/pld/consultas`.
+- [ ] `E6-T2` Implementar endpoint `POST /api/v1/loans/{product_code}/consultas`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E6-T1`, `E4-T5`
@@ -456,7 +462,7 @@ Tareas:
   - Dependencias: `E5-T8`
   - Aceptacion: caso de uso documentado y probado.
 
-- [ ] `E6-T4` Implementar endpoint `POST /api/v1/pld/evaluaciones`.
+- [ ] `E6-T4` Implementar endpoint `POST /api/v1/loans/{product_code}/evaluaciones`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E6-T3`, `E4-T5`
@@ -476,7 +482,7 @@ Tareas:
   - Dependencias: `E5-T7`, `E3-T3`
   - Aceptacion: servicio rechaza y acepta solicitudes segun reglas definidas.
 
-- [ ] `E6-T6` Implementar endpoint `POST /api/v1/pld/solicitudes`.
+- [ ] `E6-T6` Implementar endpoint `POST /api/v1/loans/{product_code}/solicitudes`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E6-T5`, `E4-T5`
@@ -496,25 +502,25 @@ Tareas:
   - Dependencias: `E6-T6`
   - Aceptacion: servicio filtra por periodo y otros campos basicos.
 
-- [ ] `E6-T8` Implementar endpoint `GET /api/v1/pld/solicitudes`.
+- [ ] `E6-T8` Implementar endpoint `GET /api/v1/loans/{product_code}/solicitudes`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E6-T7`
   - Aceptacion: endpoint retorna bandeja desacoplada de HTML.
 
-- [ ] `E6-T9` Implementar endpoint `POST /api/v1/pld/solicitudes/{id}/anular`.
+- [ ] `E6-T9` Implementar endpoint `POST /api/v1/loans/{product_code}/solicitudes/{id}/anular`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E6-T6`, `E4-T5`
   - Aceptacion: solicitud cambia a estado anulado o equivalente con historial.
 
-- [ ] `E6-T10` Implementar endpoint `POST /api/v1/pld/solicitudes/{id}/estado`.
+- [ ] `E6-T10` Implementar endpoint `POST /api/v1/loans/{product_code}/solicitudes/{id}/estado`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E6-T6`, `E4-T5`
   - Aceptacion: estado cambia solo por roles autorizados y queda historizado.
 
-- [ ] `E6-T11` Implementar endpoint de exportacion de bandeja.
+- [ ] `E6-T11` Implementar endpoint `GET /api/v1/loans/{product_code}/solicitudes/export`.
   - Prioridad: `P2`
   - Estimacion: `M`
   - Dependencias: `E6-T8`
@@ -831,7 +837,7 @@ Tareas:
   - Estimacion: `S`
   - Dependencias: `E12-T1`, `E5-T1`
   - Aceptacion: prompts escritos y probados que inyectan de forma estricta los indicadores del motor y restringen la alucinacion.
-- [ ] `E12-T5` Implementar el endpoint `POST /api/v1/pld/evaluaciones/{evaluation_id}/explain`.
+- [ ] `E12-T5` Implementar el endpoint `POST /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/explain`.
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E6-T4`, `E12-T3`, `E12-T4`
@@ -852,12 +858,117 @@ Tareas:
   - Prioridad: `P2`
   - Estimacion: `M`
   - Dependencias: `E6-T6`, `E12-T3`
-  - Aceptacion: endpoint `POST /api/v1/pld/solicitudes/{request_id}/assist` devuelve advertencias operativas si el comentario no sustenta adecuadamente el desvio.
+  - Aceptacion: endpoint `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/assist` devuelve advertencias operativas si el comentario no sustenta adecuadamente el desvio.
 - [ ] `E12-T8` Desarrollar briefing automatizado de bandeja de solicitudes.
   - Prioridad: `P2`
   - Estimacion: `M`
   - Dependencias: `E6-T8`, `E12-T3`
-  - Aceptacion: endpoint `POST /api/v1/pld/bandeja/summary` genera resumen de la bandeja operativa para supervisores.
+  - Aceptacion: endpoint `POST /api/v1/loans/{product_code}/bandeja/summary` genera resumen de la bandeja operativa para supervisores.
+
+---
+
+## E13. Event Sourcing de Decisiones
+
+Prioridad: `P1`
+
+### Historia E13-H1. Implementacion del event store
+
+Resultado esperado:
+- cada evaluacion y cambio de estado se persiste como evento inmutable
+
+Tareas:
+- [ ] `E13-T1` Diseñar e implementar el modelo de datos para `decision_events`.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E3-T3`
+  - Aceptacion: tabla `decision_events` creada con indices y FK.
+- [ ] `E13-T2` Implementar el servicio de event store con escritura de eventos y consulta por agregado.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E13-T1`, `E6-T3`
+  - Aceptacion: cada evaluacion y cambio de estado genera un evento inmutable. Se puede consultar el timeline de un agregado.
+- [ ] `E13-T3` Implementar endpoints de consulta de eventos (`GET /api/v1/events` y `GET /api/v1/events/{aggregate_id}/timeline`).
+  - Prioridad: `P2`
+  - Estimacion: `M`
+  - Dependencias: `E13-T2`, `E4-T5`
+  - Aceptacion: los endpoints retornan eventos ordenados con paginacion.
+
+---
+
+## E14. Business Rules Management System (BRMS)
+
+Prioridad: `P2`
+
+### Historia E14-H1. Catalogacion y versionado de reglas
+
+Resultado esperado:
+- las reglas de negocio se almacenan en base de datos con versionado completo
+
+Tareas:
+- [ ] `E14-T1` Diseñar el modelo de datos para `rule_sets` y `rule_versions`.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E3-T3`
+  - Aceptacion: tablas creadas con relaciones, indices y soporte para versionado y vigencia.
+- [ ] `E14-T2` Implementar servicio de BRMS (CRUD de reglas, versionado, activacion/desactivacion).
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T1`
+  - Aceptacion: el servicio permite crear, versionar, activar y desactivar conjuntos de reglas por producto.
+- [ ] `E14-T3` Implementar endpoints de administracion de reglas.
+  - Prioridad: `P2`
+  - Estimacion: `M`
+  - Dependencias: `E14-T2`, `E4-T5`
+  - Aceptacion: CRUD completo de rule-sets y rule-versions disponible via API.
+- [ ] `E14-T4` Migrar las reglas PLD actuales a la nueva estructura de rule_sets y rule_versions.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T2`, `ISSUE-011`
+  - Aceptacion: todas las reglas del motor PLD migradas a la nueva estructura y funcionando en pipeline.
+
+### Historia E14-H2. Pipeline de etapas
+
+Resultado esperado:
+- el motor de decisiones ejecuta un pipeline configurable de etapas independientes
+
+Tareas:
+- [ ] `E14-T5` Definir la interfaz `DecisionStage` y el orquestador de pipeline.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E5-T1`
+  - Aceptacion: interfaz definida, orquestador que ejecuta etapas secuencialmente con manejo de errores y rollback.
+- [ ] `E14-T6` Refactorizar las reglas actuales del motor en 5 etapas del pipeline (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing).
+  - Prioridad: `P1`
+  - Estimacion: `XL`
+  - Dependencias: `E14-T4`, `E14-T5`
+  - Aceptacion: el motor ejecuta el pipeline completo para PLD y produce resultados equivalentes al actual.
+- [ ] `E14-T7` Implementar tabla `pipeline_strategies` y logica de seleccion de pipeline por producto.
+  - Prioridad: `P2`
+  - Estimacion: `S`
+  - Dependencias: `E14-T6`
+  - Aceptacion: cada producto puede definir su propio pipeline de etapas (orden y configuracion).
+
+### Historia E14-H3. UI Administrativa de Reglas
+
+Resultado esperado:
+- administradores pueden gestionar reglas desde una interfaz web
+
+Tareas:
+- [ ] `E14-T8` Disenar e implementar el modulo frontend de administracion de reglas (CRUD basico).
+  - Prioridad: `P2`
+  - Estimacion: `L`
+  - Dependencias: `E14-T3`, `E7-T1`
+  - Aceptacion: admin puede listar, crear, editar y versionar reglas desde la UI.
+- [ ] `E14-T9` Implementar sandbox de pruebas de reglas en la UI.
+  - Prioridad: `P3`
+  - Estimacion: `L`
+  - Dependencias: `E14-T8`
+  - Aceptacion: admin puede seleccionar casos de prueba historicos y simular el impacto de cambios en reglas antes de activarlos.
+- [ ] `E14-T10` Implementar flujo de aprobacion de cambios de reglas.
+  - Prioridad: `P3`
+  - Estimacion: `M`
+  - Dependencias: `E14-T8`, `E4-T5`
+  - Aceptacion: cambios a reglas activas requieren aprobacion de supervisor antes de aplicarse.
 
 ---
 
@@ -871,6 +982,7 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E1-T4`
 - `E1-T5`
 - `E1-T6`
+- `E1-T7`
 - `E2-T1`
 - `E2-T2`
 - `E2-T3`
@@ -920,6 +1032,13 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E12-T4`
 - `E12-T5`
 - `E12-T6`
+- `E13-T1`
+- `E13-T2`
+- `E14-T1`
+- `E14-T2`
+- `E14-T4`
+- `E14-T5`
+- `E14-T6`
 
 ---
 
@@ -949,6 +1068,12 @@ Tareas candidatas para una segunda fase:
 - `E10-T5`
 - `E12-T7`
 - `E12-T8`
+- `E13-T3`
+- `E14-T3`
+- `E14-T7`
+- `E14-T8`
+- `E14-T9`
+- `E14-T10`
 
 ---
 
@@ -968,7 +1093,7 @@ No conviene iniciar implementaciones sensibles sin resolver:
 
 Primer sprint tecnico sugerido:
 
-1. `E1-T1` a `E1-T6`
+1. `E1-T1` a `E1-T7`
 2. `E2-T1`, `E2-T2`, `E2-T3`, `E2-T5`
 3. `E3-T1`, `E3-T2`, `E3-T3`
 4. `E5-T1`, `E5-T2`

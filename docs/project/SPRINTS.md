@@ -161,6 +161,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-020` Implementar auditoria, logs y endurecimiento basico
 - `ISSUE-021` Implementar pruebas de integracion y E2E del MVP
 - `ISSUE-022` Preparar despliegue inicial y CI
+- `ISSUE-031` Implementar event store de decisiones
 
 ### Resultado esperado
 
@@ -168,6 +169,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - auditoria y logs basicos activos
 - pruebas de integracion y al menos un E2E estable
 - pipeline y despliegue base definidos
+- event store de decisiones operativo con eventos inmutables
 
 ### Riesgos del sprint
 
@@ -191,6 +193,8 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-024` Importador de parametros desde Excel
 - `ISSUE-025` Migracion historica desde legacy
 - `ISSUE-026` Definir base multiproducto de la plataforma
+- `ISSUE-032` Implementar BRMS: catalogacion de reglas
+- `ISSUE-033` Refactorizar motor a pipeline de etapas
 
 ### Resultado esperado
 
@@ -198,6 +202,8 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - importador versionado de parametros
 - definicion y ejecucion de migracion historica si aplica
 - lineamientos tecnicos para incorporar futuros productos de prestamo
+- reglas de negocio almacenadas en BD con versionado completo
+- motor de decisiones refactorizado como pipeline de etapas intercambiables
 
 ### Criterio de cierre
 
@@ -212,6 +218,29 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - Sprint 4 depende del motor y APIs nucleares de Sprint 3
 - Sprint 5 depende del flujo funcional ya implementado en Sprint 4
 - Sprint 6 es posterior al MVP y puede ajustarse segun prioridades reales
+- Sprint 7 depende de la UI base de Sprint 4 y del BRMS de Sprint 6
+
+---
+
+## Sprint 7 - BRMS y UI Administrativa
+
+- Estado: `planned`
+- Objetivo: completar la UI administrativa de reglas con simulacion y flujo de aprobacion
+
+### Issues comprometidos
+
+- `ISSUE-034` UI Administrativa de Reglas
+- `ISSUE-026` Definir base multiproducto de la plataforma (si no se completo en Sprint 6)
+
+### Resultado esperado
+
+- administradores pueden gestionar reglas desde interfaz web
+- sandbox de pruebas de reglas funcional
+- flujo de aprobacion de cambios operativo
+
+### Criterio de cierre
+
+- el sistema BRMS completo permite a negocio gestionar reglas sin intervencion de desarrollo
 
 ---
 

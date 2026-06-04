@@ -31,6 +31,8 @@ Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas
 - catalogo de reglas de negocio observadas
 - resolucion de decisiones abiertas del SPEC
 - separacion entre capacidades exclusivas de PLD y capacidades de plataforma compartida
+- definicion exacta de roles operativos con responsabilidades y permisos (analista, evaluador, supervisor, admin)
+- reglas de aprobacion y rechazo posteriores al registro (quien, cuando y bajo que condiciones)
 
 ### Criterios de aceptacion
 
@@ -38,6 +40,8 @@ Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas
 - existe un catalogo de reglas con nombre, condicion, entradas, salidas y efecto
 - quedan resueltas las decisiones sobre autenticacion, frontend, ZIP, historicos y despliegue del motor
 - queda explicito que partes del diseno deben permanecer neutrales para soportar otros tipos de prestamo en el futuro
+- roles operativos definidos (analista, evaluador, supervisor, admin) con matriz de permisos por accion
+- reglas de aprobacion y rechazo documentadas: criterios, responsable y momento del flujo en que aplican
 
 ---
 
@@ -348,7 +352,7 @@ Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML.
 ### Entregables
 
 - servicio de consulta PLD
-- endpoint `POST /api/v1/pld/consultas`
+- endpoint `POST /api/v1/loans/{product_code}/consultas`
 
 ### Criterios de aceptacion
 
@@ -372,7 +376,7 @@ Exponer la evaluacion del motor como caso de uso persistido.
 ### Entregables
 
 - caso de uso de evaluacion
-- endpoint `POST /api/v1/pld/evaluaciones`
+- endpoint `POST /api/v1/loans/{product_code}/evaluaciones`
 - persistencia de evaluaciones
 
 ### Criterios de aceptacion
@@ -397,7 +401,7 @@ Registrar solicitudes de credito con validaciones de negocio y trazabilidad.
 ### Entregables
 
 - servicio de registro
-- endpoint `POST /api/v1/pld/solicitudes`
+- endpoint `POST /api/v1/loans/{product_code}/solicitudes`
 - estado inicial de solicitud
 
 ### Criterios de aceptacion
@@ -422,9 +426,9 @@ Exponer la bandeja de solicitudes y las acciones de anulacion y cambio de estado
 ### Entregables
 
 - listado paginado o filtrado de solicitudes
-- endpoint de bandeja
-- endpoint de anulacion
-- endpoint de cambio de estado
+- endpoint `GET /api/v1/loans/{product_code}/solicitudes`
+- endpoint `POST /api/v1/loans/{product_code}/solicitudes/{id}/anular`
+- endpoint `POST /api/v1/loans/{product_code}/solicitudes/{id}/estado`
 - historial de estados
 
 ### Criterios de aceptacion
@@ -432,164 +436,6 @@ Exponer la bandeja de solicitudes y las acciones de anulacion y cambio de estado
 - la bandeja puede filtrarse al menos por periodo
 - la anulacion y el cambio de estado respetan permisos
 - el historial de cambios queda persistido
-
----
-
-## ISSUE-017 - Construir base del frontend y manejo de sesion
-
-- Tipo: Frontend
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
-- Backlog origen: `E7-T1`, `E4-T3`
-- Dependencias: `ISSUE-005`, `ISSUE-008`
-
-### Objetivo
-
-Preparar la app frontend con rutas, layout y manejo de sesion.
-
-### Entregables
-
-- layout base
-- rutas protegidas
-- proveedor de sesion
-
-### Criterios de aceptacion
-
-- la app conoce al usuario autenticado
-- las rutas protegidas se comportan correctamente
-
----
-
-## ISSUE-018 - Implementar UI de consulta y evaluacion PLD
-
-- Tipo: Frontend
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
-- Backlog origen: `E7-T3`, `E7-T4`, `E7-T5`
-- Dependencias: `ISSUE-013`, `ISSUE-014`, `ISSUE-017`
-
-### Objetivo
-
-Permitir al usuario consultar cliente, seleccionar campana y visualizar evaluacion.
-
-### Entregables
-
-- formulario de consulta PLD
-- seleccion de campana
-- formulario de evaluacion
-- vista de resultado de evaluacion
-
-### Criterios de aceptacion
-
-- el usuario puede completar el flujo hasta obtener una evaluacion valida
-- la UI no depende de indices de tabla ni de HTML inyectado
-
----
-
-## ISSUE-019 - Implementar UI de registro y bandeja
-
-- Tipo: Frontend
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
-- Backlog origen: `E7-T6`, `E7-T7`, `E7-T8`
-- Dependencias: `ISSUE-015`, `ISSUE-016`, `ISSUE-018`
-
-### Objetivo
-
-Completar en frontend el registro de solicitud y la bandeja operativa con acciones por rol.
-
-### Entregables
-
-- formulario de registro de solicitud
-- pantalla de bandeja
-- accion de anular
-- accion de cambio de estado
-
-### Criterios de aceptacion
-
-- el usuario puede registrar solicitud desde una evaluacion valida
-- la bandeja refleja estados y permisos reales
-
----
-
-## ISSUE-020 - Implementar auditoria, logs y endurecimiento basico
-
-- Tipo: Security / Observability
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
-- Backlog origen: `E2-T7`, `E4-T6`, `E4-T7`, `E9-T6`, `E9-T7`
-- Dependencias: `ISSUE-009`, `ISSUE-015`, `ISSUE-016`
-
-### Objetivo
-
-Agregar auditabilidad y controles operativos minimos al MVP.
-
-### Entregables
-
-- logs estructurados
-- auditoria de acciones sensibles
-- health checks
-- rate limiting
-- cabeceras de seguridad base
-
-### Criterios de aceptacion
-
-- acciones sensibles quedan auditadas
-- el sistema expone endpoints de salud
-- existen controles basicos de endurecimiento
-
----
-
-## ISSUE-021 - Implementar pruebas de integracion y E2E del MVP
-
-- Tipo: QA
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
-- Backlog origen: `E9-T2`, `E9-T4`, `E9-T5`
-- Dependencias: `ISSUE-018`, `ISSUE-019`
-
-### Objetivo
-
-Cubrir el flujo MVP con pruebas de API y al menos un flujo punta a punta.
-
-### Entregables
-
-- pruebas de integracion de API
-- pruebas frontend base
-- prueba E2E del flujo principal
-
-### Criterios de aceptacion
-
-- consulta, evaluacion, registro y cambio de estado tienen cobertura automatizada
-- existe al menos un escenario E2E estable
-
----
-
-## ISSUE-022 - Preparar despliegue inicial y CI
-
-- Tipo: DevOps
-- Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
-- Backlog origen: `E10-T1`, `E10-T2`, `E10-T3`, `E10-T4`, `E10-T5`
-- Dependencias: `ISSUE-004`, `ISSUE-005`, `ISSUE-021`
-
-### Objetivo
-
-Dejar lista la ejecucion reproducible, pipeline minima y checklist de salida.
-
-### Entregables
-
-- estrategia de ejecucion local y despliegue
-- configuracion base de despliegue
-- pipeline CI minima
-- checklist de salida a produccion
-- guia basica operativa
-
-### Criterios de aceptacion
-
-- el proyecto puede levantarse de forma repetible
-- la pipeline ejecuta validaciones minimas
-- existe checklist de salida con rollback y monitoreo
 
 ---
 
@@ -607,7 +453,7 @@ Agregar exportacion desacoplada del DOM para la bandeja de solicitudes.
 
 ### Entregables
 
-- endpoint de exportacion
+- endpoint `GET /api/v1/loans/{product_code}/solicitudes/export`
 - accion de descarga en UI
 
 ### Criterios de aceptacion
@@ -749,7 +595,7 @@ Implementar el endpoint que traduce una evaluacion PLD a texto explicativo y sug
 
 ### Entregables
 - plantilla de prompt para explicacion PLD
-- endpoint `POST /api/v1/pld/evaluaciones/{evaluation_id}/explain`
+- endpoint `POST /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/explain`
 - persistencia de la interaccion en `ai_interactions`
 
 ### Criterios de aceptacion
@@ -779,3 +625,96 @@ Mostrar al analista de credito la explicacion y sugerencias del caso de forma cl
 - tras una evaluacion exitosa, el panel muestra la explicacion generada por IA
 - los textos AI estan visualmente diferenciados de los datos duros calculados por el motor
 - ante caidas de red del modulo AI, el analista puede re-intentar la explicacion sin tener que volver a calcular la evaluacion
+
+---
+
+## ISSUE-031 - Implementar event store de decisiones
+
+- Tipo: Backend / Data
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E13-T1`, `E13-T2`
+- Dependencias: `ISSUE-007`, `ISSUE-014`
+
+### Objetivo
+Implementar el almacenamiento inmutable de eventos de decision con capacidad de consulta por agregado.
+
+### Entregables
+- modelo SQLAlchemy para `decision_events`
+- servicio de event store con escritura y consulta
+- integracion con el motor de decisiones para emitir eventos en cada etapa del pipeline
+
+### Criterios de aceptacion
+- cada evaluacion y cambio de estado genera un evento inmutable en `decision_events`
+- se puede consultar el timeline completo de cualquier evaluacion o solicitud
+- los eventos incluyen version, usuario y timestamp
+
+---
+
+## ISSUE-032 - Implementar BRMS: catalogacion de reglas
+
+- Tipo: Backend / Engine
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 6`
+- Backlog origen: `E14-T1`, `E14-T2`
+- Dependencias: `ISSUE-007`, `ISSUE-011`
+
+### Objetivo
+Almacenar las reglas de negocio en base de datos con versionado completo y vigencia por producto.
+
+### Entregables
+- modelo SQLAlchemy para `rule_sets` y `rule_versions`
+- servicio CRUD de reglas con versionado
+- migracion de reglas PLD actuales al nuevo esquema
+
+### Criterios de aceptacion
+- las reglas del motor PLD se cargan desde `rule_versions` y no desde codigo fijo
+- cada cambio genera una nueva version sin perder la anterior
+- los rule_sets pueden activarse/desactivarse por periodo
+
+---
+
+## ISSUE-033 - Refactorizar motor a pipeline de etapas
+
+- Tipo: Engine / Architecture
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 6`
+- Backlog origen: `E14-T5`, `E14-T6`, `E14-T7`
+- Dependencias: `ISSUE-010`, `ISSUE-032`
+
+### Objetivo
+Reestructurar el motor de decisiones como un pipeline configurable de etapas independientes.
+
+### Entregables
+- interfaz `DecisionStage` y orquestador de pipeline
+- 5 etapas implementadas: Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing
+- tabla `pipeline_strategies` con seleccion de pipeline por producto
+
+### Criterios de aceptacion
+- el pipeline ejecuta las 5 etapas secuencialmente para PLD
+- cada etapa es independiente y testeable por separado
+- los resultados son equivalentes a la implementacion anterior
+- se puede configurar un pipeline diferente por producto
+
+---
+
+## ISSUE-034 - UI Administrativa de Reglas
+
+- Tipo: Frontend
+- Prioridad: `P2`
+- Sprint sugerido: `Sprint 7`
+- Backlog origen: `E14-T8`, `E14-T9`, `E14-T10`
+- Dependencias: `ISSUE-017`, `ISSUE-032`
+
+### Objetivo
+Interfaz web para que administradores gestionen reglas de negocio con versionado, simulacion y flujo de aprobacion.
+
+### Entregables
+- CRUD de rule-sets y rule-versions en frontend
+- sandbox de pruebas con casos historicos
+- flujo de aprobacion de cambios (borrador → pending_approval → activo)
+
+### Criterios de aceptacion
+- admin puede listar, crear, editar y versionar reglas desde UI
+- admin puede simular cambios en reglas contra casos historicos antes de activarlos
+- cambios a reglas activas requieren aprobacion de un supervisor
