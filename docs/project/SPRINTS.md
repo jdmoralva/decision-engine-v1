@@ -1,8 +1,8 @@
-# SPRINTS - Decision Engine PLD
+# SPRINTS - Decision Engine
 
 ## Proposito
 
-Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejecutar el MVP del nuevo sistema PLD.
+Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejecutar el MVP del nuevo sistema, cuyo primer producto soportado es `PLD`.
 
 ## Supuestos
 
@@ -39,6 +39,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - estructura nueva del proyecto creada
 - backend y frontend levantando localmente
 - modelo de datos inicial definido
+- decision inicial sobre como mantener la plataforma extensible a otros tipos de prestamo
 
 ### Riesgos del sprint
 
@@ -70,6 +71,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - migraciones funcionando
 - autenticacion y autorizacion base implementadas
 - motor desacoplado creado como modulo reusable
+- base tecnica lista para soportar otros productos sin rehacer componentes compartidos
 
 ### Riesgos del sprint
 
@@ -180,12 +182,14 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - `ISSUE-023` Exportacion de bandeja
 - `ISSUE-024` Importador de parametros desde Excel
 - `ISSUE-025` Migracion historica desde legacy
+- `ISSUE-026` Definir base multiproducto de la plataforma
 
 ### Resultado esperado
 
 - exportacion desacoplada del DOM
 - importador versionado de parametros
 - definicion y ejecucion de migracion historica si aplica
+- lineamientos tecnicos para incorporar futuros productos de prestamo
 
 ### Criterio de cierre
 
@@ -241,3 +245,5 @@ Antes de iniciar Sprint 1 conviene tomar decisiones explicitas sobre:
 - fuente oficial de reglas cuando haya discrepancias con el legado
 
 Sin esas definiciones, `ISSUE-001` y `ISSUE-008` pueden bloquear el resto del camino critico.
+
+La extension a otros productos no forma parte del MVP, pero el diseno de sprints 1 y 2 debe evitar que la plataforma quede acoplada estructuralmente a PLD.

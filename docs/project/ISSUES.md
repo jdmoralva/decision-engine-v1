@@ -1,8 +1,8 @@
-# ISSUES - Decision Engine PLD
+# ISSUES - Decision Engine
 
 ## Proposito
 
-Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo razonablemente entregable, manteniendo trazabilidad con epicas y tareas del backlog.
+Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo razonablemente entregable, manteniendo trazabilidad con epicas y tareas del backlog del MVP PLD y de la base futura multiproducto.
 
 ## Convenciones
 
@@ -23,19 +23,21 @@ Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gesti
 
 ### Objetivo
 
-Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas y decisiones abiertas.
+Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas y decisiones abiertas, y distinguiendo lo especifico de PLD frente a lo que debe quedar reutilizable para futuros productos de prestamo.
 
 ### Entregables
 
 - mapa del flujo PLD legado
 - catalogo de reglas de negocio observadas
 - resolucion de decisiones abiertas del SPEC
+- separacion entre capacidades exclusivas de PLD y capacidades de plataforma compartida
 
 ### Criterios de aceptacion
 
 - existe un mapa del flujo completo de consulta, evaluacion, solicitud, bandeja, anulacion y cambio de estado
 - existe un catalogo de reglas con nombre, condicion, entradas, salidas y efecto
 - quedan resueltas las decisiones sobre autenticacion, frontend, ZIP, historicos y despliegue del motor
+- queda explicito que partes del diseno deben permanecer neutrales para soportar otros tipos de prestamo en el futuro
 
 ---
 
@@ -64,6 +66,7 @@ Definir los contratos de consulta, evaluacion, registro de solicitud y cambio de
 - contratos documentados con campos, tipos y validaciones
 - contratos no dependen de posiciones de tabla ni de HTML
 - contratos son consistentes con el modelo de datos objetivo
+- los contratos distinguen entre campos comunes a la plataforma y campos especificos de PLD
 
 ---
 
@@ -161,12 +164,14 @@ Definir el esquema base de persistencia y el mapeo de parametros del motor.
 - entidades principales del MVP
 - diseno de versionado de parametros
 - mapeo del Excel a estructuras persistentes
+- soporte base para clasificacion por producto de prestamo
 
 ### Criterios de aceptacion
 
 - existe documento o diagrama de tablas y relaciones
 - existe mapeo de `ParametrosPLD-v3.xlsx` a tablas nuevas
 - el modelo evita dependencias innecesarias del motor de base de datos
+- el esquema inicial no obliga a redisenar tablas compartidas al agregar nuevos productos de prestamo
 
 ---
 
@@ -262,11 +267,13 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
 - contratos de entrada y salida del motor
 - paquete `decision_engine`
 - normalizacion base de entradas
+- estrategia para seleccionar reglas por producto o conjunto de reglas
 
 ### Criterios de aceptacion
 
 - el modulo puede importarse sin dependencias web
 - el contrato del motor es estable y testeable
+- la estructura no asume que PLD sera el unico producto soportado
 
 ---
 
@@ -652,3 +659,28 @@ Ejecutar la estrategia definida para conservar o migrar historicos del sistema l
 
 - la migracion historica, si aplica, es repetible y auditada
 - queda documentado el alcance exacto de los datos migrados
+
+---
+
+## ISSUE-026 - Definir base multiproducto de la plataforma
+
+- Tipo: Architecture
+- Prioridad: `P2`
+- Sprint sugerido: `Sprint 6`
+- Backlog origen: `E11-T1`, `E11-T2`
+- Dependencias: `ISSUE-001`, `ISSUE-006`, `ISSUE-010`
+
+### Objetivo
+
+Dejar definida la estrategia tecnica para incorporar otros tipos de prestamo sobre la misma plataforma sin comprometer el MVP PLD.
+
+### Entregables
+
+- nomenclatura compartida de dominio
+- estrategia de extension del motor por producto
+- lineamientos de extension de API y persistencia
+
+### Criterios de aceptacion
+
+- la estrategia evita hardcode estructural de PLD en modulos compartidos
+- queda claro como introducir nuevos productos sin romper contratos base ni seguridad compartida

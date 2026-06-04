@@ -1,8 +1,8 @@
-# Decision Engine PLD
+# Decision Engine
 
 ## Resumen Ejecutivo
 
-Este repositorio contiene la planificacion y la base documental para construir una nueva version del sistema de `PLD / solicitudes de credito`.
+Este repositorio contiene la planificacion y la base documental para construir una nueva version de `Decision Engine`, una plataforma de gestion y decision para productos de prestamo.
 
 El objetivo es reemplazar la solucion legacy de `old-version/`, implementada como un monolito en `R + Plumber + HTML/jQuery`, por una arquitectura moderna con:
 
@@ -12,7 +12,10 @@ El objetivo es reemplazar la solucion legacy de `old-version/`, implementada com
 - autenticacion y autorizacion modernas
 - motor de decisiones aislado de la UI y del framework web
 
-El alcance actual del nuevo proyecto cubre solo el flujo `PLD / solicitudes de credito`.
+`PLD` significa `Prestamo de Libre Disponibilidad`.
+
+El MVP actual del nuevo proyecto cubre solo el flujo `PLD / solicitudes de credito`.
+La arquitectura objetivo, sin embargo, esta pensada para soportar otros tipos de prestamo en el futuro sin rehacer la plataforma base.
 El modulo de `Cobranzas` presente en `old-version/` queda fuera de alcance salvo instruccion explicita.
 
 ## Estado Actual
@@ -21,7 +24,7 @@ Hoy la raiz del repositorio no contiene todavia la implementacion nueva.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `SPEC.md` define la especificacion tecnica del nuevo sistema
+- `SPEC.md` define la especificacion tecnica de la nueva plataforma y de su MVP inicial PLD
 - `docs/project/BACKLOG.md` traduce la especificacion a trabajo ejecutable
 - `docs/project/ISSUES.md` organiza el backlog en issues operativos
 - `docs/project/SPRINTS.md` propone la secuencia de ejecucion del MVP
@@ -53,5 +56,6 @@ Ese issue debe consolidar:
 - el mapa completo del flujo PLD legado
 - el catalogo de reglas de negocio observadas
 - la resolucion de decisiones abiertas del SPEC, especialmente autenticacion, frontend, ZIP e historicos
+- la separacion entre decisiones especificas de PLD y decisiones de plataforma reutilizables para futuros productos de prestamo
 
 Sin ese cierre, los issues tecnicos posteriores del MVP pueden quedar bloqueados.

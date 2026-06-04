@@ -1,8 +1,8 @@
-# BACKLOG - Decision Engine PLD
+# BACKLOG - Decision Engine
 
 ## 0. Proposito
 
-Este backlog convierte `SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir el nuevo sistema `PLD / solicitudes de credito`.
+Este backlog convierte `SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir la nueva plataforma `Decision Engine`, cuyo MVP inicial cubre `PLD / solicitudes de credito`.
 
 ## 1. Convenciones de trabajo
 
@@ -104,6 +104,12 @@ Tareas:
   - Dependencias: `E1-T1`
   - Aceptacion: quedan resueltas al menos autenticacion, frontend, ZIP, historicos y modo de despliegue del motor.
 
+- [ ] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T1`, `E1-T2`
+  - Aceptacion: existe una separacion explicita entre reglas, datos y flujos especificos de PLD frente a capacidades de plataforma reutilizables.
+
 ### Historia E1-H2. Definir contratos iniciales
 
 Resultado esperado:
@@ -123,6 +129,12 @@ Tareas:
   - Estimacion: `S`
   - Dependencias: `E1-T2`
   - Aceptacion: contrato documentado independiente de UI y de indices de tabla.
+
+- [ ] `E1-T5a` Definir que campos del contrato son comunes a cualquier producto de prestamo y cuales son especificos de PLD.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E1-T5`
+  - Aceptacion: el contrato deja clara la frontera entre datos compartidos de plataforma y datos particulares de PLD.
 
 - [ ] `E1-T6` Definir payload de registro de solicitud y de cambio de estado.
   - Prioridad: `P0`
@@ -213,6 +225,12 @@ Tareas:
   - Estimacion: `M`
   - Dependencias: `E1-T6`
   - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave.
+
+- [ ] `E3-T1a` Incorporar soporte base para clasificar solicitudes y reglas por producto de prestamo.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E3-T1`
+  - Aceptacion: el modelo inicial contempla `loan_product` o equivalente sin exigir reestructura futura del esquema base.
 
 - [ ] `E3-T2` Implementar modelos SQLAlchemy iniciales.
   - Prioridad: `P0`
@@ -347,6 +365,12 @@ Tareas:
   - Estimacion: `M`
   - Dependencias: `E5-T1`, `E2-T2`
   - Aceptacion: modulo aislado importable sin dependencias web.
+
+- [ ] `E5-T2a` Diseñar el motor para seleccionar reglas por producto o conjunto de reglas.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E5-T2`
+  - Aceptacion: la estructura del motor no asume que PLD sera el unico producto soportado.
 
 - [ ] `E5-T3` Implementar versionado de reglas y parametros aplicados.
   - Prioridad: `P1`
@@ -741,6 +765,32 @@ Tareas:
   - Estimacion: `S`
   - Dependencias: `E10-T4`
   - Aceptacion: existe guia corta de arranque, diagnostico y recuperacion basica.
+
+---
+
+## E11. Preparacion multiproducto
+
+Prioridad: `P2`
+
+### Historia E11-H1. Base extensible de plataforma
+
+Resultado esperado:
+
+- la plataforma queda preparada para soportar nuevos tipos de prestamo sin reescritura de sus modulos compartidos
+
+Tareas:
+
+- [ ] `E11-T1` Definir nomenclatura compartida de dominio para productos de prestamo.
+  - Prioridad: `P2`
+  - Estimacion: `S`
+  - Dependencias: `E1-T3a`
+  - Aceptacion: los modulos compartidos usan terminologia neutral y no cerrada a PLD.
+
+- [ ] `E11-T2` Definir estrategia de incorporacion de nuevos productos sobre el mismo motor y API.
+  - Prioridad: `P2`
+  - Estimacion: `M`
+  - Dependencias: `E5-T2a`, `E3-T1a`
+  - Aceptacion: existe una propuesta tecnica de extension sin romper contratos base ni seguridad compartida.
 
 ---
 

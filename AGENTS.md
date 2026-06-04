@@ -23,7 +23,9 @@ Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo co
 
 ## Alcance del proyecto nuevo
 
-- El nuevo sistema cubre solo `PLD / solicitudes de credito`.
+- `PLD` significa `Prestamo de Libre Disponibilidad`.
+- El MVP del nuevo sistema cubre solo `PLD / solicitudes de credito`.
+- La plataforma nueva debe quedar preparada para soportar otros tipos de prestamo en el futuro; no diseñes componentes compartidos como si PLD fuera el unico producto posible.
 - `Cobranzas` aparece en `old-version/`, pero esta fuera de alcance salvo instruccion explicita del usuario.
 - No reintroduzcas decisiones del legado que ya fueron descartadas en `SPEC.md`, especialmente:
   - autenticacion basada en IP
@@ -53,6 +55,7 @@ Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo co
 
 - Si vas a construir la nueva app, sigue la estructura objetivo definida en `SPEC.md` en lugar de extender el monolito legacy.
 - Manten separado el motor de decisiones del framework web y de la UI; esta separacion es un objetivo central del repo.
+- En modulos compartidos, evita nombres, contratos o estructuras que supongan que `PLD` sera el unico tipo de prestamo futuro.
 - Trata `ParametrosPLD-v3.xlsx` como fuente legacy para migracion de parametros, no como dependencia runtime por defecto.
 - Si detectas discrepancias entre documentacion y legado ejecutable, prioriza:
   - contratos y alcance en `SPEC.md` para el sistema nuevo

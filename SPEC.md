@@ -1,10 +1,12 @@
-# SPEC - Nuevo Decision Engine PLD
+# SPEC - Decision Engine
 
 ## 0. Proposito del documento
 
-Este documento define la especificacion tecnica inicial para construir una nueva version del sistema legado contenido en `old-version/`, limitada al flujo `PLD / solicitudes de credito`.
+Este documento define la especificacion tecnica inicial para construir una nueva version del sistema legado contenido en `old-version/`, como una plataforma de gestion y decision para productos de prestamo.
 
 El objetivo es reemplazar la implementacion monolitica en R + HTML/jQuery por una solucion moderna, segura, mantenible y extensible, con backend en Python y persistencia soportada inicialmente sobre SQLite, con opcion de migracion a SQL Server.
+
+`PLD` significa `Prestamo de Libre Disponibilidad` y constituye el primer producto que se implementara en la nueva plataforma.
 
 Este documento toma como referencia funcional principal:
 
@@ -21,7 +23,7 @@ Este documento toma como referencia funcional principal:
 
 ### 1.1 Incluido en el nuevo sistema
 
-El nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes de credito`, incluyendo:
+El MVP del nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes de credito`, incluyendo:
 
 - consulta de cliente por tipo y numero de documento
 - visualizacion de datos relevantes de cliente
@@ -37,7 +39,18 @@ El nuevo proyecto debe cubrir exclusivamente el flujo `PLD / solicitudes de cred
 - exportacion de resultados de bandeja
 - trazabilidad operativa y auditoria
 
-### 1.2 Excluido del nuevo sistema
+### 1.2 Vision futura de la plataforma
+
+Aunque el MVP se limita a `PLD`, la arquitectura del nuevo sistema debe quedar preparada para soportar otros tipos de prestamo en el futuro.
+
+Esto implica que los componentes compartidos deben diseniarse de forma reutilizable para:
+
+- multiples productos de prestamo
+- distintos conjuntos de reglas
+- variantes de formularios y validaciones por producto
+- evolucion independiente de parametros y politicas por tipo de prestamo
+
+### 1.3 Excluido del nuevo sistema
 
 No forma parte de esta primera version:
 
@@ -47,7 +60,7 @@ No forma parte de esta primera version:
 - dependencia de HTML generado por backend
 - autenticacion basada en IP como mecanismo principal
 
-### 1.3 Pendiente de confirmacion funcional
+### 1.4 Pendiente de confirmacion funcional
 
 Los siguientes temas quedan abiertos hasta definicion del usuario o negocio:
 
@@ -70,6 +83,7 @@ La nueva arquitectura debe cumplir los siguientes principios:
 - seguridad desacoplada de la red o de archivos de IPs
 - compatibilidad con cambio de motor de base de datos
 - facilidad para pruebas automatizadas
+- capacidad de incorporar nuevos tipos de prestamo sin redisenar los modulos compartidos
 
 ### 2.2 Arquitectura propuesta
 
@@ -78,6 +92,8 @@ Se propone una arquitectura modular de tres bloques:
 1. `frontend web`
 2. `backend API`
 3. `motor de decisiones`
+
+Los modulos compartidos de esta arquitectura no deben asumir que `PLD` sera el unico producto del sistema.
 
 ### 2.3 Frontend recomendado
 
@@ -122,11 +138,14 @@ Debe implementarse como modulo aislado dentro del backend en la primera version,
 
 Responsabilidades:
 
+- seleccionar el conjunto de reglas aplicable segun producto o contexto
 - evaluar elegibilidad
 - recalcular oferta
 - aplicar reglas de bloqueo
 - generar alertas y observaciones
 - versionar resultados
+
+En el MVP, `PLD` sera el primer conjunto de reglas implementado, pero el contrato del motor debe permitir agregar otros productos sin redefinir la base del modulo.
 
 ### 2.6 Despliegue inicial
 
@@ -170,6 +189,8 @@ Responsable de:
 - invariantes
 - contratos del motor de decisiones
 - reglas criticas
+
+Los conceptos compartidos del dominio deben modelarse como primitivas de plataforma cuando no sean exclusivos de PLD.
 
 ### 3.4 Capa de infraestructura
 
@@ -365,6 +386,7 @@ Cada evaluacion debe almacenar:
 
 Separar correctamente:
 
+- catalogo de productos de prestamo
 - datos maestros
 - parametros del motor
 - eventos operativos
@@ -377,6 +399,7 @@ Separar correctamente:
 - `users`
 - `roles`
 - `user_roles`
+- `loan_products`
 - `clients`
 - `pld_campaigns`
 - `pld_rule_sets`
@@ -393,6 +416,7 @@ Separar correctamente:
 #### `credit_requests`
 
 - `id`
+- `loan_product_code`
 - `document_type`
 - `document_number`
 - `campaign_code`
@@ -416,6 +440,7 @@ Separar correctamente:
 #### `pld_evaluations`
 
 - `id`
+- `loan_product_code`
 - `document_type`
 - `document_number`
 - `campaign_code`
@@ -436,6 +461,16 @@ Se debe priorizar compatibilidad entre:
 
 - SQLite
 - SQL Server
+
+### 6.5 Consideracion de multiproducto
+
+El modelo inicial debe permitir distinguir entre:
+
+- datos comunes a cualquier producto de prestamo
+- datos especificos de PLD
+- reglas y parametros por producto
+
+El MVP puede tener tablas y servicios especificos de PLD, pero no debe impedir la introduccion posterior de otros productos bajo la misma plataforma.
 
 ---
 
@@ -467,6 +502,10 @@ Se debe priorizar compatibilidad entre:
 - `POST /api/v1/pld/solicitudes/{request_id}/anular`
 - `POST /api/v1/pld/solicitudes/{request_id}/estado`
 - `GET /api/v1/pld/solicitudes/export`
+
+#### Consideracion futura de API
+
+Aunque el MVP expone endpoints especificos para `PLD`, la API interna y sus contratos base deben quedar listos para incorporar otros productos de prestamo sin redisenar autenticacion, auditoria, manejo de errores ni capacidades compartidas.
 
 #### Administracion futura
 
@@ -500,6 +539,7 @@ Entregables:
 - catalogo de pantallas
 - casos de uso definitivos
 - matriz de roles y permisos
+- definicion de fronteras entre capacidades exclusivas de PLD y capacidades compartidas de plataforma
 
 ### Fase 1. Bootstrap tecnico
 
@@ -519,6 +559,7 @@ Entregables:
 - migraciones Alembic
 - compatibilidad SQLite
 - guia de cambio a SQL Server
+- soporte base para clasificar solicitudes y reglas por producto
 
 ### Fase 3. Motor de decisiones
 
@@ -528,6 +569,7 @@ Entregables:
 - motor desacoplado
 - reglas base implementadas
 - pruebas de regresion contra legado
+- base lista para agregar nuevos conjuntos de reglas por producto
 
 ### Fase 4. Casos de uso PLD
 
@@ -577,6 +619,14 @@ Entregables:
 - configuracion de despliegue
 - documentacion operativa
 - checklist de salida
+
+### Fase 9. Extension a nuevos productos
+
+Entregables futuros:
+
+- incorporacion de nuevos tipos de prestamo
+- nuevos conjuntos de reglas sobre el mismo motor
+- evoluciones de UI y API sin romper el MVP PLD
 
 ---
 
@@ -700,6 +750,7 @@ Recomendadas:
 - fijar casos canonicos de prueba
 - aislar motor de decisiones desde el inicio
 - versionar parametros y formulas
+- modelar conceptos compartidos con enfoque multiproducto desde la primera iteracion
 
 ---
 
@@ -719,6 +770,7 @@ Estas decisiones deben cerrarse al inicio del proyecto:
 10. necesidad de trazabilidad avanzada o simple
 11. politica de versionado de parametros del motor
 12. criterio de aprobacion para salida a produccion
+13. estrategia para incorporar nuevos tipos de prestamo sin rehacer contratos compartidos
 
 ---
 
@@ -776,6 +828,7 @@ El sistema debe quedar preparado para:
 - exponer el motor a otros canales
 - incorporar administracion de parametros por UI
 - soportar nuevas familias de reglas
+- soportar nuevos productos de prestamo ademas de PLD
 
 ---
 
@@ -804,3 +857,4 @@ El MVP se considerara exitoso si logra:
 - soportar SQLite sin bloquear futura migracion a SQL Server
 - contar con pruebas automatizadas del motor de decisiones
 - dejar una base tecnica lista para evolucion posterior
+- dejar definidos los puntos de extension necesarios para soportar otros tipos de prestamo en futuras fases
