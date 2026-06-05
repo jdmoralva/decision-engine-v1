@@ -102,7 +102,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`
-  - Aceptacion: quedan resueltas al menos autenticacion, frontend y modo de despliegue del motor. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada.
+  - Aceptacion: quedan resueltas al menos autenticacion, frontend segun despliegue, modo de despliegue del motor, fuente oficial de reglas y lineamientos corporativos de seguridad/despliegue. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada.
 
 - [ ] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
   - Prioridad: `P0`
@@ -128,13 +128,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T1`
-  - Aceptacion: contrato documentado con campos, tipos, validaciones y errores esperados.
+  - Aceptacion: contrato documentado con campos, tipos, validaciones y errores esperados. Los contratos quedan documentados en OpenAPI.
 
 - [ ] `E1-T5` Definir payload de evaluacion del motor.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
-  - Aceptacion: contrato documentado independiente de UI y de indices de tabla.
+  - Aceptacion: contrato documentado independiente de UI y de indices de tabla. Los contratos quedan documentados en OpenAPI.
 
 - [ ] `E1-T5a` Definir que campos del contrato son comunes a cualquier producto de prestamo y cuales son especificos de PLD.
   - Prioridad: `P1`
@@ -146,7 +146,25 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
-  - Aceptacion: contratos aprobados y alineados con modelo de datos previsto.
+  - Aceptacion: contratos aprobados y alineados con modelo de datos previsto. Los contratos quedan documentados en OpenAPI.
+
+- [ ] `E1-T6b` Definir contratos de inputs externos para cliente, campanas y deuda.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T1`, `E1-T2`
+  - Aceptacion: existen contratos documentados con campos, origen, validaciones y errores esperados para cada input externo consumido por el motor o por los casos de uso.
+
+- [ ] `E1-T6c` Definir snapshot minimo por evaluacion con solo los campos consumidos por el motor.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T5`, `E1-T6b`
+  - Aceptacion: queda definida la lista exacta de campos que se persisten como evidencia de entrada de cada evaluacion.
+
+- [ ] `E1-T6d` Definir fuente oficial de reglas y criterio de resolucion de discrepancias entre SPEC, legado y parametros.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T2`
+  - Aceptacion: queda explicito el orden de precedencia entre `SPEC.md`, `old-version/api-build.R`, `ParametrosPLD-v3.xlsx` y decisiones funcionales cerradas.
 
 ---
 
@@ -166,19 +184,19 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
-  - Aceptacion: carpetas creadas con archivos base y convenciones minimas.
+  - Aceptacion: estructura creada segun SPEC §3.5: `backend/app/{api,application,domain,infrastructure,security,config}/main.py` y `frontend/src/{app,features,components,services,routes}`. Carpetas con archivos base y convenciones minimas.
 
 - [ ] `E2-T2` Inicializar backend con FastAPI, configuracion por entornos y comando local de arranque.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E2-T1`
-  - Aceptacion: backend levanta localmente con endpoint `health` utilizando las versiones e imports estipulados en SPEC.md (Seccion 2.7.2). Incluye ruff y pyproject.toml base.
+  - Aceptacion: backend levanta localmente con endpoint `health` utilizando el stack y las decisiones vigentes documentadas en `SPEC.md`. Incluye `ruff` y `pyproject.toml` base.
 
-- [ ] `E2-T3` Inicializar frontend con React, TypeScript y Vite.
+- [ ] `E2-T3` Inicializar frontend web segun el stack definido en `E1-T3`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T3`, `E2-T1`
-  - Aceptacion: frontend levanta localmente con pagina base utilizando las dependencias e integraciones de SPEC.md (Seccion 2.7.4).
+  - Aceptacion: el frontend elegido levanta localmente con pagina base y queda alineado con las restricciones de despliegue acordadas.
 
 - [ ] `E2-T4` Configurar linting, formateo y chequeos basicos para frontend y backend.
   - Prioridad: `P1`
@@ -230,7 +248,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T6`
-  - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave.
+  - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave, incluyendo snapshots minimos de inputs externos consumidos por el motor.
 
 - [ ] `E3-T1a` Incorporar soporte base para clasificar solicitudes y reglas por producto de prestamo.
   - Prioridad: `P0`
@@ -338,13 +356,13 @@ Tareas:
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E3-T3`, `E4-T5`
-  - Aceptacion: quedan auditadas evaluacion, registro, anulacion, cambio de estado y carga de parametros.
+  - Aceptacion: quedan auditadas evaluacion, registro, anulacion, cambio de estado y carga de parametros. Cada registro de auditoria incluye los campos de SPEC §4.5: usuario, rol, accion, entidad afectada, resultado, IP origen, request ID y trazabilidad IA si aplica.
 
-- [ ] `E4-T7` Configurar rate limiting y cabeceras de seguridad.
+- [ ] `E4-T7` Configurar controles de seguridad.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E2-T2`
-  - Aceptacion: backend aplica limites y endurecimiento basico documentado.
+  - Aceptacion: backend aplica HTTPS en entornos no locales, CORS restringido, validacion CSRF si aplica, proteccion contra SQL injection, almacenamiento seguro de secretos, rate limiting y cabeceras de seguridad (SPEC §4.4).
 
 ---
 
@@ -370,7 +388,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E5-T1`, `E2-T2`
-  - Aceptacion: modulo aislado importable sin dependencias web.
+  - Aceptacion: modulo aislado importable sin dependencias web. El motor expone funciones `async` para soportar peticiones concurrentes (SPEC §5.2).
 
 - [ ] `E5-T2a` Diseñar el motor para seleccionar reglas por producto o conjunto de reglas.
   - Prioridad: `P0`
@@ -521,10 +539,16 @@ Tareas:
   - Aceptacion: estado cambia solo por roles autorizados y queda historizado.
 
 - [ ] `E6-T11` Implementar endpoint `GET /api/v1/loans/{product_code}/solicitudes/export`.
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E6-T8`
   - Aceptacion: exporta resultados en formato acordado sin depender del DOM.
+
+- [ ] `E6-T12` Implementar endpoints de carga, listado y descarga de adjuntos ZIP por solicitud.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E6-T6`, `E4-T5`
+  - Aceptacion: el backend permite cargar, listar y descargar ZIPs asociados a una solicitud utilizando `filesystem`, con control de acceso y trazabilidad.
 
 ---
 
@@ -605,10 +629,24 @@ Tareas:
   - Aceptacion: UI habilita solo acciones permitidas y refleja cambios correctamente.
 
 - [ ] `E7-T9` Implementar exportacion de bandeja.
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E6-T11`, `E7-T7`
   - Aceptacion: usuario descarga el archivo acordado desde UI.
+
+### Historia E7-H4. Adjuntos ZIP
+
+Resultado esperado:
+
+- usuarios autorizados gestionan adjuntos ZIP desde la solicitud
+
+Tareas:
+
+- [ ] `E7-T10` Implementar componentes frontend para carga, listado y descarga de ZIP.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E6-T12`, `E7-T6`
+  - Aceptacion: el usuario autorizado puede cargar, listar y descargar ZIPs desde la UI de solicitud.
 
 ---
 
@@ -640,21 +678,21 @@ Tareas:
 
 Resultado esperado:
 
-- estrategia cerrada para conservar o no historicos
+- estrategia cerrada de base limpia y uso referencial del legacy
 
 Tareas:
 
-- [ ] `E8-T3` Definir politica de migracion historica.
+- [ ] `E8-T3` Documentar estrategia de base limpia y rol referencial del legado.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
-  - Aceptacion: decision formal sobre base limpia o migracion parcial/completa.
+  - Aceptacion: queda documentado que el MVP inicia con base limpia y que `old-version/API_DB.db` se usa solo como referencia funcional o analitica.
 
-- [ ] `E8-T4` Implementar scripts de migracion historica si aplica.
+- [ ] `E8-T4` Documentar guia de consulta del legacy para validacion funcional y contraste de casos.
   - Prioridad: `P2`
-  - Estimacion: `L`
-  - Dependencias: `E8-T3`, `E3-T3`
-  - Aceptacion: historicos migran con trazabilidad y validaciones basicas.
+  - Estimacion: `S`
+  - Dependencias: `E8-T3`
+  - Aceptacion: existe una guia corta para consultar datos legacy con fines de contraste sin convertirla en dependencia runtime del nuevo sistema.
 
 ---
 
@@ -848,19 +886,19 @@ Tareas:
   - Dependencias: `E7-T5`, `E12-T5`
   - Aceptacion: panel colapsable visible tras evaluar, con texto claro, disclaimers y boton de re-intento ante errores de API.
 
-### Historia E12-H3. Asistencia al registro e interacciones futuras (Post-MVP)
+### Historia E12-H3. Asistencia al registro e interacciones operativas (MVP)
 
 Resultado esperado:
-- capacidades AI adicionales preparadas en backlog para fases subsiguientes
+- capacidades AI operativas del MVP implementadas de forma auditable
 
 Tareas:
 - [ ] `E12-T7` Desarrollar logica de asistencia en el registro (consistencia de comentarios, alertas de omision).
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E6-T6`, `E12-T3`
   - Aceptacion: endpoint `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/assist` devuelve advertencias operativas si el comentario no sustenta adecuadamente el desvio.
 - [ ] `E12-T8` Desarrollar briefing automatizado de bandeja de solicitudes.
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E6-T8`, `E12-T3`
   - Aceptacion: endpoint `POST /api/v1/loans/{product_code}/bandeja/summary` genera resumen de la bandeja operativa para supervisores.
@@ -897,7 +935,7 @@ Tareas:
 
 ## E14. Business Rules Management System (BRMS)
 
-Prioridad: `P2`
+Prioridad: `P1`
 
 ### Historia E14-H1. Catalogacion y versionado de reglas
 
@@ -955,17 +993,17 @@ Resultado esperado:
 
 Tareas:
 - [ ] `E14-T8` Disenar e implementar el modulo frontend de administracion de reglas (CRUD basico).
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `L`
   - Dependencias: `E14-T3`, `E7-T1`
   - Aceptacion: admin puede listar, crear, editar y versionar reglas desde la UI.
 - [ ] `E14-T9` Implementar sandbox de pruebas de reglas en la UI.
-  - Prioridad: `P3`
+  - Prioridad: `P1`
   - Estimacion: `L`
   - Dependencias: `E14-T8`
   - Aceptacion: admin puede seleccionar casos de prueba historicos y simular el impacto de cambios en reglas antes de activarlos.
 - [ ] `E14-T10` Implementar flujo de aprobacion de cambios de reglas.
-  - Prioridad: `P3`
+  - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E14-T8`, `E4-T5`
   - Aceptacion: cambios a reglas activas requieren aprobacion de supervisor antes de aplicarse.
@@ -982,10 +1020,14 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E1-T4`
 - `E1-T5`
 - `E1-T6`
+- `E1-T6b`
+- `E1-T6c`
+- `E1-T6d`
 - `E1-T7`
 - `E2-T1`
 - `E2-T2`
 - `E2-T3`
+- `E2-T7`
 - `E2-T5`
 - `E3-T1`
 - `E3-T2`
@@ -995,8 +1037,11 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E3-T7`
 - `E4-T1`
 - `E4-T2`
+- `E4-T3`
 - `E4-T4`
 - `E4-T5`
+- `E4-T6`
+- `E4-T7`
 - `E5-T1`
 - `E5-T2`
 - `E5-T4`
@@ -1014,6 +1059,8 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E6-T8`
 - `E6-T9`
 - `E6-T10`
+- `E6-T11`
+- `E6-T12`
 - `E7-T1`
 - `E7-T3`
 - `E7-T4`
@@ -1021,24 +1068,42 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E7-T6`
 - `E7-T7`
 - `E7-T8`
+- `E7-T9`
+- `E7-T10`
+- `E8-T1`
+- `E8-T2`
+- `E8-T3`
+- `E8-T4`
 - `E9-T1`
+- `E9-T2`
 - `E9-T3`
 - `E9-T4`
+- `E9-T5`
+- `E9-T6`
 - `E10-T1`
 - `E10-T2`
+- `E10-T3`
+- `E10-T4`
 - `E12-T1`
 - `E12-T2`
 - `E12-T3`
 - `E12-T4`
 - `E12-T5`
 - `E12-T6`
+- `E12-T7`
+- `E12-T8`
 - `E13-T1`
 - `E13-T2`
 - `E14-T1`
 - `E14-T2`
+- `E14-T3`
 - `E14-T4`
 - `E14-T5`
 - `E14-T6`
+- `E14-T7`
+- `E14-T8`
+- `E14-T9`
+- `E14-T10`
 
 ---
 
@@ -1048,32 +1113,12 @@ Tareas candidatas para una segunda fase:
 
 - `E2-T4`
 - `E2-T6`
-- `E2-T7`
 - `E3-T4`
-- `E4-T3`
-- `E4-T6`
-- `E4-T7`
 - `E5-T3`
-- `E6-T11`
 - `E7-T2`
-- `E7-T9`
-- `E8-T2`
-- `E8-T4`
-- `E9-T2`
-- `E9-T5`
-- `E9-T6`
 - `E9-T7`
-- `E10-T3`
-- `E10-T4`
 - `E10-T5`
-- `E12-T7`
-- `E12-T8`
 - `E13-T3`
-- `E14-T3`
-- `E14-T7`
-- `E14-T8`
-- `E14-T9`
-- `E14-T10`
 
 ---
 
@@ -1082,8 +1127,8 @@ Tareas candidatas para una segunda fase:
 No conviene iniciar implementaciones sensibles sin resolver:
 
 - mecanismo definitivo de autenticacion
-- uso o eliminacion del flujo ZIP
-- politica de migracion historica
+- decision de frontend segun facilidades reales de despliegue
+- contratos de inputs externos y snapshot minimo consumido por el motor
 - fuente oficial de reglas si difiere del legado
 - lineamientos corporativos de despliegue y seguridad
 

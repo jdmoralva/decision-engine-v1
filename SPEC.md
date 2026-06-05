@@ -70,6 +70,8 @@ El sistema incorpora IA bajo un modelo puramente asistivo (copiloto).
 - **Copiloto de reglas:** herramienta para que negocio simule y entienda el impacto de cambios en las politicas.
 - **Decisiones automaticas:** la IA nunca tomara la decision de aprobar o rechazar directamente.
 
+La capa AI del MVP debe ser auditable, opcional desde el punto de vista operativo y no determinista: el flujo principal debe seguir funcionando aunque la AI falle o se desactive.
+
 ### 1.4 Excluido del nuevo sistema
 
 No forma parte de esta primera version:
@@ -85,7 +87,7 @@ No forma parte de esta primera version:
 
 Los siguientes temas quedan abiertos hasta definicion del usuario o negocio:
 
-- (sin pendientes en este momento)
+- Stack de frontend final segun facilidades tecnicas de despliegue
 
 ---
 
@@ -118,10 +120,7 @@ Los modulos compartidos de esta arquitectura no deben asumir que `PLD` sera el u
 
 Stack recomendado:
 
-- React
-- TypeScript
-- Vite
-- libreria de componentes por definir
+- stack por definir segun facilidades tecnicas de despliegue
 
 Responsabilidades del frontend:
 
@@ -132,6 +131,7 @@ Responsabilidades del frontend:
 - exportacion de datos
 - carga y descarga de archivos ZIP
 - manejo de estados de carga, error y permisos
+- paneles de asistencia AI y administracion de reglas
 
 ### 2.4 Backend recomendado
 
@@ -180,6 +180,7 @@ Se recomienda un despliegue inicial simple:
 - funciones async para soportar consultas concurrentes o paralelas
 - SQLite en entorno inicial o de desarrollo
 - SQL Server como opcion de entorno productivo
+- el stack definitivo del frontend se selecciona segun la facilidad de integracion y despliegue en el entorno objetivo
 
 ---
 
@@ -433,6 +434,8 @@ Opcion complementaria:
 
 - importador administrativo desde Excel para cargar o actualizar parametros según un formato establecido
 
+La parametrizacion del MVP debe permitir versionar tambien los inputs externos consumidos por cada evaluacion, persistiendo solo los campos efectivamente usados por el motor.
+
 ### 5.8 Versionado de reglas
 
 Cada evaluacion debe almacenar:
@@ -499,6 +502,7 @@ Separar correctamente:
 - `pld_evaluations`
 - `pld_evaluation_inputs`
 - `pld_evaluation_results`
+- `evaluation_input_snapshots`
 - `credit_requests`
 - `credit_request_status_history`
 - `audit_logs`
@@ -547,6 +551,16 @@ Separar correctamente:
 - `executed_by`
 - `executed_at`
 
+#### `evaluation_input_snapshots`
+
+- `id`
+- `evaluation_id` (FK a `pld_evaluations`)
+- `source_type` (VARCHAR: cliente, campana, deuda, otro input externo)
+- `source_key` (VARCHAR)
+- `field_name` (VARCHAR)
+- `field_value` (JSON o TEXT segun tipo)
+- `created_at`
+
 #### `ai_interactions`
 - `id` (UUID)
 - `user_id` (FK a `users`)
@@ -557,6 +571,17 @@ Separar correctamente:
 - `input_payload` (JSON: datos de entrada estructurados pasados al modelo)
 - `model_name` (VARCHAR: identificador del LLM usado)
 - `response_text` (TEXT: salida generada por la IA)
+- `created_at` (TIMESTAMP)
+
+#### `ai_prompt_templates`
+
+- `id` (UUID, PK)
+- `template_key` (VARCHAR, unico)
+- `prompt_text` (TEXT)
+- `product` (VARCHAR, nullable: si es null aplica a todos los productos)
+- `version` (INT)
+- `is_active` (BOOLEAN)
+- `created_by` (FK a `users`)
 - `created_at` (TIMESTAMP)
 
 #### `decision_events`
@@ -654,6 +679,9 @@ El MVP puede tener tablas y servicios especificos de PLD, pero no debe impedir l
 - `GET /api/v1/loans/{product_code}/solicitudes/export`
 - `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/assist`
 - `POST /api/v1/loans/{product_code}/bandeja/summary`
+- `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/attachments`
+- `GET /api/v1/loans/{product_code}/solicitudes/{request_id}/attachments`
+- `GET /api/v1/loans/{product_code}/solicitudes/{request_id}/attachments/{attachment_id}`
 
 #### Consideracion futura de API
 
@@ -700,6 +728,7 @@ Entregables:
 - casos de uso definitivos
 - matriz de roles y permisos
 - definicion de fronteras entre capacidades exclusivas de PLD y capacidades compartidas de plataforma
+- decision del frontend segun despliegue
 
 ### Fase 1. Bootstrap tecnico
 
@@ -707,7 +736,7 @@ Entregables:
 
 - repositorio base
 - backend FastAPI
-- frontend React
+- frontend web segun stack seleccionado
 - configuracion de entornos
 - pipeline inicial
 
@@ -741,6 +770,9 @@ Entregables:
 - bandeja
 - anulacion
 - cambio de estado
+- ZIP
+- AI asistiva
+- administracion de reglas
 
 ### Fase 5. Frontend funcional
 
@@ -761,6 +793,7 @@ Entregables:
 - auditoria completa
 - rate limiting
 - monitoreo base
+- controles de almacenamiento seguro para adjuntos ZIP
 
 ### Fase 7. QA y validacion
 
@@ -770,6 +803,7 @@ Entregables:
 - pruebas de integracion
 - pruebas end-to-end
 - validacion de negocio
+- pruebas de regresion del motor y de AI asistiva
 
 ### Fase 8. Despliegue
 
@@ -779,6 +813,7 @@ Entregables:
 - configuracion de despliegue
 - documentacion operativa
 - checklist de salida
+- decision cerrada del stack frontend seleccionado
 
 ### Fase 9. Extension a nuevos productos
 
@@ -915,19 +950,17 @@ Recomendadas:
 
 Estas decisiones deben cerrarse al inicio del proyecto:
 
-1. `React + TypeScript` versus frontend server-side
+1. frontend final segun facilidades tecnicas de despliegue
 2. proveedor de identidad corporativo o login temporal
-3. inclusion o eliminacion del flujo ZIP
-4. migracion o no de datos historicos
-5. motor de decisiones como modulo interno o servicio separado
-6. fuente oficial de reglas de negocio
-7. lineamientos corporativos de despliegue y seguridad
-8. definicion formal de roles
-9. formato final de exportacion de bandeja
-10. necesidad de trazabilidad avanzada o simple
-11. politica de versionado de parametros del motor
-12. criterio de aprobacion para salida a produccion
-13. estrategia para incorporar nuevos tipos de prestamo sin rehacer contratos compartidos
+3. motor de decisiones como modulo interno o servicio separado
+4. fuente oficial de reglas de negocio
+5. lineamientos corporativos de despliegue y seguridad
+6. definicion formal de roles
+7. formato final de exportacion de bandeja
+8. necesidad de trazabilidad avanzada o simple
+9. politica de versionado de parametros del motor
+10. criterio de aprobacion para salida a produccion
+11. estrategia para incorporar nuevos tipos de prestamo sin rehacer contratos compartidos
 
 ---
 
@@ -993,13 +1026,7 @@ El sistema debe quedar preparado para:
 
 Estas preguntas deben resolverse antes de cerrar el backlog definitivo:
 
-1. El frontend sera SPA en React o renderizado desde backend.
-2. Existe proveedor corporativo de identidad disponible.
-3. El flujo ZIP debe permanecer o eliminarse.
-4. Se migraran historicos desde `BaseSolicitudesTN`, `BaseValidacion` y `BaseConsultasTN`.
-5. El motor de decisiones se desplegara junto al backend o por separado.
-6. Existen reglas oficiales fuera del codigo legado y del Excel.
-7. Hay lineamientos corporativos obligatorios para UI, seguridad, logs y despliegue.
+1. El frontend final se definira segun las facilidades tecnicas de despliegue.
 
 ---
 
@@ -1011,6 +1038,8 @@ El MVP se considerara exitoso si logra:
 - desacoplar la evaluacion de la UI
 - operar con autenticacion y autorizacion modernas
 - registrar solicitudes con trazabilidad
+- soportar ZIP sobre filesystem con control de acceso y auditoria
+- incluir AI asistiva completa, event store, BRMS, pipeline configurable y UI administrativa de reglas
 - soportar SQLite sin bloquear futura migracion a SQL Server
 - contar con pruebas automatizadas del motor de decisiones
 - dejar una base tecnica lista para evolucion posterior

@@ -8,7 +8,7 @@ El objetivo es reemplazar la solucion legacy de `old-version/`, un monolito en `
 
 - backend en Python (FastAPI + Pydantic v2)
 - persistencia inicial en SQLite con opcion de migracion a SQL Server
-- frontend web desacoplado (React + TypeScript + Vite)
+- frontend web desacoplado (stack por definir segun facilidades de despliegue)
 - autenticacion y autorizacion modernas (RBAC)
 - motor de decisiones deterministico aislado de la UI y del framework web
 - pipeline de etapas intercambiables (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing)
@@ -25,10 +25,10 @@ Hoy la raiz del repositorio no contiene todavia la implementacion nueva.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `SPEC.md` define la especificacion tecnica completa: arquitectura (pipeline de etapas, event sourcing, BRMS, AI), modelo de datos, API, entorno de desarrollo (versiones exactas, dependencias) y roadmap por fases
+- `SPEC.md` define la especificacion tecnica del proyecto: arquitectura (pipeline de etapas, event sourcing, BRMS, AI), modelo de datos, API, lineamientos de stack y roadmap por fases
 - `docs/project/BACKLOG.md` organiza el trabajo en 14 epicas (E1-E14) con tareas ejecutables, prioridades y dependencias
-- `docs/project/ISSUES.md` descompone el backlog en 34 issues operativos asignados a sprints
-- `docs/project/SPRINTS.md` secuencia la ejecucion en 7 sprints (Sprint 1-7), desde descubrimiento hasta BRMS y UI administrativa
+- `docs/project/ISSUES.md` descompone el backlog en 40 issues operativos asignados a sprints
+- `docs/project/SPRINTS.md` secuencia la ejecucion en 7 sprints (Sprint 1-7), desde descubrimiento hasta cierre del MVP con BRMS, pipeline configurable y UI administrativa
 - `docs/analysis/` reservado para levantamiento funcional y analisis del legado
 - `docs/sessions/SESSIONS.md` guarda referencias cortas de sesiones previas
 - `AGENTS.md` resume las restricciones y fuentes de verdad para futuras sesiones
@@ -36,10 +36,13 @@ El estado real es:
 Decisiones funcionales ya cerradas:
 - El flujo de carga y descarga de archivos ZIP se **incluye** en el alcance del MVP
 - La migracion de historicos queda **descartada**; se inicia con base limpia
-- Los roles operativos (analista, evaluador, supervisor, admin) seran definidos con matriz de permisos en ISSUE-001
-- Las reglas de aprobacion y rechazo posteriores al registro seran documentadas en ISSUE-001
+- El MVP mantiene las capacidades AI asistivas definidas en `SPEC.md`
+- `Event Store`, `BRMS`, `pipeline configurable` y `UI administrativa de reglas` forman parte del MVP
+- El almacenamiento inicial de archivos ZIP se implementara sobre `filesystem`
+- Los snapshots de evaluacion persistiran solo los campos efectivamente consumidos por el motor
 
-El proyecto se encuentra en fase de definicion y preparacion tecnica, listo para iniciar el Sprint 1.
+El proyecto se encuentra en fase de definicion y preparacion tecnica.
+El inicio de `Sprint 1` debe cerrar la decision de frontend segun facilidades de despliegue, formalizar contratos de inputs externos y fijar la fuente oficial de reglas ante discrepancias con el legado.
 
 ## Arquitectura del Motor de Decisiones
 
@@ -68,6 +71,6 @@ Input → [Preprocessing] → [Eligibility] → [Scoring Layer] → [Decision St
 
 El siguiente paso prioritario es iniciar `Sprint 1`, comenzando por:
 
-- `ISSUE-001` Cerrar alcance funcional del MVP, incluyendo roles operativos y reglas de aprobacion/rechazo
+- `ISSUE-001` Cerrar alcance funcional del MVP, incluyendo roles operativos, reglas de aprobacion/rechazo, decision de frontend por despliegue, contratos de inputs externos y fuente oficial de reglas
 
 Sin ese cierre, los issues tecnicos posteriores del MVP pueden quedar bloqueados.

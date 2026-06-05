@@ -2,7 +2,7 @@
 
 ## Proposito
 
-Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo razonablemente entregable, manteniendo trazabilidad con epicas y tareas del backlog del MVP PLD y de la base futura multiproducto.
+Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo entregable, manteniendo trazabilidad con el backlog del MVP PLD y con la base futura multiproducto.
 
 ## Convenciones
 
@@ -18,30 +18,29 @@ Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gesti
 - Tipo: Discovery
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
-- Backlog origen: `E1-T1`, `E1-T2`, `E1-T3`
+- Backlog origen: `E1-T1`, `E1-T2`, `E1-T3`, `E1-T3a`, `E1-T7`, `E1-T6b`, `E1-T6c`, `E1-T6d`
 - Dependencias: ninguna
 
 ### Objetivo
 
-Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas y decisiones abiertas, y distinguiendo lo especifico de PLD frente a lo que debe quedar reutilizable para futuros productos de prestamo.
+Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas, decisiones abiertas y separacion entre capacidades propias de PLD y capacidades compartidas de plataforma.
 
 ### Entregables
 
-- mapa del flujo PLD legado
+- mapa del flujo PLD legacy
 - catalogo de reglas de negocio observadas
-- resolucion de decisiones abiertas del SPEC
-- separacion entre capacidades exclusivas de PLD y capacidades de plataforma compartida
-- definicion exacta de roles operativos con responsabilidades y permisos (analista, evaluador, supervisor, admin)
-- reglas de aprobacion y rechazo posteriores al registro (quien, cuando y bajo que condiciones)
+- definicion de roles operativos y reglas de aprobacion/rechazo
+- decision abierta de frontend segun despliegue
+- contratos de inputs externos y snapshot minimo
+- criterio de fuente oficial de reglas
 
 ### Criterios de aceptacion
 
 - existe un mapa del flujo completo de consulta, evaluacion, solicitud, bandeja, anulacion y cambio de estado
 - existe un catalogo de reglas con nombre, condicion, entradas, salidas y efecto
-- quedan resueltas las decisiones sobre autenticacion, frontend, ZIP, historicos y despliegue del motor
-- queda explicito que partes del diseno deben permanecer neutrales para soportar otros tipos de prestamo en el futuro
-- roles operativos definidos (analista, evaluador, supervisor, admin) con matriz de permisos por accion
-- reglas de aprobacion y rechazo documentadas: criterios, responsable y momento del flujo en que aplican
+- quedan resueltas las decisiones sobre autenticacion, frontend segun despliegue, despliegue del motor, fuente oficial de reglas y lineamientos corporativos relevantes
+- queda explicita la separacion entre capacidades exclusivas de PLD y capacidades compartidas
+- quedan definidos los roles operativos y las reglas de aprobacion/rechazo posteriores al registro
 
 ---
 
@@ -50,12 +49,12 @@ Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas
 - Tipo: Analysis / Design
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
-- Backlog origen: `E1-T4`, `E1-T5`, `E1-T6`
+- Backlog origen: `E1-T4`, `E1-T5`, `E1-T5a`, `E1-T6`, `E1-T6b`, `E1-T6c`
 - Dependencias: `ISSUE-001`
 
 ### Objetivo
 
-Definir los contratos de consulta, evaluacion, registro de solicitud y cambio de estado desacoplados de la UI.
+Definir los contratos de consulta, evaluacion, registro, cambio de estado, inputs externos y snapshot minimo desacoplados de la UI.
 
 ### Entregables
 
@@ -63,14 +62,18 @@ Definir los contratos de consulta, evaluacion, registro de solicitud y cambio de
 - payload de evaluacion
 - payload de registro de solicitud
 - payload de cambio de estado
+- contratos de inputs externos para cliente, campanas y deuda
+- criterios de snapshot minimo por evaluacion
 - contratos de error estructurados
+- documentacion OpenAPI de los contratos
 
 ### Criterios de aceptacion
 
-- contratos documentados con campos, tipos y validaciones
+- contratos documentados con campos, tipos, validaciones y errores esperados
 - contratos no dependen de posiciones de tabla ni de HTML
 - contratos son consistentes con el modelo de datos objetivo
-- los contratos distinguen entre campos comunes a la plataforma y campos especificos de PLD
+- los contratos quedan documentados en OpenAPI
+- queda explicito que solo se persisten como snapshot los campos efectivamente consumidos por el motor
 
 ---
 
@@ -88,13 +91,15 @@ Crear la estructura base del proyecto nuevo separando backend, frontend y docume
 
 ### Entregables
 
+- estructura `backend/app/{api,application,domain,infrastructure,security,config}/main.py`
+- estructura `frontend/src/{app,features,components,services,routes}`
 - carpetas `backend/`, `frontend/`, `docs/`
 - archivos base del repositorio
 - convenciones minimas documentadas
 
 ### Criterios de aceptacion
 
-- la estructura existe en la raiz del proyecto
+- la estructura en `backend/` y `frontend/` sigue el arbol definido en SPEC §3.5
 - la separacion entre nuevo sistema y `old-version/` es explicita
 
 ---
@@ -116,21 +121,20 @@ Levantar el backend base con FastAPI, configuracion por entorno y endpoint de sa
 - proyecto FastAPI funcional
 - configuracion base por entorno
 - endpoint `health`
-- archivo `requirements.txt` y `pyproject.toml` segun SPEC.md Seccion 2.7
+- archivo `pyproject.toml` base
 
 ### Criterios de aceptacion
 
 - el backend levanta localmente
 - el endpoint `health` responde correctamente
 - existe estructura base para configuracion por entorno
-- las versiones de FastAPI, Pydantic (v2) y demas paquetes son las definidas en SPEC.md Seccion 2.7.2
-- el linter `ruff` esta integrado y pasa sin advertencias en la inicializacion
+- `ruff` queda integrado desde la inicializacion
 
 ---
 
-## ISSUE-005 - Inicializar frontend con React y TypeScript
+## ISSUE-005 - Seleccionar e inicializar frontend web segun estrategia de despliegue
 
-- Tipo: Frontend
+- Tipo: Frontend / Architecture
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
 - Backlog origen: `E2-T3`
@@ -138,20 +142,21 @@ Levantar el backend base con FastAPI, configuracion por entorno y endpoint de sa
 
 ### Objetivo
 
-Crear la aplicacion frontend base con React, TypeScript y Vite.
+Comparar opciones tecnicas de frontend segun despliegue y dejar inicializado el stack elegido para el MVP.
 
 ### Entregables
 
+- comparativa tecnica de opciones de frontend y despliegue
+- decision documentada del stack elegido
 - app frontend inicial
 - pagina base funcional
 - configuracion de arranque local
-- archivo `package.json` base segun SPEC.md Seccion 2.7
 
 ### Criterios de aceptacion
 
-- el frontend levanta localmente
-- existe una pagina inicial navegable
-- las dependencias de React, TypeScript, React Query y Tailwind CSS coinciden con SPEC.md Seccion 2.7.4
+- el stack elegido queda justificado segun despliegue previsto
+- existe una base ejecutable del frontend seleccionado
+- el stack no compromete la separacion entre UI, backend y motor
 
 ---
 
@@ -160,12 +165,12 @@ Crear la aplicacion frontend base con React, TypeScript y Vite.
 - Tipo: Data Design
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
-- Backlog origen: `E3-T1`, `E3-T5`, `E3-T6`
+- Backlog origen: `E3-T1`, `E3-T1a`, `E3-T5`, `E3-T6`
 - Dependencias: `ISSUE-002`
 
 ### Objetivo
 
-Definir el esquema base de persistencia y el mapeo de parametros del motor.
+Definir el esquema base de persistencia del MVP, incluyendo parametros del motor y snapshot minimo de inputs externos.
 
 ### Entregables
 
@@ -173,14 +178,15 @@ Definir el esquema base de persistencia y el mapeo de parametros del motor.
 - entidades principales del MVP
 - diseno de versionado de parametros
 - mapeo del Excel a estructuras persistentes
-- soporte base para clasificacion por producto de prestamo
+- soporte base para clasificacion por producto
+- snapshot minimo de inputs externos consumidos por el motor
 
 ### Criterios de aceptacion
 
 - existe documento o diagrama de tablas y relaciones
 - existe mapeo de `ParametrosPLD-v3.xlsx` a tablas nuevas
 - el modelo evita dependencias innecesarias del motor de base de datos
-- el esquema inicial no obliga a redisenar tablas compartidas al agregar nuevos productos de prestamo
+- el esquema deja trazabilidad de los inputs externos efectivamente utilizados en cada evaluacion
 
 ---
 
@@ -249,12 +255,12 @@ Definir la matriz de permisos del sistema e implementarla en backend.
 ### Entregables
 
 - matriz de roles y permisos
-- middleware o dependencias de autorizacion
+- dependencias o middleware de autorizacion
 - proteccion de endpoints por rol
 
 ### Criterios de aceptacion
 
-- roles permiten o restringen consultar, evaluar, registrar, anular y cambiar estado
+- roles permiten o restringen consultar, evaluar, registrar, anular, cambiar estado y administrar reglas
 - endpoints criticos fallan correctamente sin permisos
 
 ---
@@ -264,7 +270,7 @@ Definir la matriz de permisos del sistema e implementarla en backend.
 - Tipo: Domain / Engine
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 2`
-- Backlog origen: `E5-T1`, `E5-T2`, `E5-T4`
+- Backlog origen: `E5-T1`, `E5-T2`, `E5-T2a`, `E5-T4`
 - Dependencias: `ISSUE-002`, `ISSUE-004`
 
 ### Objetivo
@@ -282,6 +288,7 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
 
 - el modulo puede importarse sin dependencias web
 - el contrato del motor es estable y testeable
+- el motor expone funciones `async` para soportar peticiones concurrentes (SPEC §5.2)
 - la estructura no asume que PLD sera el unico producto soportado
 
 ---
@@ -296,18 +303,18 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
 
 ### Objetivo
 
-Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y bloqueos.
+Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y bloqueos del motor PLD.
 
 ### Entregables
 
 - reglas de elegibilidad
 - formulas de calculo
 - bloqueos y alertas
-- versionado de reglas y parametros
+- versionado de reglas y parametros aplicados
 
 ### Criterios de aceptacion
 
-- el motor produce resultados comparables al legado para casos definidos
+- el motor produce resultados comparables al legacy para casos definidos
 - cada evaluacion registra version de reglas y parametros
 
 ---
@@ -322,7 +329,7 @@ Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y b
 
 ### Objetivo
 
-Construir pruebas automatizadas del motor contra casos representativos del legado.
+Construir pruebas automatizadas del motor contra casos representativos del legacy.
 
 ### Entregables
 
@@ -382,7 +389,7 @@ Exponer la evaluacion del motor como caso de uso persistido.
 ### Criterios de aceptacion
 
 - el endpoint ejecuta el motor y retorna la salida esperada
-- la evaluacion queda persistida con versionado y usuario
+- la evaluacion queda persistida con versionado, usuario y snapshot minimo
 
 ---
 
@@ -439,11 +446,324 @@ Exponer la bandeja de solicitudes y las acciones de anulacion y cambio de estado
 
 ---
 
-## ISSUE-023 - Exportacion de bandeja
+## ISSUE-017 - Construir base del frontend y manejo de sesion
+
+- Tipo: Frontend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 4`
+- Backlog origen: `E7-T1`, `E4-T3`
+- Dependencias: `ISSUE-005`, `ISSUE-008`
+
+### Objetivo
+
+Construir la base navegable del frontend elegido, con manejo de sesion y proteccion de rutas.
+
+### Entregables
+
+- layout base de la aplicacion
+- proveedor de sesion
+- rutas protegidas
+- integracion inicial con autenticacion y permisos
+
+### Criterios de aceptacion
+
+- la aplicacion reconoce la sesion actual
+- existen rutas protegidas por autenticacion
+- la base del frontend soporta permisos y crecimiento del flujo PLD
+
+---
+
+## ISSUE-018 - Implementar UI de consulta y evaluacion PLD
+
+- Tipo: Frontend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 4`
+- Backlog origen: `E7-T3`, `E7-T4`, `E7-T5`
+- Dependencias: `ISSUE-017`, `ISSUE-013`, `ISSUE-014`
+
+### Objetivo
+
+Permitir consulta, evaluacion y visualizacion estructurada del resultado PLD desde la UI.
+
+### Entregables
+
+- formulario de consulta
+- seleccion de campana y formulario de evaluacion
+- vista de resultado de evaluacion
+
+### Criterios de aceptacion
+
+- el usuario puede consultar por documento y evaluar una oferta
+- la UI muestra oferta, RCI, alertas, bloqueos y version de reglas
+- el flujo no depende de tablas HTML legacy
+
+---
+
+## ISSUE-019 - Implementar UI de registro y bandeja
+
+- Tipo: Frontend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E7-T6`, `E7-T7`, `E7-T8`
+- Dependencias: `ISSUE-018`, `ISSUE-016`
+
+### Objetivo
+
+Completar el flujo frontend de registro de solicitud, bandeja operativa y acciones por rol.
+
+### Entregables
+
+- formulario de registro
+- pantalla de bandeja con filtros
+- acciones de anulacion y cambio de estado segun rol
+
+### Criterios de aceptacion
+
+- el usuario puede registrar solicitudes desde la UI
+- la bandeja lista solicitudes por periodo y estado
+- la UI respeta permisos por rol en acciones operativas
+
+---
+
+## ISSUE-020 - Implementar auditoria, logs y endurecimiento basico
+
+- Tipo: Security / Observability
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E2-T7`, `E4-T6`, `E4-T7`, `E9-T6`, `E9-T7`
+- Dependencias: `ISSUE-009`, `ISSUE-016`
+
+### Objetivo
+
+Activar auditoria de acciones sensibles, logs estructurados y controles de seguridad.
+
+### Entregables
+
+- auditoria de acciones criticas
+- request id y logs estructurados
+- controles de seguridad: HTTPS en entornos no locales, CORS restringido, validacion CSRF si aplica, proteccion contra SQL injection, almacenamiento seguro de secretos, rate limiting y cabeceras de seguridad (SPEC §4.4)
+- health checks operativos
+
+### Criterios de aceptacion
+
+- evaluacion, registro, anulacion, cambio de estado, adjuntos ZIP y administracion de reglas quedan auditados
+- cada registro de auditoria incluye los campos de SPEC §4.5: usuario, rol, accion, entidad afectada, resultado, IP origen, request ID y trazabilidad IA si aplica
+- el backend emite logs correlacionables por request id
+- existen controles de seguridad documentados y operativos segun SPEC §4.4
+
+---
+
+## ISSUE-021 - Implementar pruebas de integracion y E2E del MVP
+
+- Tipo: QA
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E9-T4`, `E9-T5`
+- Dependencias: `ISSUE-019`, `ISSUE-020`
+
+### Objetivo
+
+Cubrir el MVP con pruebas automatizadas de integracion y al menos un flujo E2E estable.
+
+### Entregables
+
+- pruebas de integracion de API
+- pruebas E2E del flujo principal
+- evidencia automatizada de regresion del MVP
+
+### Criterios de aceptacion
+
+- consulta, evaluacion, registro y cambio de estado tienen pruebas de integracion
+- existe al menos un flujo E2E punta a punta estable
+
+---
+
+## ISSUE-022 - Preparar despliegue inicial y CI
+
+- Tipo: Platform / DevOps
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E10-T1`, `E10-T2`, `E10-T3`, `E10-T4`
+- Dependencias: `ISSUE-004`, `ISSUE-005`, `ISSUE-021`
+
+### Objetivo
+
+Preparar la receta reproducible de despliegue inicial y la automatizacion minima de CI del proyecto.
+
+### Entregables
+
+- estrategia de ejecucion local y despliegue
+- configuracion base por entorno no productivo
+- pipeline CI minima
+- checklist de salida
+
+### Criterios de aceptacion
+
+- existe una receta reproducible de arranque para backend y frontend
+- la CI ejecuta validaciones y pruebas base
+- el checklist de salida cubre migraciones, seguridad, rollback y monitoreo
+
+---
+
+## ISSUE-023 - Implementar backend de adjuntos ZIP
+
+- Tipo: Backend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 4`
+- Backlog origen: `E6-T12`
+- Dependencias: `ISSUE-015`, `ISSUE-009`
+
+### Objetivo
+
+Habilitar carga, listado y descarga de adjuntos ZIP por solicitud usando `filesystem`.
+
+### Entregables
+
+- estrategia documentada de almacenamiento ZIP
+- endpoint de carga de ZIP
+- endpoint de listado de adjuntos
+- endpoint de descarga de adjuntos
+
+### Criterios de aceptacion
+
+- los ZIP quedan asociados a una solicitud
+- el almacenamiento usa `filesystem` con naming, limites y permisos definidos
+- la operacion queda auditada y protegida por rol
+
+---
+
+## ISSUE-024 - Implementar UI de adjuntos ZIP
+
+- Tipo: Frontend
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E7-T10`
+- Dependencias: `ISSUE-019`, `ISSUE-023`
+
+### Objetivo
+
+Exponer en la UI la carga, consulta y descarga de adjuntos ZIP por solicitud.
+
+### Entregables
+
+- componentes de carga de ZIP
+- listado de adjuntos de una solicitud
+- accion de descarga
+
+### Criterios de aceptacion
+
+- el usuario autorizado puede cargar, listar y descargar ZIPs desde la UI
+- la experiencia respeta permisos y muestra errores operativos de forma clara
+
+---
+
+## ISSUE-025 - Implementar asistencia AI al registro
+
+- Tipo: Backend / AI
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E12-T7`
+- Dependencias: `ISSUE-015`, `ISSUE-034`
+
+### Objetivo
+
+Agregar asistencia AI al registro de solicitud para revisar consistencia del comentario y advertir omisiones.
+
+### Entregables
+
+- endpoint `POST /api/v1/loans/{product_code}/solicitudes/{request_id}/assist`
+- plantilla de prompt para asistencia de registro
+- persistencia de interacciones AI
+
+### Criterios de aceptacion
+
+- el endpoint devuelve advertencias operativas y sugerencias de accion
+- la interaccion queda auditada en `ai_interactions`
+- una falla AI no bloquea el flujo determinista de registro
+
+---
+
+## ISSUE-026 - Implementar briefing AI de bandeja
+
+- Tipo: Backend / AI
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
+- Backlog origen: `E12-T8`
+- Dependencias: `ISSUE-016`, `ISSUE-034`
+
+### Objetivo
+
+Generar un resumen AI de la bandeja operativa para uso de supervisores.
+
+### Entregables
+
+- endpoint `POST /api/v1/loans/{product_code}/bandeja/summary`
+- plantilla de prompt para briefing operativo
+- persistencia de la interaccion AI
+
+### Criterios de aceptacion
+
+- el endpoint genera resumen de bandeja sin alterar datos operativos
+- la respuesta queda trazada y auditada
+- un fallo del modulo AI no afecta la consulta normal de bandeja
+
+---
+
+## ISSUE-027 - Definir contratos de inputs externos y snapshot minimo
+
+- Tipo: Analysis / Data Design
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 1`
+- Backlog origen: `E1-T6b`, `E1-T6c`
+- Dependencias: `ISSUE-001`
+
+### Objetivo
+
+Formalizar los inputs externos de cliente, campanas y deuda, y definir el snapshot minimo que se persiste por evaluacion.
+
+### Entregables
+
+- contratos de inputs externos
+- validaciones y errores esperados
+- lista de campos persistidos como snapshot minimo
+
+### Criterios de aceptacion
+
+- queda explicito que solo se persisten los campos consumidos por el motor
+- los contratos diferencian origen externo, uso operativo y trazabilidad de evaluacion
+
+---
+
+## ISSUE-028 - Formalizar fuente oficial de reglas y tratamiento de discrepancias
+
+- Tipo: Analysis / Governance
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 1`
+- Backlog origen: `E1-T6d`
+- Dependencias: `ISSUE-001`
+
+### Objetivo
+
+Definir la precedencia entre `SPEC.md`, legacy, Excel de parametros y decisiones funcionales cerradas.
+
+### Entregables
+
+- criterio de fuente oficial de reglas
+- politica de discrepancias documentada
+- ruta de aprobacion para cambios funcionales
+
+### Criterios de aceptacion
+
+- existe un orden de precedencia claro entre fuentes
+- el equipo puede resolver discrepancias sin bloquear implementacion del motor
+
+---
+
+## ISSUE-029 - Exportacion de bandeja
 
 - Tipo: Backend / Frontend
-- Prioridad: `P2`
-- Sprint sugerido: `Sprint 6`
+- Prioridad: `P1`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E6-T11`, `E7-T9`
 - Dependencias: `ISSUE-016`, `ISSUE-019`
 
@@ -463,7 +783,7 @@ Agregar exportacion desacoplada del DOM para la bandeja de solicitudes.
 
 ---
 
-## ISSUE-024 - Importador de parametros desde Excel
+## ISSUE-030 - Importador de parametros desde Excel
 
 - Tipo: Admin / Data
 - Prioridad: `P2`
@@ -488,32 +808,32 @@ Permitir cargar parametros del motor desde Excel de forma controlada y versionad
 
 ---
 
-## ISSUE-025 - Migracion historica desde legacy
+## ISSUE-031 - Documentar estrategia de base limpia y referencia legacy
 
-- Tipo: Data Migration
-- Prioridad: `P2`
+- Tipo: Data Strategy
+- Prioridad: `P1`
 - Sprint sugerido: `Sprint 6`
 - Backlog origen: `E8-T3`, `E8-T4`
-- Dependencias: `ISSUE-001`, `ISSUE-007`
+- Dependencias: `ISSUE-001`
 
 ### Objetivo
 
-Ejecutar la estrategia definida para conservar o migrar historicos del sistema legado.
+Dejar formalizada la estrategia de base limpia del MVP y el uso del legacy solo como referencia funcional y analitica.
 
 ### Entregables
 
-- decision formal de migracion
-- scripts de carga historica si aplica
-- validacion de consistencia
+- documento de base limpia
+- criterio de uso referencial de `old-version/API_DB.db`
+- guia de contraste funcional contra legacy
 
 ### Criterios de aceptacion
 
-- la migracion historica, si aplica, es repetible y auditada
-- queda documentado el alcance exacto de los datos migrados
+- queda documentado que no habra migracion historica en el MVP
+- el alcance del uso referencial del legacy queda acotado y no se convierte en dependencia runtime
 
 ---
 
-## ISSUE-026 - Definir base multiproducto de la plataforma
+## ISSUE-032 - Definir base multiproducto de la plataforma
 
 - Tipo: Architecture
 - Prioridad: `P2`
@@ -538,7 +858,7 @@ Dejar definida la estrategia tecnica para incorporar otros tipos de prestamo sob
 
 ---
 
-## ISSUE-027 - Definir politicas de seguridad y contratos AI
+## ISSUE-033 - Definir politicas de seguridad y diseno de contratos AI
 
 - Tipo: Security / Architecture
 - Prioridad: `P0`
@@ -547,150 +867,173 @@ Dejar definida la estrategia tecnica para incorporar otros tipos de prestamo sob
 - Dependencias: `ISSUE-001`, `ISSUE-006`
 
 ### Objetivo
-Definir que datos pueden procesarse, que politicas de privacidad aplican y estructurar las tablas de auditoria AI.
+
+Definir que datos pueden procesarse, que politicas de privacidad aplican y como se disena la persistencia auditable de interacciones AI.
 
 ### Entregables
+
 - documento de politicas de datos AI
-- modelos SQLAlchemy para `ai_interactions` y `ai_prompt_templates`
-- migracion de base de datos asociada
+- diseno logico de `ai_interactions` y `ai_prompt_templates`
+- reglas de minimizacion de datos para prompts y respuestas
 
 ### Criterios de aceptacion
-- la base SQLite puede generar las tablas de interaccion de IA
+
 - queda explicito que datos del cliente se omiten o anonimizan antes de enviar al modelo
+- queda aprobado el diseno de persistencia AI para implementarlo junto al ORM y las migraciones
 
 ---
 
-## ISSUE-028 - Implementar servicio base de conexion a LLM
+## ISSUE-034 - Implementar servicio base de conexion a LLM
 
 - Tipo: Backend / Platform
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 2`
 - Backlog origen: `E12-T3`
-- Dependencias: `ISSUE-004`, `ISSUE-027`
+- Dependencias: `ISSUE-004`, `ISSUE-033`
 
 ### Objetivo
+
 Crear el cliente de integracion con el proveedor del modelo de lenguaje, aislando fallas y reintentos.
 
 ### Entregables
+
 - clase cliente `AIModelClient`
 - variables de entorno configuradas
 - pruebas unitarias de integracion
 
 ### Criterios de aceptacion
+
 - el backend puede conectarse de manera exitosa con el LLM usando configuracion externa
-- un fallo de red o timeout del LLM no bloquea el arranque o ejecucion de calculos deterministas
+- un fallo de red o timeout del LLM no bloquea el arranque ni la ejecucion de calculos deterministas
 
 ---
 
-## ISSUE-029 - Desarrollar el servicio de explicacion de evaluacion PLD
+## ISSUE-035 - Desarrollar el servicio de explicacion de evaluacion PLD
 
 - Tipo: Backend
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 3`
 - Backlog origen: `E12-T4`, `E12-T5`
-- Dependencias: `ISSUE-014`, `ISSUE-028`
+- Dependencias: `ISSUE-014`, `ISSUE-034`
 
 ### Objetivo
+
 Implementar el endpoint que traduce una evaluacion PLD a texto explicativo y sugerencias.
 
 ### Entregables
+
 - plantilla de prompt para explicacion PLD
 - endpoint `POST /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/explain`
 - persistencia de la interaccion en `ai_interactions`
 
 ### Criterios de aceptacion
+
 - el endpoint devuelve la explicacion en JSON
 - toda invocacion exitosa se registra en base de datos para auditoria
 - el prompt restringe la alucinacion forzando el uso exclusivo de los datos inyectados
 
 ---
 
-## ISSUE-030 - Implementar panel de explicacion AI en frontend
+## ISSUE-036 - Implementar integracion frontend de capacidades AI del MVP
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E12-T6`
-- Dependencias: `ISSUE-018`, `ISSUE-029`
+- Dependencias: `ISSUE-018`, `ISSUE-019`, `ISSUE-025`, `ISSUE-026`, `ISSUE-035`
 
 ### Objetivo
-Mostrar al analista de credito la explicacion y sugerencias del caso de forma clara e interactiva.
+
+Mostrar en la UI las capacidades AI del MVP de forma clara e interactiva, sin mezclar datos duros del motor con contenido generado.
 
 ### Entregables
+
 - componente `EvaluationAIExplanationPanel`
-- integracion en el flujo post-evaluacion
+- integracion AI en registro de solicitud
+- integracion AI para resumen de bandeja
 - disclaimers y controles de error
 
 ### Criterios de aceptacion
-- tras una evaluacion exitosa, el panel muestra la explicacion generada por IA
+
+- tras una evaluacion exitosa, la UI muestra la explicacion generada por IA
+- la UI expone asistencia AI en registro y resumen AI en bandeja donde corresponda
 - los textos AI estan visualmente diferenciados de los datos duros calculados por el motor
-- ante caidas de red del modulo AI, el analista puede re-intentar la explicacion sin tener que volver a calcular la evaluacion
+- ante caidas de red del modulo AI, el usuario puede reintentar la operacion AI sin repetir el calculo determinista
 
 ---
 
-## ISSUE-031 - Implementar event store de decisiones
+## ISSUE-037 - Implementar event store de decisiones
 
 - Tipo: Backend / Data
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 5`
 - Backlog origen: `E13-T1`, `E13-T2`
-- Dependencias: `ISSUE-007`, `ISSUE-014`
+- Dependencias: `ISSUE-007`, `ISSUE-014`, `ISSUE-016`
 
 ### Objetivo
+
 Implementar el almacenamiento inmutable de eventos de decision con capacidad de consulta por agregado.
 
 ### Entregables
+
 - modelo SQLAlchemy para `decision_events`
 - servicio de event store con escritura y consulta
-- integracion con el motor de decisiones para emitir eventos en cada etapa del pipeline
+- integracion con evaluaciones y cambios de estado del MVP
 
 ### Criterios de aceptacion
+
 - cada evaluacion y cambio de estado genera un evento inmutable en `decision_events`
 - se puede consultar el timeline completo de cualquier evaluacion o solicitud
 - los eventos incluyen version, usuario y timestamp
 
 ---
 
-## ISSUE-032 - Implementar BRMS: catalogacion de reglas
+## ISSUE-038 - Implementar BRMS: catalogacion de reglas
 
 - Tipo: Backend / Engine
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 6`
-- Backlog origen: `E14-T1`, `E14-T2`
+- Backlog origen: `E14-T1`, `E14-T2`, `E14-T3`, `E14-T4`
 - Dependencias: `ISSUE-007`, `ISSUE-011`
 
 ### Objetivo
+
 Almacenar las reglas de negocio en base de datos con versionado completo y vigencia por producto.
 
 ### Entregables
+
 - modelo SQLAlchemy para `rule_sets` y `rule_versions`
-- servicio CRUD de reglas con versionado
+- endpoints y servicio CRUD de reglas con versionado
 - migracion de reglas PLD actuales al nuevo esquema
 
 ### Criterios de aceptacion
+
 - las reglas del motor PLD se cargan desde `rule_versions` y no desde codigo fijo
 - cada cambio genera una nueva version sin perder la anterior
-- los rule_sets pueden activarse/desactivarse por periodo
+- los rule sets pueden activarse y desactivarse por periodo
 
 ---
 
-## ISSUE-033 - Refactorizar motor a pipeline de etapas
+## ISSUE-039 - Refactorizar motor a pipeline de etapas
 
 - Tipo: Engine / Architecture
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 6`
+- Sprint sugerido: `Sprint 7`
 - Backlog origen: `E14-T5`, `E14-T6`, `E14-T7`
-- Dependencias: `ISSUE-010`, `ISSUE-032`
+- Dependencias: `ISSUE-010`, `ISSUE-038`
 
 ### Objetivo
+
 Reestructurar el motor de decisiones como un pipeline configurable de etapas independientes.
 
 ### Entregables
+
 - interfaz `DecisionStage` y orquestador de pipeline
 - 5 etapas implementadas: Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing
 - tabla `pipeline_strategies` con seleccion de pipeline por producto
 
 ### Criterios de aceptacion
+
 - el pipeline ejecuta las 5 etapas secuencialmente para PLD
 - cada etapa es independiente y testeable por separado
 - los resultados son equivalentes a la implementacion anterior
@@ -698,23 +1041,26 @@ Reestructurar el motor de decisiones como un pipeline configurable de etapas ind
 
 ---
 
-## ISSUE-034 - UI Administrativa de Reglas
+## ISSUE-040 - UI Administrativa de Reglas
 
 - Tipo: Frontend
-- Prioridad: `P2`
+- Prioridad: `P1`
 - Sprint sugerido: `Sprint 7`
 - Backlog origen: `E14-T8`, `E14-T9`, `E14-T10`
-- Dependencias: `ISSUE-017`, `ISSUE-032`
+- Dependencias: `ISSUE-017`, `ISSUE-038`, `ISSUE-039`
 
 ### Objetivo
-Interfaz web para que administradores gestionen reglas de negocio con versionado, simulacion y flujo de aprobacion.
+
+Exponer una interfaz web para que administradores gestionen reglas de negocio con versionado, simulacion y flujo de aprobacion.
 
 ### Entregables
-- CRUD de rule-sets y rule-versions en frontend
+
+- CRUD de `rule_sets` y `rule_versions` en frontend
 - sandbox de pruebas con casos historicos
-- flujo de aprobacion de cambios (borrador → pending_approval → activo)
+- flujo de aprobacion de cambios de reglas
 
 ### Criterios de aceptacion
+
 - admin puede listar, crear, editar y versionar reglas desde UI
 - admin puede simular cambios en reglas contra casos historicos antes de activarlos
 - cambios a reglas activas requieren aprobacion de un supervisor
