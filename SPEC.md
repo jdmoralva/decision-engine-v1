@@ -301,7 +301,7 @@ Cada rol debe tener niveles de autonomia diferenciados para la aprobación de so
 - logs estructurados
 - almacenamiento seguro de secretos
 - proteccion contra CSRF si se usan cookies de sesion
-. proteccion contra SQL injection
+- proteccion contra SQL injection
 - encabezados de seguridad HTTP
 
 ### 4.5 Auditoria
