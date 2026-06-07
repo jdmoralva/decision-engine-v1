@@ -102,7 +102,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`
-  - Aceptacion: quedan resueltas al menos autenticacion, frontend segun despliegue, modo de despliegue del motor, fuente oficial de reglas y lineamientos corporativos de seguridad/despliegue. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada.
+  - Aceptacion: quedan resueltas al menos autenticacion, frontend segun despliegue, modo de despliegue del motor, fuente oficial de reglas, gobierno del flujo configurable y lineamientos corporativos de seguridad/despliegue. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada. Queda confirmado que se espera un segundo producto al finalizar el MVP.
 
 - [ ] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
   - Prioridad: `P0`
@@ -135,6 +135,18 @@ Tareas:
   - Estimacion: `S`
   - Dependencias: `E1-T2`
   - Aceptacion: contrato documentado independiente de UI y de indices de tabla. Los contratos quedan documentados en OpenAPI.
+
+- [ ] `E1-T5b` Definir contrato de `DecisionTrace` y endpoint de consulta de trazas de evaluacion.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T5`
+  - Aceptacion: quedan definidos el payload minimo de `DecisionTrace`, su uso para AI y auditoria humana, y el contrato de `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`.
+
+- [ ] `E1-T5c` Definir restricciones de topologia y gobierno del pipeline configurable.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T5`, `E1-T6d`
+  - Aceptacion: queda definido que negocio administra reglas, parametros y secuencia del flujo bajo branching controlado, validacion de topologia y aprobacion separada para cambios de flujo.
 
 - [ ] `E1-T5a` Definir que campos del contrato son comunes a cualquier producto de prestamo y cuales son especificos de PLD.
   - Prioridad: `P1`
@@ -248,7 +260,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T6`
-  - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave, incluyendo snapshots minimos de inputs externos consumidos por el motor.
+  - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave, incluyendo snapshots minimos de inputs externos consumidos por el motor, `decision_traces`, `pipeline_strategies` y `pipeline_nodes`.
 
 - [ ] `E3-T1a` Incorporar soporte base para clasificar solicitudes y reglas por producto de prestamo.
   - Prioridad: `P0`
@@ -286,7 +298,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`, `E3-T1`
-  - Aceptacion: existen tablas o estructuras definidas para `rule_set` y `parameter_version`.
+  - Aceptacion: existen tablas o estructuras definidas para `rule_set`, `parameter_version`, `pipeline_strategy` y aprobacion de cambios de flujo.
+
+- [ ] `E3-T5a` Diseñar persistencia de `DecisionTrace` y versionado de pipeline por evaluacion.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E3-T1`, `E1-T5b`
+  - Aceptacion: el modelo define `decision_traces`, `pipeline_version` por evaluacion y su relacion con AI, auditoria y consulta de trazas.
 
 - [ ] `E3-T6` Definir mapeo entre `ParametrosPLD-v3.xlsx` y tablas nuevas.
   - Prioridad: `P0`
@@ -382,13 +400,25 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5`
-  - Aceptacion: contratos implementados y validados por pruebas.
+  - Aceptacion: contratos implementados y validados por pruebas, incluyendo versionado de reglas, parametros y pipeline.
 
-- [ ] `E5-T2` Crear modulo `decision_engine` con capas internas de validacion, calculo y respuesta.
+- [ ] `E5-T1a` Definir modelo estructurado de `DecisionTrace`.
+  - Prioridad: `P0`
+  - Estimacion: `S`
+  - Dependencias: `E1-T5b`, `E5-T1`
+  - Aceptacion: `DecisionTrace` define etapas o nodos ejecutados, versiones aplicadas, bloqueos, alertas y evidencia consumible por AI y auditoria humana.
+
+- [ ] `E5-T2` Crear modulo `decision_engine` con contratos internos de nodos, calculo y respuesta.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E5-T1`, `E2-T2`
   - Aceptacion: modulo aislado importable sin dependencias web. El motor expone funciones `async` para soportar peticiones concurrentes (SPEC §5.2).
+
+- [ ] `E5-T2b` Implementar orquestador base de `DecisionNode` con seleccion de `pipeline_strategy`.
+  - Prioridad: `P0`
+  - Estimacion: `M`
+  - Dependencias: `E5-T2`, `E3-T5`
+  - Aceptacion: el motor ejecuta nodos segun una estrategia versionada por producto, con branching controlado y validacion de topologia.
 
 - [ ] `E5-T2a` Diseñar el motor para seleccionar reglas por producto o conjunto de reglas.
   - Prioridad: `P0`
@@ -400,7 +430,13 @@ Tareas:
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E3-T5`, `E5-T2`
-  - Aceptacion: cada evaluacion expone `rule_set_version` y `parameter_version`.
+  - Aceptacion: cada evaluacion expone `rule_set_version`, `parameter_version` y `pipeline_version`.
+
+- [ ] `E5-T3a` Persistir `DecisionTrace` por evaluacion.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E3-T5a`, `E5-T1a`, `E5-T2b`
+  - Aceptacion: cada evaluacion persiste una traza estructurada reutilizable por AI, auditoria y soporte operativo.
 
 ### Historia E5-H2. Reglas de negocio y formulas
 
@@ -484,7 +520,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E6-T3`, `E4-T5`
-  - Aceptacion: endpoint persiste la evaluacion y retorna salida del motor.
+  - Aceptacion: endpoint persiste la evaluacion, la traza estructurada y retorna salida del motor.
+
+- [ ] `E6-T4a` Implementar endpoint `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E6-T4`, `E5-T3a`
+  - Aceptacion: el endpoint retorna `DecisionTrace` estructurado con control de acceso y contrato estable para AI y auditoria humana.
 
 ### Historia E6-H3. Registro de solicitud
 
@@ -724,13 +766,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `L`
   - Dependencias: `E5-T8`, `E9-T1`
-  - Aceptacion: formulas y bloqueos criticos quedan cubiertos.
+  - Aceptacion: formulas, bloqueos criticos, versionado de pipeline y generacion de `DecisionTrace` quedan cubiertos.
 
 - [ ] `E9-T4` Implementar pruebas de integracion de API.
   - Prioridad: `P0`
   - Estimacion: `L`
   - Dependencias: `E6-T10`, `E9-T1`
-  - Aceptacion: consulta, evaluacion, registro y cambio de estado tienen pruebas de integracion.
+  - Aceptacion: consulta, evaluacion, consulta de traza, registro y cambio de estado tienen pruebas de integracion.
 
 - [ ] `E9-T5` Implementar pruebas E2E del flujo MVP.
   - Prioridad: `P1`
@@ -814,7 +856,7 @@ Tareas:
 
 ## E11. Preparacion multiproducto
 
-Prioridad: `P2`
+Prioridad: `P1`
 
 ### Historia E11-H1. Base extensible de plataforma
 
@@ -831,10 +873,16 @@ Tareas:
   - Aceptacion: los modulos compartidos usan terminologia neutral y no cerrada a PLD.
 
 - [ ] `E11-T2` Definir estrategia de incorporacion de nuevos productos sobre el mismo motor y API.
-  - Prioridad: `P2`
+  - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E5-T2a`, `E3-T1a`
   - Aceptacion: existe una propuesta tecnica de extension sin romper contratos base ni seguridad compartida.
+
+- [ ] `E11-T3` Validar onboarding tecnico de un segundo producto sobre el pipeline configurable.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E11-T2`, `E14-T7`
+  - Aceptacion: existe evidencia tecnica de que un segundo producto puede configurarse con contratos compartidos, estrategia de pipeline propia y sin reestructurar el motor base.
 
 ---
 
@@ -931,6 +979,23 @@ Tareas:
   - Dependencias: `E13-T2`, `E4-T5`
   - Aceptacion: los endpoints retornan eventos ordenados con paginacion.
 
+### Historia E13-H2. DecisionTrace de evaluaciones
+
+Resultado esperado:
+- cada evaluacion deja una traza estructurada consumible por AI y auditoria humana
+
+Tareas:
+- [ ] `E13-T4` Diseñar e implementar el modelo de datos para `decision_traces`.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E3-T5a`
+  - Aceptacion: tabla o estructura `decision_traces` creada con relacion a evaluaciones y version de pipeline.
+- [ ] `E13-T5` Implementar persistencia y consulta de `DecisionTrace` por evaluacion.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E13-T4`, `E6-T4`
+  - Aceptacion: la traza se persiste al evaluar y puede consultarse por API con permisos adecuados.
+
 ---
 
 ## E14. Business Rules Management System (BRMS)
@@ -964,29 +1029,35 @@ Tareas:
   - Dependencias: `E14-T2`, `ISSUE-011`
   - Aceptacion: todas las reglas del motor PLD migradas a la nueva estructura y funcionando en pipeline.
 
-### Historia E14-H2. Pipeline de etapas
+### Historia E14-H2. Pipeline configurable por nodos
 
 Resultado esperado:
-- el motor de decisiones ejecuta un pipeline configurable de etapas independientes
+- el motor de decisiones ejecuta un pipeline configurable por nodos gobernados
 
 Tareas:
-- [ ] `E14-T5` Definir la interfaz `DecisionStage` y el orquestador de pipeline.
+- [ ] `E14-T5` Definir la interfaz `DecisionNode` y el orquestador de pipeline.
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E5-T1`
-  - Aceptacion: interfaz definida, orquestador que ejecuta etapas secuencialmente con manejo de errores y rollback.
-- [ ] `E14-T6` Refactorizar las reglas actuales del motor en 5 etapas del pipeline (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing).
+  - Aceptacion: interfaz definida, orquestador que ejecuta nodos con branching controlado, manejo de errores, rollback y validacion de topologia.
+- [ ] `E14-T6` Refactorizar las reglas actuales del motor en 5 nodos base del pipeline (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing).
   - Prioridad: `P1`
   - Estimacion: `XL`
   - Dependencias: `E14-T4`, `E14-T5`
-  - Aceptacion: el motor ejecuta el pipeline completo para PLD y produce resultados equivalentes al actual.
-- [ ] `E14-T7` Implementar tabla `pipeline_strategies` y logica de seleccion de pipeline por producto.
+  - Aceptacion: el motor ejecuta el pipeline completo para PLD, produce resultados equivalentes al actual y emite `DecisionTrace` estructurado.
+- [ ] `E14-T7` Implementar tablas `pipeline_strategies` y `pipeline_nodes` y logica de seleccion de pipeline por producto.
   - Prioridad: `P2`
-  - Estimacion: `S`
+  - Estimacion: `M`
   - Dependencias: `E14-T6`
-  - Aceptacion: cada producto puede definir su propio pipeline de etapas (orden y configuracion).
+  - Aceptacion: cada producto puede definir su propio pipeline de nodos con orden, branching permitido y configuracion versionada.
 
-### Historia E14-H3. UI Administrativa de Reglas
+- [ ] `E14-T7a` Implementar validacion de topologia y aprobacion de cambios de flujo.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E14-T7`, `E4-T5`
+  - Aceptacion: ningun pipeline puede activarse sin pasar validaciones estructurales y sin aprobacion de supervisor cuando aplique.
+
+### Historia E14-H3. UI Administrativa de Reglas y Flujo
 
 Resultado esperado:
 - administradores pueden gestionar reglas desde una interfaz web
@@ -1001,12 +1072,18 @@ Tareas:
   - Prioridad: `P1`
   - Estimacion: `L`
   - Dependencias: `E14-T8`
-  - Aceptacion: admin puede seleccionar casos de prueba historicos y simular el impacto de cambios en reglas antes de activarlos.
-- [ ] `E14-T10` Implementar flujo de aprobacion de cambios de reglas.
+  - Aceptacion: admin puede seleccionar casos de prueba historicos y simular el impacto de cambios en reglas y en flujo antes de activarlos.
+- [ ] `E14-T10` Implementar flujo de aprobacion de cambios de reglas y flujo.
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E14-T8`, `E4-T5`
-  - Aceptacion: cambios a reglas activas requieren aprobacion de supervisor antes de aplicarse.
+  - Aceptacion: cambios a reglas activas y a pipelines activos requieren aprobacion de supervisor antes de aplicarse.
+
+- [ ] `E14-T11` Implementar UI gobernada para administracion de `pipeline_strategies` y `pipeline_nodes`.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T8`, `E14-T7`
+  - Aceptacion: admin puede visualizar, editar y versionar la secuencia del flujo por producto sin crear grafos invalidos.
 
 ---
 
@@ -1019,6 +1096,8 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E1-T3`
 - `E1-T4`
 - `E1-T5`
+- `E1-T5b`
+- `E1-T5c`
 - `E1-T6`
 - `E1-T6b`
 - `E1-T6c`
@@ -1033,6 +1112,7 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E3-T2`
 - `E3-T3`
 - `E3-T5`
+- `E3-T5a`
 - `E3-T6`
 - `E3-T7`
 - `E4-T1`
@@ -1043,7 +1123,10 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E4-T6`
 - `E4-T7`
 - `E5-T1`
+- `E5-T1a`
 - `E5-T2`
+- `E5-T2b`
+- `E5-T3a`
 - `E5-T4`
 - `E5-T5`
 - `E5-T6`
@@ -1053,6 +1136,7 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E6-T2`
 - `E6-T3`
 - `E6-T4`
+- `E6-T4a`
 - `E6-T5`
 - `E6-T6`
 - `E6-T7`
@@ -1094,6 +1178,8 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E12-T8`
 - `E13-T1`
 - `E13-T2`
+- `E13-T4`
+- `E13-T5`
 - `E14-T1`
 - `E14-T2`
 - `E14-T3`
@@ -1101,9 +1187,14 @@ Las siguientes tareas forman el camino minimo para entregar el MVP:
 - `E14-T5`
 - `E14-T6`
 - `E14-T7`
+- `E14-T7a`
 - `E14-T8`
 - `E14-T9`
 - `E14-T10`
+- `E14-T11`
+- `E11-T1`
+- `E11-T2`
+- `E11-T3`
 
 ---
 

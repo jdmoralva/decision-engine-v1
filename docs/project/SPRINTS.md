@@ -21,7 +21,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 1 - Descubrimiento y cierre de contratos base
 
 - Estado: `planned`
-- Objetivo: cerrar alcance, contratos base, decision de frontend por despliegue y politicas de datos AI
+- Objetivo: cerrar alcance, contratos base, gobierno del flujo configurable, decision de frontend por despliegue y politicas de datos AI
 
 ### Issues comprometidos
 
@@ -39,6 +39,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 - alcance del MVP aclarado
 - contratos base definidos
+- contrato de `DecisionTrace` y restricciones del pipeline configurable definidos
 - estructura nueva del proyecto creada
 - backend levantando localmente
 - frontend elegido y justificado segun despliegue
@@ -62,7 +63,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 2 - Persistencia, seguridad base y fundaciones AI
 
 - Estado: `planned`
-- Objetivo: dejar lista la persistencia inicial, autenticacion base, armazon del motor y cliente LLM
+- Objetivo: dejar lista la persistencia inicial, autenticacion base, armazon del motor configurable y cliente LLM
 
 ### Issues comprometidos
 
@@ -77,7 +78,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - base SQLite inicial operativa
 - migraciones funcionando
 - autenticacion y autorizacion base implementadas
-- motor desacoplado creado como modulo reusable
+- motor desacoplado creado como modulo reusable con contratos base de nodos y estrategia
 - servicio cliente LLM integrado y testeado en backend
 
 ### Riesgos del sprint
@@ -94,7 +95,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 3 - Motor PLD y APIs nucleares
 
 - Estado: `planned`
-- Objetivo: implementar las reglas centrales del negocio y exponer consulta, evaluacion y explicacion AI
+- Objetivo: implementar las reglas centrales del negocio y exponer consulta, evaluacion, traza y explicacion AI
 
 ### Issues comprometidos
 
@@ -109,6 +110,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - motor PLD funcional y probado
 - consulta PLD disponible por API
 - evaluacion PLD disponible por API
+- `DecisionTrace` consultable por API
 - explicador de evaluaciones AI operativo por API
 
 ### Riesgos del sprint
@@ -157,7 +159,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 5 - Flujo operativo ampliado, AI completa y salida controlada
 
 - Estado: `planned`
-- Objetivo: cerrar el flujo operativo del MVP, completar AI asistiva y dejar lista la salida controlada
+- Objetivo: cerrar el flujo operativo del MVP, completar AI asistiva, trazabilidad estructurada y dejar lista la salida controlada
 
 ### Issues comprometidos
 
@@ -178,7 +180,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - auditoria y logs basicos activos
 - pruebas de integracion y al menos un E2E estable
 - pipeline y despliegue base definidos
-- event store de decisiones operativo con eventos inmutables
+- event store de decisiones operativo con eventos inmutables y `DecisionTrace` persistido por evaluacion
 - AI MVP completa operativa: explicacion, asistencia al registro y briefing de bandeja
 - ZIP operativo de punta a punta
 
@@ -196,7 +198,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 6 - BRMS y extensibilidad de plataforma
 
 - Estado: `planned`
-- Objetivo: consolidar versionado de reglas, importacion de parametros y base multiproducto
+- Objetivo: consolidar versionado de reglas y flujo, importacion de parametros y base multiproducto
 
 ### Issues comprometidos
 
@@ -210,7 +212,8 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - importador versionado de parametros
 - base limpia documentada y legacy acotado a uso referencial
 - lineamientos tecnicos para incorporar futuros productos de prestamo
-- reglas de negocio almacenadas en BD con versionado completo
+- reglas de negocio y flujo almacenados en BD con versionado completo
+- validacion tecnica de onboarding de un segundo producto sobre la misma base
 
 ### Riesgos del sprint
 
@@ -226,19 +229,19 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ## Sprint 7 - Pipeline configurable y cierre del MVP
 
 - Estado: `planned`
-- Objetivo: cerrar el MVP con pipeline configurable y UI administrativa de reglas
+- Objetivo: cerrar el MVP con pipeline configurable por nodos y UI administrativa de reglas y flujo
 
 ### Issues comprometidos
 
-- `ISSUE-039` Refactorizar motor a pipeline de etapas
-- `ISSUE-040` UI Administrativa de Reglas
+- `ISSUE-039` Refactorizar motor a pipeline configurable por nodos
+- `ISSUE-040` UI Administrativa de Reglas y Flujo
 
 ### Resultado esperado
 
-- pipeline configurable por producto funcionando
-- administradores pueden gestionar reglas desde interfaz web
+- pipeline configurable por producto funcionando con branching controlado
+- administradores pueden gestionar reglas y flujo desde interfaz web
 - sandbox de pruebas de reglas funcional
-- flujo de aprobacion de cambios operativo
+- flujo de aprobacion de cambios de reglas y flujo operativo
 
 ### Riesgos del sprint
 
@@ -247,7 +250,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ### Criterio de cierre
 
-- el MVP queda cerrado con BRMS, pipeline configurable y UI administrativa de reglas operativos
+- el MVP queda cerrado con BRMS, pipeline configurable por nodos y UI administrativa de reglas y flujo operativos
 
 ---
 
@@ -321,4 +324,4 @@ Antes de iniciar Sprint 1 conviene tomar decisiones explicitas sobre:
 
 Sin esas definiciones, `ISSUE-001`, `ISSUE-027`, `ISSUE-028` y `ISSUE-033` pueden bloquear el resto del camino critico.
 
-La extension a otros productos no forma parte del MVP, pero el diseno de sprints 1 y 2 debe evitar que la plataforma quede acoplada estructuralmente a PLD.
+Aunque `PLD` sigue siendo el producto funcional del MVP, el diseno de sprints 1 a 7 debe dejar validado el onboarding tecnico de un segundo producto sin acoplar estructuralmente la plataforma a PLD.

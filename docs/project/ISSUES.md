@@ -23,7 +23,7 @@ Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gesti
 
 ### Objetivo
 
-Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas, decisiones abiertas y separacion entre capacidades propias de PLD y capacidades compartidas de plataforma.
+Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas, decisiones abiertas, gobierno del flujo configurable y separacion entre capacidades propias de PLD y capacidades compartidas de plataforma.
 
 ### Entregables
 
@@ -33,12 +33,14 @@ Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas
 - decision abierta de frontend segun despliegue
 - contratos de inputs externos y snapshot minimo
 - criterio de fuente oficial de reglas
+- decision de gobierno del flujo configurable y horizonte del segundo producto
 
 ### Criterios de aceptacion
 
 - existe un mapa del flujo completo de consulta, evaluacion, solicitud, bandeja, anulacion y cambio de estado
 - existe un catalogo de reglas con nombre, condicion, entradas, salidas y efecto
 - quedan resueltas las decisiones sobre autenticacion, frontend segun despliegue, despliegue del motor, fuente oficial de reglas y lineamientos corporativos relevantes
+- queda resuelto el gobierno del flujo configurable y la expectativa de un segundo producto al finalizar el MVP
 - queda explicita la separacion entre capacidades exclusivas de PLD y capacidades compartidas
 - quedan definidos los roles operativos y las reglas de aprobacion/rechazo posteriores al registro
 
@@ -49,17 +51,18 @@ Cerrar el alcance real del MVP PLD, consolidando flujo actual, reglas observadas
 - Tipo: Analysis / Design
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
-- Backlog origen: `E1-T4`, `E1-T5`, `E1-T5a`, `E1-T6`, `E1-T6b`, `E1-T6c`
+- Backlog origen: `E1-T4`, `E1-T5`, `E1-T5a`, `E1-T5b`, `E1-T5c`, `E1-T6`, `E1-T6b`, `E1-T6c`
 - Dependencias: `ISSUE-001`
 
 ### Objetivo
 
-Definir los contratos de consulta, evaluacion, registro, cambio de estado, inputs externos y snapshot minimo desacoplados de la UI.
+Definir los contratos de consulta, evaluacion, traza de evaluacion, registro, cambio de estado, inputs externos y snapshot minimo desacoplados de la UI.
 
 ### Entregables
 
 - payload de consulta PLD
 - payload de evaluacion
+- payload de `DecisionTrace`
 - payload de registro de solicitud
 - payload de cambio de estado
 - contratos de inputs externos para cliente, campanas y deuda
@@ -74,6 +77,7 @@ Definir los contratos de consulta, evaluacion, registro, cambio de estado, input
 - contratos son consistentes con el modelo de datos objetivo
 - los contratos quedan documentados en OpenAPI
 - queda explicito que solo se persisten como snapshot los campos efectivamente consumidos por el motor
+- queda definido el contrato de traza consumible por AI y auditoria humana
 
 ---
 
@@ -165,18 +169,19 @@ Comparar opciones tecnicas de frontend segun despliegue y dejar inicializado el 
 - Tipo: Data Design
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 1`
-- Backlog origen: `E3-T1`, `E3-T1a`, `E3-T5`, `E3-T6`
+- Backlog origen: `E3-T1`, `E3-T1a`, `E3-T5`, `E3-T5a`, `E3-T6`
 - Dependencias: `ISSUE-002`
 
 ### Objetivo
 
-Definir el esquema base de persistencia del MVP, incluyendo parametros del motor y snapshot minimo de inputs externos.
+Definir el esquema base de persistencia del MVP, incluyendo parametros del motor, configuracion de pipeline, `DecisionTrace` y snapshot minimo de inputs externos.
 
 ### Entregables
 
 - modelo relacional inicial
 - entidades principales del MVP
 - diseno de versionado de parametros
+- diseno de versionado de pipeline y trazas de decision
 - mapeo del Excel a estructuras persistentes
 - soporte base para clasificacion por producto
 - snapshot minimo de inputs externos consumidos por el motor
@@ -187,6 +192,7 @@ Definir el esquema base de persistencia del MVP, incluyendo parametros del motor
 - existe mapeo de `ParametrosPLD-v3.xlsx` a tablas nuevas
 - el modelo evita dependencias innecesarias del motor de base de datos
 - el esquema deja trazabilidad de los inputs externos efectivamente utilizados en cada evaluacion
+- el esquema contempla `pipeline_strategies`, `pipeline_nodes` y `decision_traces`
 
 ---
 
@@ -275,14 +281,16 @@ Definir la matriz de permisos del sistema e implementarla en backend.
 
 ### Objetivo
 
-Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
+Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI, preparado para pipeline configurable por nodos.
 
 ### Entregables
 
 - contratos de entrada y salida del motor
+- contrato base de `DecisionTrace`
 - paquete `decision_engine`
 - normalizacion base de entradas
 - estrategia para seleccionar reglas por producto o conjunto de reglas
+- orquestador base de nodos y estrategia de pipeline
 
 ### Criterios de aceptacion
 
@@ -290,6 +298,7 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
 - el contrato del motor es estable y testeable
 - el motor expone funciones `async` para soportar peticiones concurrentes (SPEC §5.2)
 - la estructura no asume que PLD sera el unico producto soportado
+- existe soporte base para `DecisionNode`, `pipeline_strategy` y branching controlado
 
 ---
 
@@ -298,7 +307,7 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI.
 - Tipo: Domain / Engine
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 3`
-- Backlog origen: `E5-T5`, `E5-T6`, `E5-T7`, `E5-T3`
+- Backlog origen: `E5-T5`, `E5-T6`, `E5-T7`, `E5-T3`, `E5-T3a`
 - Dependencias: `ISSUE-007`, `ISSUE-010`
 
 ### Objetivo
@@ -311,11 +320,12 @@ Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y b
 - formulas de calculo
 - bloqueos y alertas
 - versionado de reglas y parametros aplicados
+- versionado de pipeline y `DecisionTrace`
 
 ### Criterios de aceptacion
 
 - el motor produce resultados comparables al legacy para casos definidos
-- cada evaluacion registra version de reglas y parametros
+- cada evaluacion registra version de reglas, parametros, pipeline y traza estructurada
 
 ---
 
@@ -373,23 +383,26 @@ Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML.
 - Tipo: Backend
 - Prioridad: `P0`
 - Sprint sugerido: `Sprint 3`
-- Backlog origen: `E6-T3`, `E6-T4`
+- Backlog origen: `E6-T3`, `E6-T4`, `E6-T4a`
 - Dependencias: `ISSUE-011`, `ISSUE-012`, `ISSUE-009`
 
 ### Objetivo
 
-Exponer la evaluacion del motor como caso de uso persistido.
+Exponer la evaluacion del motor como caso de uso persistido, junto con su traza estructurada.
 
 ### Entregables
 
 - caso de uso de evaluacion
 - endpoint `POST /api/v1/loans/{product_code}/evaluaciones`
+- endpoint `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`
 - persistencia de evaluaciones
+- persistencia y consulta de `DecisionTrace`
 
 ### Criterios de aceptacion
 
 - el endpoint ejecuta el motor y retorna la salida esperada
 - la evaluacion queda persistida con versionado, usuario y snapshot minimo
+- la traza de evaluacion puede consultarse por API con permisos adecuados
 
 ---
 
@@ -574,6 +587,7 @@ Cubrir el MVP con pruebas automatizadas de integracion y al menos un flujo E2E e
 ### Criterios de aceptacion
 
 - consulta, evaluacion, registro y cambio de estado tienen pruebas de integracion
+- la consulta de `DecisionTrace` queda cubierta por integracion
 - existe al menos un flujo E2E punta a punta estable
 
 ---
@@ -833,28 +847,30 @@ Dejar formalizada la estrategia de base limpia del MVP y el uso del legacy solo 
 
 ---
 
-## ISSUE-032 - Definir base multiproducto de la plataforma
+## ISSUE-032 - Definir y validar base multiproducto de la plataforma
 
 - Tipo: Architecture
-- Prioridad: `P2`
+- Prioridad: `P1`
 - Sprint sugerido: `Sprint 6`
-- Backlog origen: `E11-T1`, `E11-T2`
+- Backlog origen: `E11-T1`, `E11-T2`, `E11-T3`
 - Dependencias: `ISSUE-001`, `ISSUE-006`, `ISSUE-010`
 
 ### Objetivo
 
-Dejar definida la estrategia tecnica para incorporar otros tipos de prestamo sobre la misma plataforma sin comprometer el MVP PLD.
+Dejar definida y validada la estrategia tecnica para incorporar otros tipos de prestamo sobre la misma plataforma sin comprometer el MVP PLD.
 
 ### Entregables
 
 - nomenclatura compartida de dominio
 - estrategia de extension del motor por producto
 - lineamientos de extension de API y persistencia
+- evidencia tecnica de onboarding de un segundo producto
 
 ### Criterios de aceptacion
 
 - la estrategia evita hardcode estructural de PLD en modulos compartidos
 - queda claro como introducir nuevos productos sin romper contratos base ni seguridad compartida
+- queda validado tecnicamente que un segundo producto puede convivir con el pipeline configurable del MVP
 
 ---
 
@@ -962,33 +978,36 @@ Mostrar en la UI las capacidades AI del MVP de forma clara e interactiva, sin me
 
 ---
 
-## ISSUE-037 - Implementar event store de decisiones
+## ISSUE-037 - Implementar event store y DecisionTrace de decisiones
 
 - Tipo: Backend / Data
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 5`
-- Backlog origen: `E13-T1`, `E13-T2`
+- Backlog origen: `E13-T1`, `E13-T2`, `E13-T4`, `E13-T5`
 - Dependencias: `ISSUE-007`, `ISSUE-014`, `ISSUE-016`
 
 ### Objetivo
 
-Implementar el almacenamiento inmutable de eventos de decision con capacidad de consulta por agregado.
+Implementar el almacenamiento inmutable de eventos de decision y la traza estructurada de evaluaciones.
 
 ### Entregables
 
 - modelo SQLAlchemy para `decision_events`
+- modelo SQLAlchemy para `decision_traces`
 - servicio de event store con escritura y consulta
 - integracion con evaluaciones y cambios de estado del MVP
+- integracion de `DecisionTrace` con evaluaciones y AI
 
 ### Criterios de aceptacion
 
 - cada evaluacion y cambio de estado genera un evento inmutable en `decision_events`
 - se puede consultar el timeline completo de cualquier evaluacion o solicitud
 - los eventos incluyen version, usuario y timestamp
+- cada evaluacion persiste un `DecisionTrace` estructurado reutilizable por AI y auditoria humana
 
 ---
 
-## ISSUE-038 - Implementar BRMS: catalogacion de reglas
+## ISSUE-038 - Implementar BRMS: reglas y configuracion de flujo
 
 - Tipo: Backend / Engine
 - Prioridad: `P1`
@@ -998,11 +1017,12 @@ Implementar el almacenamiento inmutable de eventos de decision con capacidad de 
 
 ### Objetivo
 
-Almacenar las reglas de negocio en base de datos con versionado completo y vigencia por producto.
+Almacenar las reglas de negocio y la configuracion gobernada de flujo en base de datos con versionado completo y vigencia por producto.
 
 ### Entregables
 
 - modelo SQLAlchemy para `rule_sets` y `rule_versions`
+- modelo SQLAlchemy para `pipeline_strategies` y `pipeline_nodes`
 - endpoints y servicio CRUD de reglas con versionado
 - migracion de reglas PLD actuales al nuevo esquema
 
@@ -1011,56 +1031,59 @@ Almacenar las reglas de negocio en base de datos con versionado completo y vigen
 - las reglas del motor PLD se cargan desde `rule_versions` y no desde codigo fijo
 - cada cambio genera una nueva version sin perder la anterior
 - los rule sets pueden activarse y desactivarse por periodo
+- las estrategias de pipeline quedan versionadas y sujetas a validacion de topologia
 
 ---
 
-## ISSUE-039 - Refactorizar motor a pipeline de etapas
+## ISSUE-039 - Refactorizar motor a pipeline configurable por nodos
 
 - Tipo: Engine / Architecture
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 7`
-- Backlog origen: `E14-T5`, `E14-T6`, `E14-T7`
+- Backlog origen: `E14-T5`, `E14-T6`, `E14-T7`, `E14-T7a`
 - Dependencias: `ISSUE-010`, `ISSUE-038`
 
 ### Objetivo
 
-Reestructurar el motor de decisiones como un pipeline configurable de etapas independientes.
+Reestructurar el motor de decisiones como un pipeline configurable por nodos gobernados.
 
 ### Entregables
 
-- interfaz `DecisionStage` y orquestador de pipeline
-- 5 etapas implementadas: Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing
-- tabla `pipeline_strategies` con seleccion de pipeline por producto
+- interfaz `DecisionNode` y orquestador de pipeline
+- 5 nodos base implementados: Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing
+- tablas `pipeline_strategies` y `pipeline_nodes` con seleccion de pipeline por producto
+- validacion de topologia y branching controlado
 
 ### Criterios de aceptacion
 
-- el pipeline ejecuta las 5 etapas secuencialmente para PLD
-- cada etapa es independiente y testeable por separado
+- el pipeline ejecuta los 5 nodos base para PLD
+- cada nodo es independiente y testeable por separado
 - los resultados son equivalentes a la implementacion anterior
-- se puede configurar un pipeline diferente por producto
+- se puede configurar un pipeline diferente por producto sin permitir grafos invalidos
 
 ---
 
-## ISSUE-040 - UI Administrativa de Reglas
+## ISSUE-040 - UI Administrativa de Reglas y Flujo
 
 - Tipo: Frontend
 - Prioridad: `P1`
 - Sprint sugerido: `Sprint 7`
-- Backlog origen: `E14-T8`, `E14-T9`, `E14-T10`
+- Backlog origen: `E14-T8`, `E14-T9`, `E14-T10`, `E14-T11`
 - Dependencias: `ISSUE-017`, `ISSUE-038`, `ISSUE-039`
 
 ### Objetivo
 
-Exponer una interfaz web para que administradores gestionen reglas de negocio con versionado, simulacion y flujo de aprobacion.
+Exponer una interfaz web para que administradores gestionen reglas de negocio y secuencia del flujo con versionado, simulacion y flujo de aprobacion.
 
 ### Entregables
 
 - CRUD de `rule_sets` y `rule_versions` en frontend
+- UI gobernada de `pipeline_strategies` y `pipeline_nodes`
 - sandbox de pruebas con casos historicos
-- flujo de aprobacion de cambios de reglas
+- flujo de aprobacion de cambios de reglas y flujo
 
 ### Criterios de aceptacion
 
 - admin puede listar, crear, editar y versionar reglas desde UI
-- admin puede simular cambios en reglas contra casos historicos antes de activarlos
-- cambios a reglas activas requieren aprobacion de un supervisor
+- admin puede simular cambios en reglas y flujo contra casos historicos antes de activarlos
+- cambios a reglas activas y pipelines activos requieren aprobacion de un supervisor

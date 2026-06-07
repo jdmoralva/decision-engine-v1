@@ -8,6 +8,8 @@ El objetivo es reemplazar la implementacion monolitica en R + HTML/jQuery por un
 
 `PLD` significa `Prestamo de Libre Disponibilidad` y constituye el primer producto que se implementara en la nueva plataforma.
 
+Se espera un segundo producto de prestamo al finalizar el MVP, por lo que la arquitectura del motor y sus contratos deben validar extensibilidad real en el horizonte inmediato, no solo como consideracion futura.
+
 Este documento toma como referencia funcional principal:
 
 - `old-version/api-build.R`
@@ -54,6 +56,8 @@ Esto implica que los componentes compartidos deben diseniarse de forma reutiliza
 - variantes de formularios y validaciones por producto
 - evolucion independiente de parametros y politicas por tipo de prestamo
 - distintos dashboards de monitoreo operativo
+
+Adicionalmente, el motor de decisiones debe permitir que negocio administre no solo reglas y parametros, sino tambien la secuencia del flujo bajo mecanismos gobernados, versionados y auditables.
 
 ### 1.3 Capacidades AI del MVP y evolucion
 
@@ -341,8 +345,10 @@ El motor debe ser:
 - independiente de FastAPI
 - parametrizable
 - versionable
-- extensible mediante pipeline de etapas intercambiables
+- extensible mediante pipeline configurable por nodos/etapas gobernadas
 - utilizar funciones async para peticiones múltiples
+
+El motor debe priorizar flexibilidad temprana de configuracion, manteniendo a la vez determinismo, trazabilidad y control de cambios.
 
 ### 5.3 Contrato de entrada sugerido
 
@@ -376,15 +382,18 @@ El motor debe ser:
   "plazo": 48,
   "alertas": [],
   "bloqueos": [],
-  "version_reglas": "pld-v1"
+  "version_reglas": "pld-v1",
+  "version_parametros": "pld-params-v1",
+  "version_pipeline": "pld-pipeline-v1",
+  "decision_trace_id": "uuid"
 }
 ```
 
 ### 5.5 Arquitectura de Pipeline de Etapas
 
-El motor se organiza como un pipeline secuencial de etapas independientes. Cada etapa recibe un contexto, lo procesa y lo pasa a la siguiente. Esto permite probar, modificar o reemplazar etapas sin afectar al resto.
+El motor se organiza como un pipeline configurable compuesto por nodos de decision gobernados. Cada nodo recibe un contrato tipado, produce un resultado tipado y emite evidencia trazable. La configuracion del flujo define secuencia, branching permitido y condiciones de salida, todo bajo versionado y aprobacion.
 
-#### Etapas del pipeline
+#### Nodos base del pipeline
 
 1. **Preprocessing:** Normaliza datos de entrada, enriquece con informacion historica del cliente y calcula campos derivados (ingreso revisado, deuda total ajustada).
 2. **Eligibility:** Aplica reglas duras de elegibilidad (ingreso minimo, edad maxima, documentacion requerida). Si falla, se detiene el pipeline con rechazo.
@@ -392,12 +401,23 @@ El motor se organiza como un pipeline secuencial de etapas independientes. Cada 
 4. **Decision Strategy:** Aplica la estrategia de negocio (aprobacion, rechazo, referencia a supervisor) segun las reglas de producto, el segmento y los scores calculados.
 5. **Post-processing:** Genera alertas operativas, formatea la respuesta y emite eventos de decision al event store.
 
-Cada etapa implementa una interfaz comun (`DecisionStage`) que expone:
-- `name`: identificador unico de la etapa
-- `execute(context: DecisionContext) -> DecisionContext`: metodo de ejecucion
-- `rollback(context: DecisionContext) -> None`: metodo de reversion opcional
+La configuracion inicial del MVP puede mantenerse lineal para `PLD`, pero el modelo del motor debe soportar desde el inicio:
 
-El pipeline se configura por producto mediante una estrategia (`pipeline_strategy`) que define que etapas ejecutar y en que orden.
+- secuencias configurables por producto
+- branching controlado entre nodos
+- nodos opcionales por producto o contexto
+- validacion de topologia antes de activar una version
+- restricciones para evitar grafos arbitrarios no auditables
+
+Cada nodo implementa una interfaz comun (`DecisionNode`) que expone:
+- `name`: identificador unico del nodo
+- `input_schema`: contrato tipado de entrada
+- `execute(context: DecisionContext) -> NodeResult`: metodo de ejecucion
+- `next_nodes(result: NodeResult) -> list[str]`: resolucion de transicion permitida
+- `rollback(context: DecisionContext) -> None`: metodo de reversion opcional
+- `emit_trace(result: NodeResult) -> TraceRecord`: evidencia de ejecucion
+
+El pipeline se configura por producto mediante una estrategia (`pipeline_strategy`) que define que nodos ejecutar, en que orden y bajo que branching permitido.
 
 ### 5.6 Event Sourcing de Decisiones
 
@@ -428,7 +448,7 @@ Opciones recomendadas:
 
 - tablas de parametros en base de datos
 - Interface de creacion de dimensiones y reglas de negocio
-- UI de creacion de pipeline drag and drop
+- UI de administracion de flujo con edicion gobernada de secuencia/nodos
 
 Opcion complementaria:
 
@@ -436,12 +456,20 @@ Opcion complementaria:
 
 La parametrizacion del MVP debe permitir versionar tambien los inputs externos consumidos por cada evaluacion, persistiendo solo los campos efectivamente usados por el motor.
 
+La administracion de configuracion debe separar explicitamente:
+
+- reglas de negocio
+- parametros numericos o tabulares
+- definicion de flujo por producto
+- restricciones de topologia permitida
+
 ### 5.8 Versionado de reglas
 
 Cada evaluacion debe almacenar:
 
 - version de reglas
 - version de parametros
+- version de pipeline
 - timestamp
 - usuario que ejecuto la evaluacion
 
@@ -449,18 +477,22 @@ Cada evaluacion debe almacenar:
 
 Las reglas de negocio se almacenan en base de datos y son gestionables mediante una interfaz administrativa con control de versiones.
 
+Para este proyecto, la capacidad administrativa incluye tambien la secuencia del flujo del motor bajo un modelo controlado y auditable.
+
 #### Componentes del BRMS:
 - **Rule catalog:** repositorio central de todas las reglas, clasificadas por tipo (eligibilidad, scoring, estrategia, bloqueo) y por producto.
 - **Rule versions:** cada modificacion crea una nueva version. Las reglas activas se determinan por producto + fecha efectiva.
 - **Rule sets:** agrupaciones de reglas que se activan/desactivan como unidad para un producto y periodo determinado.
+- **Pipeline definitions:** definiciones versionadas de nodos, secuencia y branching permitido por producto.
 - **Testing sandbox:** entorno aislado donde el administrador puede probar una regla o conjunto de reglas contra casos historicos antes de activarla.
-- **Approval workflow:** los cambios a reglas en produccion requieren aprobacion de un supervisor antes de su activacion.
+- **Approval workflow:** los cambios a reglas y a la definicion de flujo en produccion requieren aprobacion de un supervisor antes de su activacion.
 
 #### UI Administrativa:
 - CRUD de reglas con editor estructurado (condiciones, acciones, parametros)
 - Vista de versionado y comparacion de cambios entre versiones
 - Simulador de reglas con casos de prueba
 - Dashboard de reglas activas por producto
+- Editor gobernado de flujo por producto con validacion de topologia
 
 ### 5.10 Estrategia AI e Integracion
 
@@ -471,6 +503,8 @@ La capa AI se implementa como un servicio del backend que interactua con LLMs me
 2. **Grounding estricto:** El prompt se alimenta unicamente de la ficha del cliente, las reglas aplicadas y el resultado del motor. No se permite que el modelo infiera datos que no esten explicitamente en el payload.
 3. **Explicabilidad auditable:** Toda respuesta generada por la IA debe poder rastrearse al prompt, modelo, datos de entrada y version de reglas utilizadas.
 4. **Aislamiento:** Si el servicio de IA falla o se desactiva, el flujo principal de consulta, evaluacion y registro de solicitudes determinista debe seguir funcionando al 100%.
+
+La IA debe consumir un `DecisionTrace` estructurado, legible por humanos y maquinas, apto tanto para auditoria humana como para explicacion asistida.
 
 ---
 
@@ -509,9 +543,11 @@ Separar correctamente:
 - `ai_interactions`
 - `ai_prompt_templates`
 - `decision_events`
+- `decision_traces`
 - `rule_sets`
 - `rule_versions`
 - `pipeline_strategies`
+- `pipeline_nodes`
 
 ### 6.3 Campos minimos esperados
 
@@ -548,8 +584,18 @@ Separar correctamente:
 - `campaign_code`
 - `rule_set_version`
 - `parameter_version`
+- `pipeline_version`
 - `executed_by`
 - `executed_at`
+
+#### `decision_traces`
+
+- `id`
+- `evaluation_id` (FK a `pld_evaluations`)
+- `pipeline_version`
+- `trace_payload` (JSON)
+- `human_summary` (TEXT, nullable)
+- `created_at`
 
 #### `evaluation_input_snapshots`
 
@@ -623,6 +669,26 @@ Indices:
 - `created_by` (FK a `users`)
 - `created_at` (TIMESTAMP)
 
+#### `pipeline_strategies`
+- `id` (UUID, PK)
+- `loan_product_code` (FK a `loan_products`)
+- `version_number` (INT)
+- `graph_definition` (JSON)
+- `status` (VARCHAR: 'draft', 'active', 'deprecated')
+- `approved_by` (FK a `users`, nullable)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
+#### `pipeline_nodes`
+- `id` (UUID, PK)
+- `pipeline_strategy_id` (FK a `pipeline_strategies`)
+- `node_key` (VARCHAR)
+- `node_type` (VARCHAR: 'preprocessing', 'eligibility', 'scoring', 'strategy', 'post_processing', 'custom')
+- `position_x` (INT, nullable)
+- `position_y` (INT, nullable)
+- `config_payload` (JSON)
+- `created_at` (TIMESTAMP)
+
 ### 6.4 Compatibilidad de motor de base de datos
 
 El modelo debe evitar:
@@ -645,6 +711,8 @@ El modelo inicial debe permitir distinguir entre:
 - reglas y parametros por producto
 
 El MVP puede tener tablas y servicios especificos de PLD, pero no debe impedir la introduccion posterior de otros productos bajo la misma plataforma.
+
+Dado que se espera un segundo producto al finalizar el MVP, la estrategia de pipeline y el `DecisionTrace` deben quedar listos para soportar diferencias reales de flujo entre productos.
 
 ---
 
@@ -670,6 +738,7 @@ El MVP puede tener tablas y servicios especificos de PLD, pero no debe impedir l
 
 - `POST /api/v1/loans/{product_code}/consultas`
 - `POST /api/v1/loans/{product_code}/evaluaciones`
+- `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`
 - `POST /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/explain`
 - `POST /api/v1/loans/{product_code}/solicitudes`
 - `GET /api/v1/loans/{product_code}/solicitudes`
@@ -697,6 +766,9 @@ Aunque el MVP expone endpoints bajo el segmento `{product_code}`, la API interna
 - `POST /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/versions`
 - `PUT /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/activate`
 - `POST /api/v1/loans/{product_code}/rule-sets/{rule_set_id}/sandbox-test`
+- `GET /api/v1/loans/{product_code}/pipeline-strategies`
+- `POST /api/v1/loans/{product_code}/pipeline-strategies`
+- `PUT /api/v1/loans/{product_code}/pipeline-strategies/{strategy_id}/activate`
 - `GET /api/v1/events?aggregate_type={type}&aggregate_id={id}`
 - `GET /api/v1/events/{aggregate_id}/timeline`
 - `GET /api/v1/audit`
@@ -757,8 +829,10 @@ Entregables:
 - contratos de entrada y salida
 - motor desacoplado
 - reglas base implementadas
+- pipeline configurable por nodos gobernados
 - pruebas de regresion contra legado
 - base lista para agregar nuevos conjuntos de reglas por producto
+- `DecisionTrace` estructurado consumible por AI y auditoria humana
 
 ### Fase 4. Casos de uso PLD
 
@@ -822,6 +896,8 @@ Entregables futuros:
 - incorporacion de nuevos tipos de prestamo
 - nuevos conjuntos de reglas sobre el mismo motor
 - evoluciones de UI y API sin romper el MVP PLD
+
+Debe validarse al cierre del MVP al menos la capacidad tecnica para introducir un segundo producto con pipeline configurable sobre la misma base.
 
 ---
 
@@ -929,6 +1005,7 @@ Recomendadas:
 - integracion tardia con identidad corporativa
 - dependencia de datos legacy incompletos
 - exceso de logica en frontend si no se controla el alcance
+- complejidad de gobierno del flujo configurable si negocio administra secuencia sin restricciones suficientes
 
 ### 11.3 Riesgos operativos
 
@@ -943,6 +1020,8 @@ Recomendadas:
 - aislar motor de decisiones desde el inicio
 - versionar parametros y formulas
 - modelar conceptos compartidos con enfoque multiproducto desde la primera iteracion
+- validar topologia de pipeline antes de activar versiones
+- separar aprobacion de reglas de aprobacion de cambios de flujo
 
 ---
 
@@ -1019,6 +1098,7 @@ El sistema debe quedar preparado para:
 - incorporar administracion de parametros por UI
 - soportar nuevas familias de reglas
 - soportar nuevos productos de prestamo ademas de PLD
+- soportar estrategias de pipeline distintas por producto sin redisenar el motor base
 
 ---
 
