@@ -2,6 +2,10 @@
 
 ## SPRINT-00
 
-ISSUE-000: `ses_171804e84ffean7UT1xdu0Jh12` (session 1)\
-ISSUE-000: `ses_16a3748e8ffelEm2rcmvQYUqT0` (session 2)\
-ISSUE-000: `ses_160a63f1effeFAYO629P94FUNb` (session 3)\
+SESSION-001: `ses_171804e84ffean7UT1xdu0Jh12`\
+SESSION-002: `ses_16a3748e8ffelEm2rcmvQYUqT0`\
+SESSION-003: `ses_160a63f1effeFAYO629P94FUNb`\
+
+## SPRINT-01
+
+SESSION-004: `ses_15ced117cffe5k0tvaY8iYpOyx`\

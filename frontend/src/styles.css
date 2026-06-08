@@ -40,6 +40,10 @@ body {
   box-shadow: 0 18px 45px rgba(20, 33, 61, 0.08);
 }
 
+.auth-card {
+  width: min(980px, 100%);
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: #4361ee;
@@ -54,7 +58,158 @@ h1 {
   font-size: 34px;
 }
 
+.lead {
+  margin: 0;
+  max-width: 58ch;
+  color: #485470;
+}
+
+.auth-hero {
+  margin-bottom: 28px;
+}
+
+.auth-layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  align-items: start;
+}
+
+.login-form,
+.session-panel {
+  background: #f8faff;
+  border: 1px solid #dbe5ff;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span,
+.session-panel h2,
+.session-grid dt {
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid #b9c7ea;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  color: inherit;
+  background: #ffffff;
+}
+
+.field input:focus {
+  outline: 2px solid #4361ee;
+  outline-offset: 2px;
+}
+
+.primary-button,
+.secondary-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: #4361ee;
+  color: #ffffff;
+}
+
+.primary-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.secondary-button {
+  background: #e9eeff;
+  color: #22325c;
+}
+
+.hint,
+.session-empty {
+  margin: 0;
+  color: #5d6986;
+}
+
+.error-banner,
+.success-banner {
+  margin: 0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 600;
+}
+
+.error-banner {
+  background: #ffe8e8;
+  color: #a01e1e;
+}
+
+.success-banner {
+  background: #e7f8ed;
+  color: #17673a;
+}
+
+.session-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.session-panel h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.session-grid {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.session-grid div {
+  display: grid;
+  gap: 4px;
+}
+
+.session-grid dt,
+.session-grid dd {
+  margin: 0;
+}
+
+.token-preview {
+  word-break: break-all;
+  color: #485470;
+}
+
+.feature-list {
+  margin: 28px 0 0;
+  padding-left: 20px;
+}
+
 p,
 li {
   line-height: 1.6;
+}
+
+@media (max-width: 840px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
 }

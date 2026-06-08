@@ -14,6 +14,7 @@ class SettingsTests(unittest.TestCase):
         os.environ.pop("APP_ENV", None)
         os.environ.pop("APP_NAME", None)
         os.environ.pop("DATABASE_URL", None)
+        os.environ.pop("AUTH_SECRET_KEY", None)
 
         from backend.app.config.settings import Settings
 
@@ -23,6 +24,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(settings.app_name, "decision-engine-api")
         self.assertEqual(settings.api_v1_prefix, "/api/v1")
         self.assertEqual(settings.database_url, "sqlite+pysqlite:///./decision_engine.db")
+        self.assertEqual(settings.auth_secret_key, "change-me")
 
 
 if __name__ == "__main__":
