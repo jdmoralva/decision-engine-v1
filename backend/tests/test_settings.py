@@ -13,6 +13,7 @@ class SettingsTests(unittest.TestCase):
     def test_settings_use_environment_defaults(self):
         os.environ.pop("APP_ENV", None)
         os.environ.pop("APP_NAME", None)
+        os.environ.pop("DATABASE_URL", None)
 
         from backend.app.config.settings import Settings
 
@@ -21,6 +22,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(settings.app_env, "development")
         self.assertEqual(settings.app_name, "decision-engine-api")
         self.assertEqual(settings.api_v1_prefix, "/api/v1")
+        self.assertEqual(settings.database_url, "sqlite+pysqlite:///./decision_engine.db")
 
 
 if __name__ == "__main__":
