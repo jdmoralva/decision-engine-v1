@@ -20,7 +20,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ## Sprint 1 - Descubrimiento y cierre de contratos base
 
-- Estado: `planned`
+- Estado: `done`
 - Objetivo: cerrar alcance, contratos base, gobierno del flujo configurable, decision de frontend por despliegue y politicas de datos AI
 
 ### Issues comprometidos
@@ -57,6 +57,12 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ### Criterio de cierre
 
 - el equipo ya puede iniciar implementacion real sin depender de mas exploracion del legacy para la estructura general
+
+### Cierre documental
+
+- Sprint 1 queda cerrado como fase de descubrimiento, contratos base y bootstrap inicial.
+- Quedan consolidados el alcance del MVP, los contratos iniciales, la estructura base, el backend inicial, el frontend inicial, el modelo de datos inicial y las politicas base de AI.
+- El equipo puede continuar con Sprint 2 sin reabrir decisiones estructurales del MVP.
 
 ---
 

@@ -86,31 +86,31 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E1-T1` Documentar flujo PLD actual de punta a punta desde `old-version/api-build.R` y `old-version/script.js`.
+- [x] `E1-T1` Documentar flujo PLD actual de punta a punta desde `old-version/api-build.R` y `old-version/script.js`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: ninguna
   - Aceptacion: existe mapa de flujo con consulta, evaluacion, registro, bandeja, anulacion y cambio de estado.
 
-- [ ] `E1-T2` Listar reglas de negocio observadas en `validate1`, `validate2` y `grabasol`.
+- [x] `E1-T2` Listar reglas de negocio observadas en `validate1`, `validate2` y `grabasol`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`
   - Aceptacion: existe catalogo de reglas con nombre, descripcion, entrada, salida y condicion de bloqueo o alerta.
 
-- [ ] `E1-T3` Confirmar decisiones abiertas del SPEC con negocio o usuario.
+- [x] `E1-T3` Confirmar decisiones abiertas del SPEC con negocio o usuario.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`
   - Aceptacion: quedan resueltas al menos autenticacion, frontend segun despliegue, modo de despliegue del motor, fuente oficial de reglas, gobierno del flujo configurable y lineamientos corporativos de seguridad/despliegue. El flujo ZIP se incluye en el alcance del MVP. La migracion de historicos queda descartada. Queda confirmado que se espera un segundo producto al finalizar el MVP.
 
-- [ ] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
+- [x] `E1-T3a` Distinguir que capacidades son exclusivas de PLD y cuales deben quedar como base compartida para futuros productos de prestamo.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T1`, `E1-T2`
   - Aceptacion: existe una separacion explicita entre reglas, datos y flujos especificos de PLD frente a capacidades de plataforma reutilizables.
 
-- [ ] `E1-T7` Definir roles operativos y reglas de aprobacion/rechazo posteriores al registro.
+- [x] `E1-T7` Definir roles operativos y reglas de aprobacion/rechazo posteriores al registro.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T1`, `E1-T2`
@@ -124,55 +124,55 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E1-T4` Definir payload de consulta PLD.
+- [x] `E1-T4` Definir payload de consulta PLD.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T1`
   - Aceptacion: contrato documentado con campos, tipos, validaciones y errores esperados. Los contratos quedan documentados en OpenAPI.
 
-- [ ] `E1-T5` Definir payload de evaluacion del motor.
+- [x] `E1-T5` Definir payload de evaluacion del motor.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
   - Aceptacion: contrato documentado independiente de UI y de indices de tabla. Los contratos quedan documentados en OpenAPI.
 
-- [ ] `E1-T5b` Definir contrato de `DecisionTrace` y endpoint de consulta de trazas de evaluacion.
+- [x] `E1-T5b` Definir contrato de `DecisionTrace` y endpoint de consulta de trazas de evaluacion.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5`
   - Aceptacion: quedan definidos el payload minimo de `DecisionTrace`, su uso para AI y auditoria humana, y el contrato de `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`.
 
-- [ ] `E1-T5c` Definir restricciones de topologia y gobierno del pipeline configurable.
+- [x] `E1-T5c` Definir restricciones de topologia y gobierno del pipeline configurable.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5`, `E1-T6d`
   - Aceptacion: queda definido que negocio administra reglas, parametros y secuencia del flujo bajo branching controlado, validacion de topologia y aprobacion separada para cambios de flujo.
 
-- [ ] `E1-T5a` Definir que campos del contrato son comunes a cualquier producto de prestamo y cuales son especificos de PLD.
+- [x] `E1-T5a` Definir que campos del contrato son comunes a cualquier producto de prestamo y cuales son especificos de PLD.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E1-T5`
   - Aceptacion: el contrato deja clara la frontera entre datos compartidos de plataforma y datos particulares de PLD.
 
-- [ ] `E1-T6` Definir payload de registro de solicitud y de cambio de estado.
+- [x] `E1-T6` Definir payload de registro de solicitud y de cambio de estado.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
   - Aceptacion: contratos aprobados y alineados con modelo de datos previsto. Los contratos quedan documentados en OpenAPI.
 
-- [ ] `E1-T6b` Definir contratos de inputs externos para cliente, campanas y deuda.
+- [x] `E1-T6b` Definir contratos de inputs externos para cliente, campanas y deuda.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T1`, `E1-T2`
   - Aceptacion: existen contratos documentados con campos, origen, validaciones y errores esperados para cada input externo consumido por el motor o por los casos de uso.
 
-- [ ] `E1-T6c` Definir snapshot minimo por evaluacion con solo los campos consumidos por el motor.
+- [x] `E1-T6c` Definir snapshot minimo por evaluacion con solo los campos consumidos por el motor.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5`, `E1-T6b`
   - Aceptacion: queda definida la lista exacta de campos que se persisten como evidencia de entrada de cada evaluacion.
 
-- [ ] `E1-T6d` Definir fuente oficial de reglas y criterio de resolucion de discrepancias entre SPEC, legado y parametros.
+- [x] `E1-T6d` Definir fuente oficial de reglas y criterio de resolucion de discrepancias entre SPEC, legado y parametros.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
@@ -192,19 +192,19 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E2-T1` Crear estructura base `backend/`, `frontend/` y `docs/`.
+- [x] `E2-T1` Crear estructura base `backend/`, `frontend/` y `docs/`.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
   - Aceptacion: estructura creada segun SPEC §3.5: `backend/app/{api,application,domain,infrastructure,security,config}/main.py` y `frontend/src/{app,features,components,services,routes}`. Carpetas con archivos base y convenciones minimas.
 
-- [ ] `E2-T2` Inicializar backend con FastAPI, configuracion por entornos y comando local de arranque.
+- [x] `E2-T2` Inicializar backend con FastAPI, configuracion por entornos y comando local de arranque.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E2-T1`
   - Aceptacion: backend levanta localmente con endpoint `health` utilizando el stack y las decisiones vigentes documentadas en `SPEC.md`. Incluye `ruff` y `pyproject.toml` base.
 
-- [ ] `E2-T3` Inicializar frontend web segun el stack definido en `E1-T3`.
+- [x] `E2-T3` Inicializar frontend web segun el stack definido en `E1-T3`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T3`, `E2-T1`
@@ -224,7 +224,7 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E2-T5` Definir estrategia de configuracion por entorno.
+- [x] `E2-T5` Definir estrategia de configuracion por entorno.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E2-T2`
@@ -256,13 +256,13 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E3-T1` Diseñar modelo relacional inicial para usuarios, evaluaciones, solicitudes, historial y auditoria.
+- [x] `E3-T1` Diseñar modelo relacional inicial para usuarios, evaluaciones, solicitudes, historial y auditoria.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E1-T6`
   - Aceptacion: existe diagrama o documento con tablas, relaciones y campos clave, incluyendo snapshots minimos de inputs externos consumidos por el motor, `decision_traces`, `pipeline_strategies` y `pipeline_nodes`.
 
-- [ ] `E3-T1a` Incorporar soporte base para clasificar solicitudes y reglas por producto de prestamo.
+- [x] `E3-T1a` Incorporar soporte base para clasificar solicitudes y reglas por producto de prestamo.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E3-T1`
@@ -294,19 +294,19 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E3-T5` Diseñar tablas para versionado de parametros del motor.
+- [x] `E3-T5` Diseñar tablas para versionado de parametros del motor.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`, `E3-T1`
   - Aceptacion: existen tablas o estructuras definidas para `rule_set`, `parameter_version`, `pipeline_strategy` y aprobacion de cambios de flujo.
 
-- [ ] `E3-T5a` Diseñar persistencia de `DecisionTrace` y versionado de pipeline por evaluacion.
+- [x] `E3-T5a` Diseñar persistencia de `DecisionTrace` y versionado de pipeline por evaluacion.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E3-T1`, `E1-T5b`
   - Aceptacion: el modelo define `decision_traces`, `pipeline_version` por evaluacion y su relacion con AI, auditoria y consulta de trazas.
 
-- [ ] `E3-T6` Definir mapeo entre `ParametrosPLD-v3.xlsx` y tablas nuevas.
+- [x] `E3-T6` Definir mapeo entre `ParametrosPLD-v3.xlsx` y tablas nuevas.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E3-T5`
@@ -896,12 +896,12 @@ Resultado esperado:
 - la arquitectura de la aplicacion soporta la integracion de LLMs de manera segura, aislada y auditable
 
 Tareas:
-- [ ] `E12-T1` Definir politicas de seguridad y privacidad de datos para la capa de IA (minimizar/anonimizar datos sensibles).
+- [x] `E12-T1` Definir politicas de seguridad y privacidad de datos para la capa de IA (minimizar/anonimizar datos sensibles).
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
   - Aceptacion: existe un documento de politicas aprobado que define que datos del cliente pueden enviarse al LLM.
-- [ ] `E12-T2` Diseñar e implementar el modelo de datos para `ai_interactions` y `ai_prompt_templates`.
+- [x] `E12-T2` Diseñar e implementar el modelo de datos para `ai_interactions` y `ai_prompt_templates`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E3-T3`
