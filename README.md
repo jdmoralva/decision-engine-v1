@@ -25,7 +25,7 @@ Hoy la raiz del repositorio no contiene todavia la implementacion nueva.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `SPEC.md` define la especificacion tecnica del proyecto: arquitectura (pipeline de etapas, event sourcing, BRMS, AI), modelo de datos, API, lineamientos de stack y roadmap por fases
+- `docs/SPEC.md` define la especificacion tecnica del proyecto: arquitectura (pipeline de etapas, event sourcing, BRMS, AI), modelo de datos, API, lineamientos de stack y roadmap por fases
 - `docs/project/BACKLOG.md` organiza el trabajo en 14 epicas (E1-E14) con tareas ejecutables, prioridades y dependencias
 - `docs/project/ISSUES.md` descompone el backlog en 40 issues operativos asignados a sprints
 - `docs/project/SPRINTS.md` secuencia la ejecucion en 7 sprints (Sprint 1-7), desde descubrimiento hasta cierre del MVP con BRMS, pipeline configurable y UI administrativa
@@ -36,7 +36,7 @@ El estado real es:
 Decisiones funcionales ya cerradas:
 - El flujo de carga y descarga de archivos ZIP se **incluye** en el alcance del MVP
 - La migracion de historicos queda **descartada**; se inicia con base limpia
-- El MVP mantiene las capacidades AI asistivas definidas en `SPEC.md`
+- El MVP mantiene las capacidades AI asistivas definidas en `docs/SPEC.md`
 - `Event Store`, `BRMS`, `pipeline configurable` y `UI administrativa de reglas` forman parte del MVP
 - El almacenamiento inicial de archivos ZIP se implementara sobre `filesystem`
 - Los snapshots de evaluacion persistiran solo los campos efectivamente consumidos por el motor
@@ -58,7 +58,7 @@ Input → [Preprocessing] → [Eligibility] → [Scoring Layer] → [Decision St
 
 ## Referencias Clave
 
-- Especificacion: `SPEC.md`
+- Especificacion: `docs/SPEC.md`
 - Backlog: `docs/project/BACKLOG.md`
 - Issues: `docs/project/ISSUES.md`
 - Sprints: `docs/project/SPRINTS.md`

@@ -7,7 +7,7 @@ Levantar el backend base con FastAPI, configuracion por entorno y endpoint de sa
 ## 2. Fuentes revisadas
 
 - `ISSUES.md`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 
 ## 3. Contexto
@@ -15,7 +15,7 @@ Levantar el backend base con FastAPI, configuracion por entorno y endpoint de sa
 - La raiz del repositorio aun no contiene la implementacion nueva.
 - `ISSUE-003` debe cerrar antes la estructura base.
 - El backend forma parte de la Fase 1 de bootstrap tecnico.
-- El stack objetivo del backend ya esta definido en `SPEC.md`.
+- El stack objetivo del backend ya esta definido en `docs/SPEC.md`.
 
 ## 4. Stack base
 

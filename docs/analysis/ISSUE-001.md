@@ -11,7 +11,7 @@ Cerrar el alcance real del MVP PLD, consolidando el flujo actual, las reglas obs
 - `old-version/index.html`
 - `old-version/bandeja.html`
 - `old-version/README.md`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `docs/project/BACKLOG.md`
 - `docs/project/ISSUES.md`
 - `docs/project/SPRINTS.md`
@@ -165,7 +165,7 @@ Se considera cerrado `ISSUE-001` cuando exista:
 
 - Este documento describe el comportamiento observado del legacy y las decisiones necesarias para el nuevo sistema.
 - No define implementacion nueva.
-- Las discrepancias entre fuentes deben resolverse segun `SPEC.md` y las decisiones funcionales cerradas del proyecto.
+- Las discrepancias entre fuentes deben resolverse segun `docs/SPEC.md` y las decisiones funcionales cerradas del proyecto.
 
 ## 12. Cierre formal
 

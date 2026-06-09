@@ -758,7 +758,7 @@ Formalizar los inputs externos de cliente, campanas y deuda, y definir el snapsh
 
 ### Objetivo
 
-Definir la precedencia entre `SPEC.md`, legacy, Excel de parametros y decisiones funcionales cerradas.
+Definir la precedencia entre `docs/SPEC.md`, legacy, Excel de parametros y decisiones funcionales cerradas.
 
 ### Entregables
 

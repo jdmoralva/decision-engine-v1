@@ -8,7 +8,7 @@ Formalizar los inputs externos de cliente, campanas y deuda, y definir el snapsh
 
 - `old-version/api-build.R`
 - `old-version/script.js`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `docs/project/ISSUES.md`
 - `docs/project/BACKLOG.md`
 
@@ -105,7 +105,7 @@ Persistir solo los campos realmente consumidos por el motor:
 
 - Este documento describe el comportamiento observado del legacy y el criterio minimo necesario para el nuevo sistema.
 - No define implementacion nueva.
-- Las discrepancias entre fuentes deben resolverse segun `SPEC.md` y las decisiones funcionales cerradas del proyecto.
+- Las discrepancias entre fuentes deben resolverse segun `docs/SPEC.md` y las decisiones funcionales cerradas del proyecto.
 
 ## 11. Cierre formal
 

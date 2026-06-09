@@ -2,7 +2,7 @@
 
 ## 0. Proposito
 
-Este backlog convierte `SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir la nueva plataforma `Decision Engine`, cuyo MVP inicial cubre `PLD / solicitudes de credito`.
+Este backlog convierte `docs/SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir la nueva plataforma `Decision Engine`, cuyo MVP inicial cubre `PLD / solicitudes de credito`.
 
 ## 1. Convenciones de trabajo
 
@@ -176,7 +176,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T2`
-  - Aceptacion: queda explicito el orden de precedencia entre `SPEC.md`, `old-version/api-build.R`, `ParametrosPLD-v3.xlsx` y decisiones funcionales cerradas.
+  - Aceptacion: queda explicito el orden de precedencia entre `docs/SPEC.md`, `old-version/api-build.R`, `ParametrosPLD-v3.xlsx` y decisiones funcionales cerradas.
 
 ---
 
@@ -202,7 +202,7 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E2-T1`
-  - Aceptacion: backend levanta localmente con endpoint `health` utilizando el stack y las decisiones vigentes documentadas en `SPEC.md`. Incluye `ruff` y `pyproject.toml` base.
+  - Aceptacion: backend levanta localmente con endpoint `health` utilizando el stack y las decisiones vigentes documentadas en `docs/SPEC.md`. Incluye `ruff` y `pyproject.toml` base.
 
 - [x] `E2-T3` Inicializar frontend web segun el stack definido en `E1-T3`.
   - Prioridad: `P0`

@@ -6,7 +6,7 @@ Definir los contratos de consulta, evaluacion, traza de evaluacion, registro, ca
 
 ## 2. Fuentes revisadas
 
-- `SPEC.md`
+- `docs/SPEC.md`
 - `docs/project/ISSUES.md`
 - `docs/project/BACKLOG.md`
 - `old-version/api-build.R`
@@ -141,7 +141,7 @@ Persistir solo los campos efectivamente consumidos por el motor:
 
 - Este documento describe el contrato base para el nuevo sistema.
 - No define implementacion.
-- Las discrepancias con el legacy deben resolverse segun `SPEC.md` y las decisiones funcionales cerradas del proyecto.
+- Las discrepancias con el legacy deben resolverse segun `docs/SPEC.md` y las decisiones funcionales cerradas del proyecto.
 
 ## 14. Cierre formal
 

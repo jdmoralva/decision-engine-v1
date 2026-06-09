@@ -27,4 +27,4 @@ Fuente principal para este analisis:
 - `old-version/API_DB.db`
 - `old-version/ParametrosPLD-v3.xlsx`
 
-Mientras estos documentos no existan, usa `SPEC.md` y `docs/project/ISSUES.md` como referencia para el trabajo del nuevo sistema.
+Mientras estos documentos no existan, usa `docs/SPEC.md` y `docs/project/ISSUES.md` como referencia para el trabajo del nuevo sistema.

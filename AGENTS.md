@@ -11,7 +11,7 @@
 Lee en este orden antes de asumir nada:
 
 1. `README.md`
-2. `SPEC.md`
+2. `docs/SPEC.md`
 3. `docs/project/BACKLOG.md`
 4. `docs/project/ISSUES.md`
 5. `docs/project/SPRINTS.md`
@@ -27,7 +27,7 @@ Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo co
 - El MVP del nuevo sistema cubre solo `PLD / solicitudes de credito`.
 - La plataforma nueva debe quedar preparada para soportar otros tipos de prestamo en el futuro; no diseñes componentes compartidos como si PLD fuera el unico producto posible.
 - `Cobranzas` aparece en `old-version/`, pero esta fuera de alcance salvo instruccion explicita del usuario.
-- No reintroduzcas decisiones del legado que ya fueron descartadas en `SPEC.md`, especialmente:
+- No reintroduzcas decisiones del legado que ya fueron descartadas en `docs/SPEC.md`, especialmente:
   - autenticacion basada en IP
   - dependencia de HTML generado por backend
   - acoplamiento UI-tabla para reglas de negocio
@@ -47,18 +47,18 @@ Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo co
 ## Que no asumir
 
 - No inventes comandos de build, test, lint o typecheck para la raiz: hoy no existen en el repo.
-- No asumas que la estructura `backend/` y `frontend/` ya existe; en este momento solo esta definida en `SPEC.md` y `docs/project/BACKLOG.md`.
+- No asumas que la estructura `backend/` y `frontend/` ya existe; en este momento solo esta definida en `docs/SPEC.md` y `docs/project/BACKLOG.md`.
 - No tomes `old-version/` como plantilla de arquitectura; solo usalo para levantar comportamiento, datos y reglas.
 - No uses `docs/sessions/SESSIONS.md` como fuente de verdad tecnica; solo guarda referencias de sesiones previas.
 
 ## Restricciones importantes para futuras sesiones
 
-- Si vas a construir la nueva app, sigue la estructura objetivo definida en `SPEC.md` en lugar de extender el monolito legacy.
+- Si vas a construir la nueva app, sigue la estructura objetivo definida en `docs/SPEC.md` en lugar de extender el monolito legacy.
 - Manten separado el motor de decisiones del framework web y de la UI; esta separacion es un objetivo central del repo.
 - En modulos compartidos, evita nombres, contratos o estructuras que supongan que `PLD` sera el unico tipo de prestamo futuro.
 - Trata `ParametrosPLD-v3.xlsx` como fuente legacy para migracion de parametros, no como dependencia runtime por defecto.
 - Si detectas discrepancias entre documentacion y legado ejecutable, prioriza:
-  - contratos y alcance en `SPEC.md` para el sistema nuevo
+  - contratos y alcance en `docs/SPEC.md` para el sistema nuevo
   - comportamiento de `old-version/api-build.R` para el sistema antiguo
 
 ## Git y worktree

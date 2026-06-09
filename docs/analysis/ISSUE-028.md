@@ -2,11 +2,11 @@
 
 ## 1. Objetivo
 
-Definir la precedencia entre `SPEC.md`, el legacy, el Excel de parametros y las decisiones funcionales cerradas.
+Definir la precedencia entre `docs/SPEC.md`, el legacy, el Excel de parametros y las decisiones funcionales cerradas.
 
 ## 2. Fuentes revisadas
 
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 - `docs/project/ISSUES.md`
 - `docs/project/BACKLOG.md`
@@ -28,7 +28,7 @@ El proyecto ya fija que:
 
 Conviven varias fuentes con distinto nivel de autoridad:
 
-- `SPEC.md`
+- `docs/SPEC.md`
 - decisiones funcionales cerradas del proyecto
 - comportamiento observado en `old-version/api-build.R`
 - parametros historicos en `old-version/ParametrosPLD-v3.xlsx`
@@ -40,22 +40,22 @@ Sin una precedencia explicita, cualquier discrepancia puede bloquear analisis, c
 Orden de autoridad para el nuevo sistema:
 
 1. Decisiones funcionales cerradas del proyecto.
-2. `SPEC.md`.
+2. `docs/SPEC.md`.
 3. Comportamiento observado en `old-version/api-build.R` y `old-version/API_DB.db`.
 4. `old-version/ParametrosPLD-v3.xlsx` como referencia de parametrizacion legacy.
 
 ## 6. Regla de uso por fuente
 
 - Decisiones cerradas: mandan cuando existen y estan documentadas.
-- `SPEC.md`: define el comportamiento objetivo del nuevo sistema.
-- Legacy: sirve para levantar reglas, flujos y casos reales cuando `SPEC.md` o las decisiones cerradas no detallan el punto.
+- `docs/SPEC.md`: define el comportamiento objetivo del nuevo sistema.
+- Legacy: sirve para levantar reglas, flujos y casos reales cuando `docs/SPEC.md` o las decisiones cerradas no detallan el punto.
 - Excel: solo referencia de parametros y formula historica; no define por si solo el comportamiento del nuevo sistema.
 
 ## 7. Tratamiento de discrepancias
 
-- Si una discrepancia existe entre `SPEC.md` y el legacy, prevalece `SPEC.md` salvo que una decision funcional cerrada diga lo contrario.
-- Si una discrepancia existe entre legacy y Excel, prevalece el comportamiento confirmado por `SPEC.md` o por decisiones cerradas.
-- Si el legacy y el Excel discrepan y no hay cobertura en `SPEC.md`, el caso debe escalarse como decision funcional pendiente.
+- Si una discrepancia existe entre `docs/SPEC.md` y el legacy, prevalece `docs/SPEC.md` salvo que una decision funcional cerrada diga lo contrario.
+- Si una discrepancia existe entre legacy y Excel, prevalece el comportamiento confirmado por `docs/SPEC.md` o por decisiones cerradas.
+- Si el legacy y el Excel discrepan y no hay cobertura en `docs/SPEC.md`, el caso debe escalarse como decision funcional pendiente.
 - Ninguna discrepancia debe resolverse reintroduciendo acoplamientos legacy en el nuevo diseno.
 
 ## 8. Ruta de aprobacion
@@ -84,7 +84,7 @@ Orden de autoridad para el nuevo sistema:
 
 Queda consolidado:
 
-- el orden de precedencia entre `SPEC.md`, legacy, Excel y decisiones funcionales cerradas.
+- el orden de precedencia entre `docs/SPEC.md`, legacy, Excel y decisiones funcionales cerradas.
 - la regla de uso por fuente en el nuevo sistema.
 - la politica de tratamiento de discrepancias sin reintroducir acoplamientos legacy.
 - la ruta de aprobacion para cambios funcionales y casos ambiguos.

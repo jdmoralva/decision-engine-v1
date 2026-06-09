@@ -7,7 +7,7 @@ Definir el esquema base de persistencia del MVP, incluyendo parametros del motor
 ## 2. Fuentes revisadas
 
 - `ISSUES.md`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 - `docs/analysis/ISSUE-002.md`
 
@@ -177,7 +177,7 @@ PLD es el primer producto, no el unico supuesto del modelo.
 
 - Este documento define el modelo logico inicial, no la implementacion ORM.
 - Debe servir como base para `ISSUE-007`.
-- Las discrepancias con el legacy deben resolverse segun `SPEC.md` y las decisiones funcionales cerradas.
+- Las discrepancias con el legacy deben resolverse segun `docs/SPEC.md` y las decisiones funcionales cerradas.
 
 ## 15. Cierre formal
 

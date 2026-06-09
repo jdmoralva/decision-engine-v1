@@ -7,13 +7,13 @@ Comparar opciones tecnicas de frontend segun despliegue y dejar inicializado el 
 ## 2. Fuentes revisadas
 
 - `ISSUES.md`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 
 ## 3. Contexto
 
 - El frontend sigue sin estar definido en el repo nuevo.
-- `SPEC.md` deja el stack frontend abierto segun facilidades tecnicas de despliegue.
+- `docs/SPEC.md` deja el stack frontend abierto segun facilidades tecnicas de despliegue.
 - El despliegue inicial recomendado es frontend estatco servido por Nginx o equivalente.
 - Sprint 1 exige cerrar esta decision antes de avanzar a funcionalidad.
 
@@ -73,7 +73,7 @@ El stack elegido debe:
 
 ## 11. Nota importante
 
-`SPEC.md` no fija un stack concreto; solo exige que la decision se tome segun facilidad de despliegue.
+`docs/SPEC.md` no fija un stack concreto; solo exige que la decision se tome segun facilidad de despliegue.
 Por eso este issue debe cerrar con una comparativa corta y una decision explicita, no con una preferencia asumida.
 
 ## 12. Cierre formal

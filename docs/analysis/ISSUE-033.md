@@ -6,7 +6,7 @@ Definir que datos pueden procesarse, que politicas de privacidad aplican y como 
 
 ## 2. Fuentes revisadas
 
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 - `docs/project/ISSUES.md`
 - `docs/project/BACKLOG.md`
@@ -99,7 +99,7 @@ Definir que datos pueden procesarse, que politicas de privacidad aplican y como 
 
 - Este documento fija politicas de seguridad y contratos AI para el MVP.
 - No define implementacion.
-- La base del diseno debe seguir `SPEC.md` y las decisiones ya cerradas del proyecto.
+- La base del diseno debe seguir `docs/SPEC.md` y las decisiones ya cerradas del proyecto.
 
 ## 13. Cierre formal
 

@@ -7,14 +7,14 @@ Crear la estructura base del proyecto nuevo separando backend, frontend y docume
 ## 2. Fuentes revisadas
 
 - `ISSUES.md`
-- `SPEC.md`
+- `docs/SPEC.md`
 - `README.md`
 
 ## 3. Contexto
 
 - La raiz del repo todavia no contiene la implementacion nueva.
 - `old-version/` es solo referencia funcional y tecnica.
-- `SPEC.md` define la estructura objetivo del nuevo sistema.
+- `docs/SPEC.md` define la estructura objetivo del nuevo sistema.
 - Sprint 1 exige dejar el esqueleto listo antes de avanzar a backend y frontend reales.
 
 ## 4. Estructura objetivo
@@ -42,7 +42,7 @@ project/
     tests/
   docs/
   old-version/
-  SPEC.md
+  docs/SPEC.md
 ```
 
 ## 5. Entregables
@@ -56,7 +56,7 @@ project/
 ## 6. Criterios de diseno
 
 - Separacion explicita entre nuevo sistema y `old-version/`.
-- La estructura debe seguir `SPEC.md` sin asumir acoplamientos legacy.
+- La estructura debe seguir `docs/SPEC.md` sin asumir acoplamientos legacy.
 - No mezclar la futura UI con la logica de dominio.
 - No introducir herramientas ni stack no decididos todavia.
 
@@ -68,7 +68,7 @@ project/
 
 ## 8. Criterio de aceptacion
 
-- La estructura en `backend/` y `frontend/` sigue el arbol definido en `SPEC.md`.
+- La estructura en `backend/` y `frontend/` sigue el arbol definido en `docs/SPEC.md`.
 - La separacion entre nuevo sistema y `old-version/` es explicita.
 - La base del repo queda lista para iniciar `ISSUE-004` y `ISSUE-005`.
 
