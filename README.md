@@ -78,6 +78,26 @@ Input → [Preprocessing] → [Eligibility] → [Scoring Layer] → [Decision St
 - Guia operativa para agentes: `AGENTS.md`
 - Sistema legacy de referencia: `old-version/`
 
+## Arranque Rapido Local
+
+Backend desde la raiz:
+
+```bash
+.venv\Scripts\python -m uvicorn backend.app.main:app --reload
+```
+
+Frontend desde `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+URLs locales:
+
+- Frontend: `http://127.0.0.1:5173/`
+- Swagger backend: `http://127.0.0.1:8000/docs`
+
 ## Siguiente Paso Pendiente
 
 El siguiente paso prioritario es continuar con los issues funcionales del MVP, comenzando por:
