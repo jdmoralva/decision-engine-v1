@@ -9,6 +9,7 @@ __pycache__/
 *.exe
 *.o
 *.obj
+*.egg-info
 build/
 dist/
 temp/
