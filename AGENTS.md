@@ -1,14 +1,6 @@
 # AGENTS.md
 
-## Estado real del repo
-
-- La raiz todavia no contiene la implementacion nueva. Hoy este repo es principalmente documental mas el legado en `old-version/`.
-- No hay manifests ni toolchain ejecutable en la raiz todavia: sin `package.json`, `pyproject.toml`, `requirements.txt`, workflows CI, `opencode.json` ni `AGENTS.md` previo.
-- `README.md` en la raiz es un resumen ejecutivo del proyecto y su estado actual, no una especificacion tecnica completa.
-
-## Fuentes de verdad
-
-Lee en este orden antes de asumir nada:
+## Leer primero
 
 1. `README.md`
 2. `docs/SPEC.md`
@@ -16,53 +8,41 @@ Lee en este orden antes de asumir nada:
 4. `docs/project/ISSUES.md`
 5. `docs/project/SPRINTS.md`
 6. `docs/analysis/README.md`
-7. `old-version/README.md`
-8. `old-version/api-build.R`
+7. `backend/README.md`
+8. `frontend/README.md`
+9. `old-version/README.md`
+10. `old-version/api-build.R`
 
-Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo como referencia funcional y de reglas.
+## Fuentes de verdad
 
-## Alcance del proyecto nuevo
+- Para comandos y toolchain, manda el archivo ejecutable sobre el texto: `pyproject.toml`, `frontend/package.json`, `backend/app/main.py`, `frontend/src/App.tsx`.
+- Si docs y config chocan, confia en la config o en el codigo ejecutable.
 
-- `PLD` significa `Prestamo de Libre Disponibilidad`.
-- El MVP del nuevo sistema cubre solo `PLD / solicitudes de credito`.
-- La plataforma nueva debe quedar preparada para soportar otros tipos de prestamo en el futuro; no diseñes componentes compartidos como si PLD fuera el unico producto posible.
-- `Cobranzas` aparece en `old-version/`, pero esta fuera de alcance salvo instruccion explicita del usuario.
-- No reintroduzcas decisiones del legado que ya fueron descartadas en `docs/SPEC.md`, especialmente:
-  - autenticacion basada en IP
-  - dependencia de HTML generado por backend
-  - acoplamiento UI-tabla para reglas de negocio
+## Forma del repo
 
-## Como entender el legado
+- El MVP nuevo cubre `PLD` (`Prestamo de Libre Disponibilidad`) y `solicitudes de credito`.
+- `backend/` y `frontend/` ya son la implementacion nueva; `old-version/` es solo referencia funcional y de reglas.
+- No reintroduzcas autenticacion por IP, HTML generado por backend, ni reglas de negocio acopladas a tablas/UI.
+- `Cobranzas` existe solo en el legado y queda fuera de alcance salvo pedido explicito.
+- La nueva plataforma debe seguir preparada para otros productos de prestamo; no modeles todo como si PLD fuera el unico.
 
-- El entrypoint principal del legado es `old-version/api-build.R`.
-- La version funcional completa del backend legado esta en `old-version/api-build.R`; `api-build-v2.R`, `api-build-v3.R` y `api-debug.R` no son la referencia principal.
-- `old-version/api-build.R` sirve HTML y API desde el mismo proceso Plumber y termina con `api$run(host = '0.0.0.0', port = 8080, swagger = F)`.
-- La logica clave del flujo PLD legacy esta repartida entre:
-  - `old-version/index.html`
-  - `old-version/script.js`
-  - `old-version/api-build.R`
-  - `old-version/API_DB.db`
-  - `old-version/ParametrosPLD-v3.xlsx`
+## Entry points y comandos
 
-## Que no asumir
+- Backend: `python -m uvicorn backend.app.main:app --reload`.
+- Backend tests: `python -m unittest backend.tests.test_settings backend.tests.test_health backend.tests.test_models backend.tests.test_migrations backend.tests.test_auth backend.tests.test_seed`.
+- Alembic: `python -m alembic -c backend/alembic.ini upgrade head`.
+- Seed local: `python -m backend.app.infrastructure.db.seed`.
+- Frontend: en `frontend/`, `npm install`, `npm run dev`, `npm run build`, `npm run test`.
+- Python debe ejecutarse con `.venv\\Scripts\\python` cuando aplique.
 
-- No inventes comandos de build, test, lint o typecheck para la raiz: hoy no existen en el repo.
-- No asumas que la estructura `backend/` y `frontend/` ya existe; en este momento solo esta definida en `docs/SPEC.md` y `docs/project/BACKLOG.md`.
-- No tomes `old-version/` como plantilla de arquitectura; solo usalo para levantar comportamiento, datos y reglas.
-- No uses `docs/sessions/SESSIONS.md` como fuente de verdad tecnica; solo guarda referencias de sesiones previas.
+## Legacy
 
-## Restricciones importantes para futuras sesiones
+- El backend legacy funcional principal es `old-version/api-build.R`; los otros `api-build-*` no son la referencia primaria.
+- El legado sirve como guía de comportamiento, datos y reglas, no como plantilla de arquitectura.
+- `ParametrosPLD-v3.xlsx` es fuente de migracion de parametros, no dependencia runtime por defecto.
 
-- Si vas a construir la nueva app, sigue la estructura objetivo definida en `docs/SPEC.md` en lugar de extender el monolito legacy.
-- Manten separado el motor de decisiones del framework web y de la UI; esta separacion es un objetivo central del repo.
-- En modulos compartidos, evita nombres, contratos o estructuras que supongan que `PLD` sera el unico tipo de prestamo futuro.
-- Trata `ParametrosPLD-v3.xlsx` como fuente legacy para migracion de parametros, no como dependencia runtime por defecto.
-- Si detectas discrepancias entre documentacion y legado ejecutable, prioriza:
-  - contratos y alcance en `docs/SPEC.md` para el sistema nuevo
-  - comportamiento de `old-version/api-build.R` para el sistema antiguo
+## Trabajo diario
 
-## Git y worktree
-
-- El worktree puede estar sucio desde el inicio. Revisa `git status --short` antes de editar.
-- No limpies ni reestructures `old-version/` por defecto; es material de referencia para migracion.
-- Para comandos de Python usa siempre `.venv\\Scripts\\python` o activa `.venv` antes de ejecutar cambios, tests o tooling.
+- Revisa `git status --short` antes de editar.
+- No toques cambios ajenos sin necesidad.
+- Si detectas discrepancia entre docs y legacy, prioriza `docs/SPEC.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
