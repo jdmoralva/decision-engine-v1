@@ -8,7 +8,7 @@ El objetivo es reemplazar la solucion legacy de `old-version/`, un monolito en `
 
 - backend en Python (FastAPI + Pydantic v2)
 - persistencia inicial en SQLite con opcion de migracion a SQL Server
-- frontend web desacoplado (stack por definir segun facilidades de despliegue)
+- frontend web desacoplado (Vite + React + TypeScript, servido como assets estaticos)
 - autenticacion y autorizacion modernas (RBAC)
 - motor de decisiones deterministico aislado de la UI y del framework web
 - pipeline de etapas intercambiables (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing)
@@ -21,7 +21,7 @@ La arquitectura objetivo esta disenada para soportar otros tipos de prestamo en 
 
 ## Estado Actual
 
-Hoy la raiz del repositorio no contiene todavia la implementacion nueva.
+La raiz del repositorio ya contiene la base tecnica nueva del MVP.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
@@ -29,11 +29,14 @@ El estado real es:
 - `docs/project/BACKLOG.md` organiza el trabajo en 14 epicas (E1-E14) con tareas ejecutables, prioridades y dependencias
 - `docs/project/ISSUES.md` descompone el backlog en 40 issues operativos asignados a sprints
 - `docs/project/SPRINTS.md` secuencia la ejecucion en 7 sprints (Sprint 1-7), desde descubrimiento hasta cierre del MVP con BRMS, pipeline configurable y UI administrativa
-- `docs/analysis/` reservado para levantamiento funcional y analisis del legado
+- `backend/` ya contiene el bootstrap FastAPI, configuracion, autenticacion base, RBAC inicial, ORM, migraciones y contratos API iniciales
+- `frontend/` ya contiene el bootstrap `Vite + React + TypeScript` con arranque local y sesion basica
+- `docs/analysis/` contiene los cierres funcionales y tecnicos de los issues priorizados
 - `docs/sessions/SESSIONS.md` guarda referencias cortas de sesiones previas
 - `AGENTS.md` resume las restricciones y fuentes de verdad para futuras sesiones
 
 Decisiones funcionales ya cerradas:
+- El frontend del MVP se implementa con `Vite + React + TypeScript` y se despliega como assets estaticos compatibles con un reverse proxy o Nginx equivalente
 - El flujo de carga y descarga de archivos ZIP se **incluye** en el alcance del MVP
 - La migracion de historicos queda **descartada**; se inicia con base limpia
 - El MVP mantiene las capacidades AI asistivas definidas en `docs/SPEC.md`
@@ -41,8 +44,16 @@ Decisiones funcionales ya cerradas:
 - El almacenamiento inicial de archivos ZIP se implementara sobre `filesystem`
 - Los snapshots de evaluacion persistiran solo los campos efectivamente consumidos por el motor
 
-El proyecto se encuentra en fase de definicion y preparacion tecnica.
-El inicio de `Sprint 1` debe cerrar la decision de frontend segun facilidades de despliegue, formalizar contratos de inputs externos y fijar la fuente oficial de reglas ante discrepancias con el legado.
+El proyecto ya cerró la decision de frontend y parte del bootstrap tecnico.
+`Sprint 1` consolido la base de contratos, estructura y stack inicial; aun quedan por completar los flujos funcionales del MVP.
+
+## Estado de Implementacion
+
+- Backend FastAPI base operativo con `GET /api/v1/health`, autenticacion temporal y RBAC inicial
+- Modelo de datos inicial definido en SQLAlchemy y validado con migraciones Alembic
+- Contratos REST iniciales publicados en OpenAPI para `evaluations`, `credit-requests` y `decision-trace`
+- Frontend bootstrap operativo con login local y restauracion basica de sesion
+- La logica de negocio PLD completa, la bandeja operativa, el registro real de solicitudes y las evaluaciones aun no estan implementadas
 
 ## Arquitectura del Motor de Decisiones
 
@@ -69,8 +80,11 @@ Input → [Preprocessing] → [Eligibility] → [Scoring Layer] → [Decision St
 
 ## Siguiente Paso Pendiente
 
-El siguiente paso prioritario es iniciar `Sprint 1`, comenzando por:
+El siguiente paso prioritario es continuar con los issues funcionales del MVP, comenzando por:
 
-- `ISSUE-001` Cerrar alcance funcional del MVP, incluyendo roles operativos, reglas de aprobacion/rechazo, decision de frontend por despliegue, contratos de inputs externos y fuente oficial de reglas
+- `ISSUE-010` Crear modulo aislado del motor de decisiones
+- `ISSUE-011` Implementar reglas y formulas del motor PLD
+- `ISSUE-013` Implementar API de consulta PLD
+- `ISSUE-014` Implementar API de evaluacion PLD
 
-Sin ese cierre, los issues tecnicos posteriores del MVP pueden quedar bloqueados.
+Sin ese avance, los flujos funcionales del MVP siguen incompletos aunque el bootstrap tecnico ya este listo.

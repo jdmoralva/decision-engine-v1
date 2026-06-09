@@ -291,6 +291,28 @@ Adoptar un pipeline configurable por nodos gobernados, con branching controlado,
 - Pipeline lineal codificado: demasiado rigido para la prioridad de configuracion temprana.
 - Workflow engine general: demasiado complejo operacionalmente para el MVP.
 
+### ADR-008: Vite + React + TypeScript como frontend base
+
+**Status:** Accepted
+
+**Contexto**
+
+El MVP necesita un frontend desplegable de forma simple, con formularios complejos, tablas, manejo de rutas y una base preparada para futuras extensiones sin acoplarse al legacy.
+
+**Decision**
+
+Usar `Vite + React + TypeScript` y desplegar el resultado como assets estaticos detras de Nginx o un reverse proxy equivalente.
+
+**Consequences**
+
+- Positivas: bootstrap rapido, build estatico simple, buena ergonomia para UI operativa y separacion clara con la API.
+- Negativas: requiere disciplina para mantener la UI sin reglas de negocio criticas.
+
+**Alternatives Considered**
+
+- SPA pesada con framework mas opinado: descartada por mayor costo de arranque.
+- HTML generado por backend: descartado por el acoplamiento legado que el proyecto busca eliminar.
+
 ## 7. Modelo De Datos
 
 ### Entidades base

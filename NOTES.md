@@ -22,5 +22,5 @@ Lo que no implementé todavía
 - endpoints PLD
 
 
-Ajustar .gitignore para evitar la carga de archivos tipo build, cache, temp files, logs
+
 

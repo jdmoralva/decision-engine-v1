@@ -65,3 +65,4 @@ Usa los docs de la raiz y `docs/` para el sistema nuevo y `old-version/` solo co
 
 - El worktree puede estar sucio desde el inicio. Revisa `git status --short` antes de editar.
 - No limpies ni reestructures `old-version/` por defecto; es material de referencia para migracion.
+- Para comandos de Python usa siempre `.venv\\Scripts\\python` o activa `.venv` antes de ejecutar cambios, tests o tooling.

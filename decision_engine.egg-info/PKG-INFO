@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: decision-engine
+Version: 0.1.0
+Summary: Decision Engine bootstrap backend
+Requires-Python: >=3.12
+Requires-Dist: fastapi<1.0.0,>=0.128.0
+Requires-Dist: uvicorn<1.0.0,>=0.30.0
+Requires-Dist: sqlalchemy<3.0.0,>=2.0.0
+Requires-Dist: alembic<2.0.0,>=1.13.0
+Requires-Dist: httpx<1.0.0,>=0.28.0
+Provides-Extra: dev
+Requires-Dist: ruff<1.0.0,>=0.6.0; extra == "dev"
