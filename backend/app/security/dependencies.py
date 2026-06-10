@@ -8,6 +8,7 @@ from backend.app.application.auth import get_user_by_username, get_user_roles, u
 from backend.app.config.settings import get_settings
 from backend.app.infrastructure.db.models import User
 from backend.app.infrastructure.db.session import get_db
+from backend.app.security.permissions import roles_grant_permission
 from backend.app.security.tokens import decode_access_token
 
 
@@ -40,6 +41,16 @@ def require_roles(*required_roles: str) -> Callable:
     def dependency(context: tuple[User, list[str]] = Depends(get_current_user_context)) -> tuple[User, list[str]]:
         user, roles = context
         if not user_has_any_role(roles, required_roles):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+        return user, roles
+
+    return dependency
+
+
+def require_permission(permission: str) -> Callable:
+    def dependency(context: tuple[User, list[str]] = Depends(get_current_user_context)) -> tuple[User, list[str]]:
+        user, roles = context
+        if not roles_grant_permission(roles, permission):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
         return user, roles
 

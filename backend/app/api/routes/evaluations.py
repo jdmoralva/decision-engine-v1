@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.app.api.schemas.contracts import (
     DecisionTraceResponse,
@@ -6,6 +6,7 @@ from backend.app.api.schemas.contracts import (
     EvaluationResponse,
     StructuredErrorResponse,
 )
+from backend.app.security.dependencies import require_permission
 
 
 router = APIRouter(prefix="/evaluations", tags=["evaluations"])
@@ -23,7 +24,10 @@ error_responses = {
 
 
 @router.post("", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
-def create_evaluation(_payload: EvaluationRequest) -> EvaluationResponse:
+def create_evaluation(
+    _payload: EvaluationRequest,
+    _context: tuple = Depends(require_permission("evaluar_oferta")),
+) -> EvaluationResponse:
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="Evaluation execution is not implemented yet.",
@@ -31,7 +35,10 @@ def create_evaluation(_payload: EvaluationRequest) -> EvaluationResponse:
 
 
 @router.get("/{evaluation_id}", response_model=EvaluationResponse, responses=error_responses)
-def get_evaluation(evaluation_id: str) -> EvaluationResponse:
+def get_evaluation(
+    evaluation_id: str,
+    _context: tuple = Depends(require_permission("consultar_evaluacion")),
+) -> EvaluationResponse:
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail=f"Evaluation '{evaluation_id}' retrieval is not implemented yet.",
@@ -39,7 +46,10 @@ def get_evaluation(evaluation_id: str) -> EvaluationResponse:
 
 
 @router.get("/{evaluation_id}/decision-trace", response_model=DecisionTraceResponse, responses=error_responses)
-def get_decision_trace(evaluation_id: str) -> DecisionTraceResponse:
+def get_decision_trace(
+    evaluation_id: str,
+    _context: tuple = Depends(require_permission("consultar_trace")),
+) -> DecisionTraceResponse:
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail=f"Decision trace for evaluation '{evaluation_id}' is not implemented yet.",

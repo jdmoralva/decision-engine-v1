@@ -20,3 +20,4 @@ tmp/
 .ruff_cache/
 node_modules/
 vite.log
+.env

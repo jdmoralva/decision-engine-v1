@@ -1,3 +1,10 @@
 Sprint 2
 
+--1. ISSUE-007
+--2. ISSUE-008
+--3. ISSUE-009
+4. ISSUE-010
+5. ISSUE-034
+
+
 
