@@ -1,10 +1,10 @@
-Sprint 2
+Sprint 3
 
---1. ISSUE-007
---2. ISSUE-008
---3. ISSUE-009
-4. ISSUE-010
-5. ISSUE-034
+- `ISSUE-011` Implementar reglas y formulas del motor PLD
+- `ISSUE-012` Crear suite de regresion del motor
+- `ISSUE-013` Implementar API de consulta PLD
+- `ISSUE-014` Implementar API de evaluacion PLD
+- `ISSUE-035` Desarrollar el servicio de explicacion de 
 
 
 

@@ -68,7 +68,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ## Sprint 2 - Persistencia, seguridad base y fundaciones AI
 
-- Estado: `planned`
+- Estado: `done`
 - Objetivo: dejar lista la persistencia inicial, autenticacion base, armazon del motor configurable y cliente LLM
 
 ### Issues comprometidos
@@ -95,6 +95,14 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ### Criterio de cierre
 
 - el backend ya soporta usuarios autenticados y tiene una base tecnica estable para construir casos de uso PLD
+
+### Cierre documental
+
+- Sprint 2 queda cerrado como fase tecnica de persistencia inicial, seguridad base, motor aislado y fundaciones AI.
+- Quedan consolidados `ISSUE-007`, `ISSUE-008`, `ISSUE-009`, `ISSUE-010` y `ISSUE-034`.
+- El backend ya cuenta con ORM y migraciones, autenticacion temporal, RBAC base, core aislado del motor de decisiones y servicio base de conexion a LLM con proveedor activo configurable.
+- La documentacion de cierre tecnico relevante queda en `docs/analysis/ISSUE-007.md`, `docs/analysis/ISSUE-008.md`, `docs/analysis/ISSUE-009.md`, `docs/analysis/ISSUE-010.md` y `docs/analysis/ISSUE-034.md`.
+- El equipo puede avanzar a `Sprint 3` sin reabrir decisiones estructurales de seguridad, motor o integracion base con LLM.
 
 ---
 

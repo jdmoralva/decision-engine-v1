@@ -268,13 +268,13 @@ Tareas:
   - Dependencias: `E3-T1`
   - Aceptacion: el modelo inicial contempla `loan_product` o equivalente sin exigir reestructura futura del esquema base.
 
-- [ ] `E3-T2` Implementar modelos SQLAlchemy iniciales.
+- [x] `E3-T2` Implementar modelos SQLAlchemy iniciales.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E3-T1`, `E2-T2`
   - Aceptacion: modelos cargan correctamente y reflejan el diseno definido.
 
-- [ ] `E3-T3` Configurar Alembic y crear migracion inicial.
+- [x] `E3-T3` Configurar Alembic y crear migracion inicial.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E3-T2`
@@ -332,13 +332,13 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E4-T1` Seleccionar mecanismo de autenticacion definitivo.
+- [x] `E4-T1` Seleccionar mecanismo de autenticacion definitivo.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
   - Aceptacion: queda decidido `SSO` o `login interno temporal`.
 
-- [ ] `E4-T2` Implementar base de autenticacion en backend.
+- [x] `E4-T2` Implementar base de autenticacion en backend.
   - Prioridad: `P0`
   - Estimacion: `L`
   - Dependencias: `E4-T1`, `E2-T2`, `E3-T3`
@@ -358,13 +358,13 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E4-T4` Definir matriz de permisos por rol.
+- [x] `E4-T4` Definir matriz de permisos por rol.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T3`
   - Aceptacion: matriz aprobada para consultar, evaluar, registrar, anular y cambiar estado.
 
-- [ ] `E4-T5` Implementar RBAC en backend.
+- [x] `E4-T5` Implementar RBAC en backend.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E4-T4`, `E4-T2`
@@ -396,31 +396,31 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E5-T1` Definir modelos de entrada y salida del motor.
+- [x] `E5-T1` Definir modelos de entrada y salida del motor.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5`
   - Aceptacion: contratos implementados y validados por pruebas, incluyendo versionado de reglas, parametros y pipeline.
 
-- [ ] `E5-T1a` Definir modelo estructurado de `DecisionTrace`.
+- [x] `E5-T1a` Definir modelo estructurado de `DecisionTrace`.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T5b`, `E5-T1`
   - Aceptacion: `DecisionTrace` define etapas o nodos ejecutados, versiones aplicadas, bloqueos, alertas y evidencia consumible por AI y auditoria humana.
 
-- [ ] `E5-T2` Crear modulo `decision_engine` con contratos internos de nodos, calculo y respuesta.
+- [x] `E5-T2` Crear modulo `decision_engine` con contratos internos de nodos, calculo y respuesta.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E5-T1`, `E2-T2`
   - Aceptacion: modulo aislado importable sin dependencias web. El motor expone funciones `async` para soportar peticiones concurrentes (SPEC §5.2).
 
-- [ ] `E5-T2b` Implementar orquestador base de `DecisionNode` con seleccion de `pipeline_strategy`.
+- [x] `E5-T2b` Implementar orquestador base de `DecisionNode` con seleccion de `pipeline_strategy`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E5-T2`, `E3-T5`
   - Aceptacion: el motor ejecuta nodos segun una estrategia versionada por producto, con branching controlado y validacion de topologia.
 
-- [ ] `E5-T2a` Diseñar el motor para seleccionar reglas por producto o conjunto de reglas.
+- [x] `E5-T2a` Diseñar el motor para seleccionar reglas por producto o conjunto de reglas.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E5-T2`
@@ -446,7 +446,7 @@ Resultado esperado:
 
 Tareas:
 
-- [ ] `E5-T4` Implementar normalizacion de entrada del flujo PLD.
+- [x] `E5-T4` Implementar normalizacion de entrada del flujo PLD.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E5-T2`
@@ -906,11 +906,11 @@ Tareas:
   - Estimacion: `S`
   - Dependencias: `E3-T3`
   - Aceptacion: la base SQLite cuenta con las tablas necesarias y sus relaciones con evaluaciones y solicitudes.
-- [ ] `E12-T3` Implementar modulo backend cliente para conexion con LLM (OpenAI SDK, Azure OpenAI o local) con manejo de timeouts, reintentos y fallback.
+- [x] `E12-T3` Implementar modulo backend cliente para conexion con LLM con manejo de timeouts, reintentos y seleccion configurable de proveedor activo.
   - Prioridad: `P1`
   - Estimacion: `M`
   - Dependencias: `E2-T2`
-  - Aceptacion: servicio backend realiza llamadas de prueba al modelo de forma segura usando variables de entorno.
+  - Aceptacion: servicio backend realiza llamadas de prueba al modelo de forma segura usando variables de entorno y permite seleccionar `OpenAI` o `Gemini` por configuracion externa.
 
 ### Historia E12-H2. Explicacion de evaluacion PLD (MVP)
 
