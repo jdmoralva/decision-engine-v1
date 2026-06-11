@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
 
 
 class DecisionEngineRegistryTests(unittest.TestCase):
-    def test_registry_resolves_multiple_products_without_pld_specific_core(self):
+    def test_registry_resolves_multiple_products_and_workflows_without_pld_specific_core(self):
         from backend.app.domain.decision_engine import (
             AppliedVersions,
             DecisionEngineOrchestrator,
@@ -37,6 +37,13 @@ class DecisionEngineRegistryTests(unittest.TestCase):
             applied_versions=AppliedVersions(pipeline_version="alpha-v1"),
             nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],
         )
+        strategy_a_special = PipelineStrategy(
+            strategy_key="strategy-a-special",
+            product_code="ALPHA",
+            start_node_key="start",
+            applied_versions=AppliedVersions(pipeline_version="alpha-v2"),
+            nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],
+        )
         strategy_b = PipelineStrategy(
             strategy_key="strategy-b",
             product_code="BETA",
@@ -47,23 +54,34 @@ class DecisionEngineRegistryTests(unittest.TestCase):
 
         registry.register_product(
             product_code="ALPHA",
+            workflow_code="standard",
             strategy=strategy_a,
             normalizer=lambda request: request,
             nodes=[SharedNode()],
         )
         registry.register_product(
+            product_code="ALPHA",
+            workflow_code="special",
+            strategy=strategy_a_special,
+            normalizer=lambda request: request,
+            nodes=[SharedNode()],
+        )
+        registry.register_product(
             product_code="BETA",
+            workflow_code="standard",
             strategy=strategy_b,
             normalizer=lambda request: request,
             nodes=[SharedNode()],
         )
 
-        alpha_runtime = registry.resolve("ALPHA")
-        beta_runtime = registry.resolve("BETA")
+        alpha_runtime = registry.resolve("ALPHA", "standard")
+        alpha_special_runtime = registry.resolve("ALPHA", "special")
+        beta_runtime = registry.resolve("BETA", "standard")
         alpha_result = asyncio.run(
             DecisionEngineOrchestrator(nodes=alpha_runtime.nodes).evaluate(
                 EngineEvaluationRequest(
                     product_code="ALPHA",
+                    workflow_code="standard",
                     document={"document_type": "DNI", "document_number": "12345678"},
                     requested_by={"username": "analista"},
                     product_context={},
@@ -71,10 +89,23 @@ class DecisionEngineRegistryTests(unittest.TestCase):
                 alpha_runtime.strategy,
             )
         )
+        alpha_special_result = asyncio.run(
+            DecisionEngineOrchestrator(nodes=alpha_special_runtime.nodes).evaluate(
+                EngineEvaluationRequest(
+                    product_code="ALPHA",
+                    workflow_code="special",
+                    document={"document_type": "DNI", "document_number": "12345678"},
+                    requested_by={"username": "analista"},
+                    product_context={},
+                ),
+                alpha_special_runtime.strategy,
+            )
+        )
         beta_result = asyncio.run(
             DecisionEngineOrchestrator(nodes=beta_runtime.nodes).evaluate(
                 EngineEvaluationRequest(
                     product_code="BETA",
+                    workflow_code="standard",
                     document={"document_type": "DNI", "document_number": "12345678"},
                     requested_by={"username": "analista"},
                     product_context={},
@@ -84,8 +115,10 @@ class DecisionEngineRegistryTests(unittest.TestCase):
         )
 
         self.assertEqual(alpha_runtime.strategy.applied_versions.pipeline_version, "alpha-v1")
+        self.assertEqual(alpha_special_runtime.strategy.applied_versions.pipeline_version, "alpha-v2")
         self.assertEqual(beta_runtime.strategy.applied_versions.pipeline_version, "beta-v1")
         self.assertEqual(alpha_result.product_result["product"], "ALPHA")
+        self.assertEqual(alpha_special_result.decision_trace.workflow_code, "special")
         self.assertEqual(beta_result.product_result["product"], "BETA")
 
     def test_registry_rejects_unknown_product(self):
@@ -97,4 +130,42 @@ class DecisionEngineRegistryTests(unittest.TestCase):
         registry = DecisionEngineRegistry()
 
         with self.assertRaises(EngineRegistryError):
-            registry.resolve("UNKNOWN")
+            registry.resolve("UNKNOWN", "standard")
+
+    def test_registry_rejects_unknown_workflow_for_known_product(self):
+        from backend.app.domain.decision_engine import (
+            AppliedVersions,
+            DecisionEngineRegistry,
+            DecisionNode,
+            EngineRegistryError,
+            NodeExecutionResult,
+            PipelineNodeDefinition,
+            PipelineStrategy,
+        )
+
+        class SharedNode(DecisionNode):
+            node_key = "start"
+            node_type = "shared"
+
+            async def run(self, context):
+                return NodeExecutionResult(outcome="done", eligible=True)
+
+        registry = DecisionEngineRegistry()
+        strategy = PipelineStrategy(
+            strategy_key="strategy-a",
+            product_code="ALPHA",
+            start_node_key="start",
+            applied_versions=AppliedVersions(pipeline_version="alpha-v1"),
+            nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],
+        )
+
+        registry.register_product(
+            product_code="ALPHA",
+            workflow_code="standard",
+            strategy=strategy,
+            normalizer=lambda request: request,
+            nodes=[SharedNode()],
+        )
+
+        with self.assertRaises(EngineRegistryError):
+            registry.resolve("ALPHA", "missing")

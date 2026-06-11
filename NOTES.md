@@ -1,10 +1,9 @@
 Sprint 3
 
-- `ISSUE-011` Implementar reglas y formulas del motor PLD
-- `ISSUE-012` Crear suite de regresion del motor
-- `ISSUE-013` Implementar API de consulta PLD
-- `ISSUE-014` Implementar API de evaluacion PLD
-- `ISSUE-035` Desarrollar el servicio de explicacion de evaluacion PLD
 
 
+
+Falta un patrón de resolución de schemas que, dado product_code, seleccione el contrato REST correcto. Actualmente todo es estático: el endpoint declara PLDEvaluationRequest en firma.
+
+build_default_decision_engine_registry() en bootstrap.py registra únicamente PLD. No hay un punto de extensión donde otros productos se auto-registren.
 

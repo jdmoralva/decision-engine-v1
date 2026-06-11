@@ -26,7 +26,14 @@ class DecisionEnginePipelineTests(unittest.TestCase):
 
             async def run(self, context):
                 context.product_result["score"] = 720
-                return NodeExecutionResult(outcome="eligible", alerts_added=["manual_review"])
+                return NodeExecutionResult(
+                    outcome="eligible",
+                    alerts_added=["manual_review"],
+                    rules_applied=["rule-eligibility"],
+                    consumed_variables=["campaign_code"],
+                    produced_variables=["score"],
+                    produced_effects=["manual_review"],
+                )
 
         class OfferNode(DecisionNode):
             node_key = "offer"
@@ -34,7 +41,13 @@ class DecisionEnginePipelineTests(unittest.TestCase):
 
             async def run(self, context):
                 context.product_result["offer_amount"] = 1500
-                return NodeExecutionResult(outcome="completed", eligible=True)
+                return NodeExecutionResult(
+                    outcome="completed",
+                    eligible=True,
+                    rules_applied=["rule-offer"],
+                    consumed_variables=["score"],
+                    produced_variables=["offer_amount"],
+                )
 
         strategy = PipelineStrategy(
             strategy_key="default",
@@ -61,6 +74,7 @@ class DecisionEnginePipelineTests(unittest.TestCase):
         orchestrator = DecisionEngineOrchestrator(nodes=[EligibilityNode(), OfferNode()])
         request = EngineEvaluationRequest(
             product_code="PLD",
+            workflow_code="standard",
             document={"document_type": "DNI", "document_number": "12345678"},
             requested_by={"username": "analista"},
             product_context={"campaign_code": "PLD-01"},
@@ -72,11 +86,20 @@ class DecisionEnginePipelineTests(unittest.TestCase):
         self.assertEqual(result.product_result["score"], 720)
         self.assertEqual(result.product_result["offer_amount"], 1500)
         self.assertEqual(result.applied_versions.pipeline_version, "pipe-v1")
+        self.assertEqual(result.decision_trace.workflow_code, "standard")
+        self.assertEqual(result.decision_trace.rules_applied, ["rule-eligibility", "rule-offer"])
+        self.assertEqual(result.decision_trace.consumed_variables, ["campaign_code", "score"])
+        self.assertEqual(result.decision_trace.produced_variables, ["score", "offer_amount"])
+        self.assertEqual(result.decision_trace.produced_effects, ["manual_review"])
         self.assertEqual(
             [node.node_key for node in result.decision_trace.nodes_executed],
             ["eligibility", "offer"],
         )
         self.assertEqual(result.decision_trace.nodes_executed[0].branch_selected, "offer")
+        self.assertEqual(result.decision_trace.nodes_executed[0].rules_applied, ["rule-eligibility"])
+        self.assertEqual(result.decision_trace.nodes_executed[0].consumed_variables, ["campaign_code"])
+        self.assertEqual(result.decision_trace.nodes_executed[0].produced_variables, ["score"])
+        self.assertEqual(result.decision_trace.nodes_executed[0].produced_effects, ["manual_review"])
         self.assertEqual(result.alerts, ["manual_review"])
 
     def test_orchestrator_rejects_invalid_topology(self):

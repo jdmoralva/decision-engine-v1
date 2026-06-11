@@ -20,12 +20,15 @@ Backend del nuevo `Decision Engine` con `FastAPI`, `SQLAlchemy`, `Alembic` y un 
 - `GET /api/v1/me`
 - `GET /api/v1/admin/health`
 - `GET /api/v1/admin/rules`
-- `POST /api/v1/evaluations`
-- `GET /api/v1/evaluations/{evaluation_id}`
-- `GET /api/v1/evaluations/{evaluation_id}/decision-trace`
+- `POST /api/v1/loans/{product_code}/consultas`
+- `POST /api/v1/loans/{product_code}/evaluaciones`
+- `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}`
+- `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`
 - `POST /api/v1/credit-requests`
 - `GET /api/v1/credit-requests/{request_id}`
 - `POST /api/v1/credit-requests/{request_id}/status-transitions`
+
+El endpoint `POST /api/v1/loans/{product_code}/consultas` ya expone una consulta operativa autenticada por producto usando un adaptador local de desarrollo, desacoplado de la UI y del legacy como runtime.
 
 Los endpoints de negocio de evaluacion y solicitudes ya existen como contratos REST y controlan autenticacion/autorizacion, pero todavia responden `501` mientras se implementan los casos de uso funcionales.
 

@@ -4,9 +4,9 @@ from backend.app.api.schemas.contracts import (
     DecisionTraceNode,
     DecisionTraceResponse,
     DocumentRef,
-    EvaluationRequest,
-    EvaluationResponse,
     ExternalInputSnapshotItem,
+    PLDEvaluationRequest,
+    PLDEvaluationResponse,
     PLDEvaluationResult,
 )
 from backend.app.domain.decision_engine import (
@@ -20,15 +20,18 @@ from backend.app.domain.decision_engine import (
 )
 
 
-def map_api_request_to_engine_request(api_request: EvaluationRequest) -> EngineEvaluationRequest:
+def map_api_request_to_engine_request(api_request: PLDEvaluationRequest) -> EngineEvaluationRequest:
     return EngineEvaluationRequest(
         product_code=api_request.product_code,
+        workflow_code=api_request.workflow_code,
         document=api_request.document.model_dump(),
         requested_by=api_request.requested_by.model_dump(),
         product_context=api_request.product_context.model_dump(exclude_none=True),
         external_inputs=[
             EngineExternalInput(**item.model_dump()) for item in api_request.external_inputs
         ],
+        requested_rule_set_version=api_request.requested_rule_set_version,
+        requested_pipeline_version=api_request.requested_pipeline_version,
     )
 
 
@@ -36,8 +39,8 @@ def map_engine_result_to_api_response(
     *,
     evaluation_id: str,
     engine_result: EngineEvaluationResult,
-) -> EvaluationResponse:
-    return EvaluationResponse(
+) -> PLDEvaluationResponse:
+    return PLDEvaluationResponse(
         evaluation_id=evaluation_id,
         product_code=engine_result.product_code,
         eligible=engine_result.eligible,
@@ -64,11 +67,19 @@ def map_engine_trace_to_api_response(
         applied_versions=_map_applied_versions(engine_trace.applied_versions),
         alerts=list(engine_trace.alerts),
         blocks=list(engine_trace.blocks),
+        rules_applied=list(engine_trace.rules_applied),
+        consumed_variables=list(engine_trace.consumed_variables),
+        produced_variables=list(engine_trace.produced_variables),
+        produced_effects=list(engine_trace.produced_effects),
         nodes_executed=[
             DecisionTraceNode(
                 node_key=node.node_key,
                 node_type=node.node_type,
                 outcome=node.outcome,
+                rules_applied=list(node.rules_applied),
+                consumed_variables=list(node.consumed_variables),
+                produced_variables=list(node.produced_variables),
+                produced_effects=list(node.produced_effects),
             )
             for node in engine_trace.nodes_executed
         ],
@@ -85,9 +96,10 @@ def map_engine_trace_to_api_response(
     )
 
 
-def map_engine_request_to_api_request(engine_request: EngineEvaluationRequest) -> EvaluationRequest:
-    return EvaluationRequest(
+def map_engine_request_to_api_request(engine_request: EngineEvaluationRequest) -> PLDEvaluationRequest:
+    return PLDEvaluationRequest(
         product_code=engine_request.product_code,
+        workflow_code=engine_request.workflow_code,
         document=DocumentRef(**engine_request.document.model_dump()),
         requested_by=ActorRef(**engine_request.requested_by.model_dump()),
         product_context=engine_request.product_context,
@@ -95,6 +107,8 @@ def map_engine_request_to_api_request(engine_request: EngineEvaluationRequest) -
             ExternalInputSnapshotItem(**item.model_dump())
             for item in engine_request.external_inputs
         ],
+        requested_rule_set_version=engine_request.requested_rule_set_version,
+        requested_pipeline_version=engine_request.requested_pipeline_version,
     )
 
 

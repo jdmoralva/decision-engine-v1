@@ -11,6 +11,7 @@ def _require_non_blank(value: str, field_name: str) -> str:
 
 def normalize_evaluation_request(request: EngineEvaluationRequest) -> EngineEvaluationRequest:
     product_code = _require_non_blank(request.product_code, "product_code").upper()
+    workflow_code = _require_non_blank(request.workflow_code, "workflow_code")
     document_type = _require_non_blank(
         request.document.document_type, "document.document_type"
     ).upper()
@@ -38,6 +39,7 @@ def normalize_evaluation_request(request: EngineEvaluationRequest) -> EngineEval
     return request.model_copy(
         update={
             "product_code": product_code,
+            "workflow_code": workflow_code,
             "document": request.document.model_copy(
                 update={
                     "document_type": document_type,

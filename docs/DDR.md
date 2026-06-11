@@ -2,9 +2,9 @@
 
 ## 1. Proposito
 
-Definir la arquitectura del MVP de `Decision Engine` para `PLD / solicitudes de credito`, tomando como referencia funcional el legado en `old-version/` y como marco objetivo el `docs/SPEC.md`.
+Definir la arquitectura del MVP de `Decision Engine` como una plataforma `PLD-first` en lo funcional, pero multiproducto en su base tecnica, tomando como referencia funcional el legado en `old-version/` y como marco objetivo el `docs/SPEC.md`.
 
-El legado confirma que el negocio no es solo consulta y registro: incluye consulta de cliente, recalculo de oferta, validaciones, registro de solicitud, bandeja operativa, anulacion, cambio de estado, adjuntos ZIP y trazabilidad basica. El nuevo sistema debe reproducir ese flujo sin repetir los acoplamientos del monolito R + HTML/jQuery.
+El legado confirma que el negocio no es solo consulta y registro: incluye consulta de cliente, recalculo de oferta, validaciones, registro de solicitud, bandeja operativa, anulacion, cambio de estado, adjuntos ZIP y trazabilidad basica. El nuevo sistema debe reproducir ese flujo sin repetir los acoplamientos del monolito R + HTML/jQuery y sin convertir `PLD` en la forma estructural del sistema completo.
 
 ## 2. Requisitos
 
@@ -108,11 +108,25 @@ graph TD
 ### Motor de decisiones
 
 - Modulo interno, separado del framework web.
+- Core agnostico al producto, con resolucion por `product_code` y `workflow_code`.
 - Pipeline deterministico configurable por nodos gobernados.
 - Nodos base: preprocessing, eligibility, scoring, decision strategy, post-processing.
 - Branching controlado por estrategia versionada.
 - Reglas, parametros y secuencia versionadas y reproducibles.
 - Salida nativa de `DecisionTrace`.
+
+El motor debe evolucionar desde un core multiproducto hacia una capacidad administrable por negocio y riesgos, donde el alta de productos y la creacion de workflows no dependan de cambios en codigo ni de aprobacion de TI como mecanismo normal de operacion.
+
+En el estado actual del repositorio, esta base ya existe a nivel de dominio. `PLD` se registra como primer runtime concreto sobre infraestructura generica; lo pendiente sigue siendo completar los casos de uso funcionales y persistidos sobre esa base.
+
+La arquitectura objetivo debe contemplar:
+
+- productos registrados en persistencia
+- workflows registrados por producto
+- catalogo de variables por producto
+- reglas declarativas por workflow en JSON/DSL restringido
+- herencia de variables y reglas base desde producto hacia workflow
+- resolucion de inputs desde tablas internas de campana y desde datos capturados en UI
 
 ### BRMS
 
@@ -120,6 +134,15 @@ graph TD
 - Activacion por producto y vigencia.
 - Sandbox de pruebas para administracion.
 - Administracion gobernada de secuencia del flujo por producto.
+
+El BRMS debe ampliarse con cuatro capacidades administrables adicionales:
+
+- catalogo de productos
+- catalogo de workflows por producto
+- catalogo de variables por producto
+- resolucion declarativa de fuentes de input
+
+La plataforma debe validar configuraciones y activaciones, pero no debe exigir aprobacion de TI para registrar un producto o crear un workflow. Ambos deben guardarse primero como `draft` y activarse luego por usuarios autorizados de negocio o riesgos.
 
 ### Event Store
 
@@ -313,17 +336,59 @@ Usar `Vite + React + TypeScript` y desplegar el resultado como assets estaticos 
 - SPA pesada con framework mas opinado: descartada por mayor costo de arranque.
 - HTML generado por backend: descartado por el acoplamiento legado que el proyecto busca eliminar.
 
+### ADR-009: `PLD` como primer producto registrado sobre core multiproducto
+
+**Status:** Accepted
+
+**Contexto**
+
+El proyecto necesita entregar primero el flujo `PLD`, pero tambien necesita validar desde el MVP que la plataforma soporta mas de un producto y mas de un workflow sin reescribir su base tecnica.
+
+**Decision**
+
+Modelar `PLD` como primer producto registrado sobre un core multiproducto, manteniendo `product_code` y `workflow_code` como dimensiones de primer nivel y reservando metricas como `RCI`, `oferta`, `cuota`, `tasa` y `plazo` al resultado del producto o workflow, no al contrato universal del motor.
+
+**Consequences**
+
+- Positivas: evita hardcode estructural de `PLD`, facilita onboarding de futuros productos y mantiene compartidas las capas de seguridad, auditoria, errores y trazabilidad.
+- Negativas: obliga a distinguir mejor entre contratos genericos de plataforma y payloads todavia transicionales o PLD-especificos en el borde HTTP.
+
+**Alternatives Considered**
+
+- Motor centrado en `PLD` con refactor posterior: descartado por el riesgo de acoplamiento y retrabajo.
+
+### ADR-010: Autonomia operativa de riesgos y negocio sobre configuracion del motor
+
+**Status:** Accepted
+
+**Contexto**
+
+El objetivo del motor no es solo soportar multiples productos, sino permitir que riesgos y negocio puedan registrar productos, crear workflows, definir variables y administrar reglas sin depender de intervenciones recurrentes de TI.
+
+**Decision**
+
+Adoptar un modelo administrable en BD donde productos, workflows, variables y reglas se gestionan por configuracion persistida. Las reglas se expresan en un JSON/DSL restringido y validable. Las variables de campana se leen desde tablas internas del sistema nuevo. El catalogo de variables se define a nivel producto y los workflows pueden heredar variables y reglas base del producto. El alta de productos y workflows se guarda primero como `draft` y se activa luego por usuarios autorizados de negocio o riesgos.
+
+**Consequences**
+
+- Positivas: reduce dependencia operativa de TI, acelera alta de productos y politicas, mejora trazabilidad de cambios y fortalece el gobierno funcional del motor.
+- Negativas: incrementa complejidad del BRMS, exige validadores mas estrictos y requiere una UI administrativa mas rica.
+
+**Alternatives Considered**
+
+- Mantener productos y workflows definidos en codigo: descartado por baja autonomia y alto costo operativo.
+- Permitir reglas totalmente libres o ejecutables sin restriccion: descartado por riesgo de seguridad, falta de validacion y baja auditabilidad.
+
 ## 7. Modelo De Datos
 
 ### Entidades base
 
 - `users`, `roles`, `user_roles`
 - `loan_products`
-- `clients`
-- `pld_campaigns`
-- `pld_rule_sets`, `pld_rule_parameters`
-- `pld_evaluations`
-- `pld_evaluation_inputs`, `pld_evaluation_results`
+- `workflow_definitions`
+- `variable_definitions`
+- `variable_source_bindings`
+- `loan_evaluations`
 - `evaluation_input_snapshots`
 - `credit_requests`
 - `credit_request_status_history`
@@ -340,25 +405,75 @@ Persistir solo los campos efectivamente consumidos por el motor en cada evaluaci
 
 Separar explicitamente versionado de reglas, parametros y estrategia de flujo para evitar que una misma version mezcle cambios heterogeneos dificiles de auditar.
 
+La base canonica del modelo debe ser compartida por plataforma. Si aparecen estructuras auxiliares especificas por producto, no deben desplazar a `loan_evaluations`, `rule_sets`, `pipeline_strategies`, `decision_traces` o `decision_events` como modelo principal.
+
+El modelado debe soportar explicitamente:
+
+- catalogo de variables por producto
+- asociacion de reglas a workflows
+- herencia de variables y reglas base hacia workflows
+- declaracion de fuente por variable
+- resolucion de variables de `campaign_db` desde tablas internas del sistema nuevo
+
 ### Campos adicionales esperados
 
-#### `pld_evaluations`
+#### `loan_evaluations`
 
+- `workflow_code`
 - `pipeline_version`
+- `variable_catalog_version`
 
 #### `decision_traces`
 
 - `id`
-- `evaluation_id` (FK a `pld_evaluations`)
+- `evaluation_id` (FK a `loan_evaluations`)
+- `workflow_code`
 - `pipeline_version`
 - `trace_payload` (JSON)
 - `human_summary` (TEXT, nullable)
 - `created_at`
 
+#### `workflow_definitions`
+
+- `id` (UUID, PK)
+- `loan_product_code` (FK a `loan_products`)
+- `workflow_code` (VARCHAR)
+- `name` (VARCHAR)
+- `description` (TEXT, nullable)
+- `status` (VARCHAR: 'draft', 'active', 'inactive', 'retired')
+- `is_default` (BOOLEAN)
+- `effective_from` (TIMESTAMP, nullable)
+- `effective_to` (TIMESTAMP, nullable)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
+#### `variable_definitions`
+
+- `id` (UUID, PK)
+- `loan_product_code` (FK a `loan_products`)
+- `variable_key` (VARCHAR)
+- `label` (VARCHAR)
+- `description` (TEXT, nullable)
+- `variable_kind` (VARCHAR)
+- `data_type` (VARCHAR)
+- `required` (BOOLEAN)
+- `allowed_in_rules` (BOOLEAN)
+- `persist_in_evidence` (BOOLEAN)
+- `source_type` (VARCHAR: 'campaign_db', 'user_input', 'derived', 'constant')
+- `source_config` (JSON)
+- `validation_config` (JSON, nullable)
+- `created_by` (FK a `users`)
+- `created_at` (TIMESTAMP)
+
+#### `rule_versions`
+
+Debe permitir representar reglas declarativas en JSON/DSL restringido y asociarlas a workflows concretos o a reglas base heredables desde producto.
+
 #### `pipeline_strategies`
 
 - `id` (UUID, PK)
 - `loan_product_code` (FK a `loan_products`)
+- `workflow_code` (VARCHAR)
 - `version_number` (INT)
 - `graph_definition` (JSON)
 - `status` (VARCHAR: 'draft', 'active', 'deprecated')

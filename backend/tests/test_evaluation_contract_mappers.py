@@ -10,10 +10,11 @@ if str(ROOT) not in sys.path:
 class EvaluationContractMapperTests(unittest.TestCase):
     def test_api_request_maps_to_engine_request_without_http_types(self):
         from backend.app.api.mappers.evaluations import map_api_request_to_engine_request
-        from backend.app.api.schemas.contracts import EvaluationRequest
+        from backend.app.api.schemas.contracts import PLDEvaluationRequest
 
-        api_request = EvaluationRequest(
+        api_request = PLDEvaluationRequest(
             product_code="PLD",
+            workflow_code="standard",
             document={"document_type": "DNI", "document_number": "12345678"},
             requested_by={"username": "analista", "user_id": "u-1"},
             product_context={
@@ -21,6 +22,8 @@ class EvaluationContractMapperTests(unittest.TestCase):
                 "customer_type": "docente",
                 "validated_income": 1800,
             },
+            requested_rule_set_version="rules-v2",
+            requested_pipeline_version="pipe-v3",
             external_inputs=[
                 {
                     "source_type": "customer",
@@ -34,6 +37,9 @@ class EvaluationContractMapperTests(unittest.TestCase):
         engine_request = map_api_request_to_engine_request(api_request)
 
         self.assertEqual(engine_request.product_code, "PLD")
+        self.assertEqual(engine_request.workflow_code, "standard")
+        self.assertEqual(engine_request.requested_rule_set_version, "rules-v2")
+        self.assertEqual(engine_request.requested_pipeline_version, "pipe-v3")
         self.assertEqual(engine_request.document.document_number, "12345678")
         self.assertEqual(engine_request.requested_by.user_id, "u-1")
         self.assertEqual(engine_request.product_context["campaign_code"], "PLD-01")
@@ -68,7 +74,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
                 "term_months": 24,
                 "internal_score": 900,
             },
-            decision_trace=EngineDecisionTrace(product_code="PLD"),
+            decision_trace=EngineDecisionTrace(product_code="PLD", workflow_code="standard"),
         )
 
         response = map_engine_result_to_api_response(
@@ -92,7 +98,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
             alerts=[],
             blocks=["rule_blocked"],
             product_result={"lvr": 0.7},
-            decision_trace=EngineDecisionTrace(product_code="AUTO"),
+            decision_trace=EngineDecisionTrace(product_code="AUTO", workflow_code="standard"),
         )
 
         response = map_engine_result_to_api_response(
@@ -115,6 +121,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
 
         trace = EngineDecisionTrace(
             product_code="PLD",
+            workflow_code="standard",
             applied_versions=AppliedVersions(pipeline_version="pipe-v1"),
             alerts=["manual_review"],
             blocks=[],
@@ -124,6 +131,10 @@ class EvaluationContractMapperTests(unittest.TestCase):
                     node_type="eligibility",
                     outcome="eligible",
                     branch_selected="offer",
+                    rules_applied=["rule-eligibility"],
+                    consumed_variables=["campaign_code"],
+                    produced_variables=["segment_code"],
+                    produced_effects=["manual_review"],
                 )
             ],
             evidence=[
@@ -134,6 +145,10 @@ class EvaluationContractMapperTests(unittest.TestCase):
                     field_value="A1",
                 )
             ],
+            rules_applied=["rule-eligibility"],
+            consumed_variables=["campaign_code"],
+            produced_variables=["segment_code"],
+            produced_effects=["manual_review"],
         )
 
         response = map_engine_trace_to_api_response(
@@ -144,4 +159,12 @@ class EvaluationContractMapperTests(unittest.TestCase):
         self.assertEqual(response.trace_id, trace.trace_id)
         self.assertEqual(response.evaluation_id, "eval-3")
         self.assertEqual(response.nodes_executed[0].node_key, "eligibility")
+        self.assertEqual(response.nodes_executed[0].rules_applied, ["rule-eligibility"])
+        self.assertEqual(response.nodes_executed[0].consumed_variables, ["campaign_code"])
+        self.assertEqual(response.nodes_executed[0].produced_variables, ["segment_code"])
+        self.assertEqual(response.nodes_executed[0].produced_effects, ["manual_review"])
+        self.assertEqual(response.rules_applied, ["rule-eligibility"])
+        self.assertEqual(response.consumed_variables, ["campaign_code"])
+        self.assertEqual(response.produced_variables, ["segment_code"])
+        self.assertEqual(response.produced_effects, ["manual_review"])
         self.assertEqual(response.evidence[0].field_name, "segment_code")

@@ -35,19 +35,36 @@ class DecisionEngineContractTests(unittest.TestCase):
             EngineEvaluationRequest.model_fields["product_context"].annotation,
             dict[str, object],
         )
+        self.assertEqual(
+            EngineEvaluationRequest.model_fields["workflow_code"].annotation,
+            str,
+        )
 
     def test_engine_request_requires_shared_fields_only(self):
         from backend.app.domain.decision_engine import EngineEvaluationRequest
 
         payload = EngineEvaluationRequest(
             product_code="pld",
+            workflow_code="standard",
             document={"document_type": "dni", "document_number": "12345678"},
             requested_by={"username": "analista"},
             product_context={"campaign_code": "PLD-01"},
         )
 
         self.assertEqual(payload.product_code, "pld")
+        self.assertEqual(payload.workflow_code, "standard")
         self.assertEqual(payload.product_context, {"campaign_code": "PLD-01"})
+
+    def test_engine_request_rejects_missing_workflow_code(self):
+        from backend.app.domain.decision_engine import EngineEvaluationRequest
+
+        with self.assertRaises(ValidationError):
+            EngineEvaluationRequest(
+                product_code="pld",
+                document={"document_type": "dni", "document_number": "12345678"},
+                requested_by={"username": "analista"},
+                product_context={"campaign_code": "PLD-01"},
+            )
 
     def test_engine_request_rejects_missing_product_context(self):
         from backend.app.domain.decision_engine import EngineEvaluationRequest
@@ -55,6 +72,7 @@ class DecisionEngineContractTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             EngineEvaluationRequest(
                 product_code="pld",
+                workflow_code="standard",
                 document={"document_type": "dni", "document_number": "12345678"},
                 requested_by={"username": "analista"},
             )

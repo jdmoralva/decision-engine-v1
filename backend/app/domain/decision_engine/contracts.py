@@ -30,6 +30,7 @@ class AppliedVersions(BaseModel):
 
 class EngineEvaluationRequest(BaseModel):
     product_code: str = Field(min_length=1)
+    workflow_code: str = Field(min_length=1)
     document: EngineDocumentRef
     requested_by: EngineActorRef
     product_context: dict[str, object]
@@ -52,15 +53,24 @@ class EngineDecisionTraceNode(BaseModel):
     branch_selected: str | None = None
     alerts_added: list[str] = Field(default_factory=list)
     blocks_added: list[str] = Field(default_factory=list)
+    rules_applied: list[str] = Field(default_factory=list)
+    consumed_variables: list[str] = Field(default_factory=list)
+    produced_variables: list[str] = Field(default_factory=list)
+    produced_effects: list[str] = Field(default_factory=list)
     evidence_keys: list[str] = Field(default_factory=list)
 
 
 class EngineDecisionTrace(BaseModel):
     trace_id: str = Field(default_factory=lambda: str(uuid4()))
     product_code: str
+    workflow_code: str
     applied_versions: AppliedVersions = Field(default_factory=AppliedVersions)
     alerts: list[str] = Field(default_factory=list)
     blocks: list[str] = Field(default_factory=list)
+    rules_applied: list[str] = Field(default_factory=list)
+    consumed_variables: list[str] = Field(default_factory=list)
+    produced_variables: list[str] = Field(default_factory=list)
+    produced_effects: list[str] = Field(default_factory=list)
     nodes_executed: list[EngineDecisionTraceNode] = Field(default_factory=list)
     evidence: list[EngineDecisionEvidence] = Field(default_factory=list)
     final_outcome: str | None = None

@@ -39,6 +39,10 @@ class PLDEvaluationContext(BaseModel):
     employment_status: str | None = None
     validated_income: float | None = None
     reported_debt: float | None = None
+    initial_offered_amount: float | None = None
+    existing_consumption_balance: float | None = None
+    campaign_rate: float | None = None
+    campaign_term_months: int | None = None
 
 
 class AppliedVersions(BaseModel):
@@ -47,12 +51,48 @@ class AppliedVersions(BaseModel):
     pipeline_version: str | None = None
 
 
-class EvaluationRequest(BaseModel):
+class LoanConsultationRequest(BaseModel):
+    document: DocumentRef
+
+
+class LoanConsultationCustomer(BaseModel):
+    customer_id: str = Field(min_length=1)
+    full_name: str = Field(min_length=1)
+    customer_type: str | None = None
+    profile_code: str | None = None
+    sunedu_flag: str | None = None
+    employment_status: str | None = None
+    validated_income: float | None = None
+
+
+class LoanConsultationCampaign(BaseModel):
+    campaign_code: str = Field(min_length=1)
+    offered_amount: float | None = None
+    rate: float | None = None
+    term_months: int | None = None
+    installment_amount: float | None = None
+    metadata: dict[str, str] = Field(default_factory=dict)
+
+
+class LoanConsultationResponse(BaseModel):
     product_code: str = Field(min_length=1)
     document: DocumentRef
+    customer: LoanConsultationCustomer
+    campaigns: list[LoanConsultationCampaign] = Field(default_factory=list)
+
+
+class EvaluationRequestBase(BaseModel):
+    product_code: str = Field(min_length=1)
+    workflow_code: str = Field(min_length=1)
+    document: DocumentRef
     requested_by: ActorRef
-    product_context: PLDEvaluationContext
     external_inputs: list[ExternalInputSnapshotItem] = Field(default_factory=list)
+    requested_rule_set_version: str | None = None
+    requested_pipeline_version: str | None = None
+
+
+class PLDEvaluationRequest(EvaluationRequestBase):
+    product_context: PLDEvaluationContext
 
 
 class PLDEvaluationResult(BaseModel):
@@ -65,7 +105,7 @@ class PLDEvaluationResult(BaseModel):
     term_months: int | None = None
 
 
-class EvaluationResponse(BaseModel):
+class EvaluationResponseBase(BaseModel):
     evaluation_id: str
     product_code: str
     eligible: bool
@@ -73,13 +113,25 @@ class EvaluationResponse(BaseModel):
     blocks: list[str] = Field(default_factory=list)
     applied_versions: AppliedVersions
     decision_trace_id: str
+
+
+class PLDEvaluationResponse(EvaluationResponseBase):
     product_result: PLDEvaluationResult | None = None
+
+
+# Transitional aliases while routes and application code migrate
+EvaluationRequest = PLDEvaluationRequest
+EvaluationResponse = PLDEvaluationResponse
 
 
 class DecisionTraceNode(BaseModel):
     node_key: str
     node_type: str
     outcome: str
+    rules_applied: list[str] = Field(default_factory=list)
+    consumed_variables: list[str] = Field(default_factory=list)
+    produced_variables: list[str] = Field(default_factory=list)
+    produced_effects: list[str] = Field(default_factory=list)
 
 
 class DecisionTraceResponse(BaseModel):
@@ -89,6 +141,10 @@ class DecisionTraceResponse(BaseModel):
     applied_versions: AppliedVersions
     alerts: list[str] = Field(default_factory=list)
     blocks: list[str] = Field(default_factory=list)
+    rules_applied: list[str] = Field(default_factory=list)
+    consumed_variables: list[str] = Field(default_factory=list)
+    produced_variables: list[str] = Field(default_factory=list)
+    produced_effects: list[str] = Field(default_factory=list)
     nodes_executed: list[DecisionTraceNode] = Field(default_factory=list)
     evidence: list[ExternalInputSnapshotItem] = Field(default_factory=list)
 

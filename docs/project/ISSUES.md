@@ -2,7 +2,7 @@
 
 ## Proposito
 
-Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo entregable, manteniendo trazabilidad con el backlog del MVP PLD y con la base futura multiproducto.
+Este archivo convierte `BACKLOG.md` en una estructura de issues lista para gestion operativa. Cada issue agrupa una unidad de trabajo entregable, manteniendo trazabilidad con el backlog del MVP PLD y con la base multiproducto ya iniciada en la implementacion.
 
 ## Convenciones
 
@@ -302,17 +302,17 @@ Crear el modulo base del motor de decisiones desacoplado de FastAPI y de la UI, 
 
 ---
 
-## ISSUE-011 - Implementar reglas y formulas del motor PLD
+## ISSUE-011 - Implementar reglas y formulas PLD sobre motor multiproducto
 
 - Tipo: Domain / Engine
 - Prioridad: `P0`
-- Sprint sugerido: `Sprint 3`
+- Sprint sugerido: `Sprint 4`
 - Backlog origen: `E5-T5`, `E5-T6`, `E5-T7`, `E5-T3`, `E5-T3a`
 - Dependencias: `ISSUE-007`, `ISSUE-010`
 
 ### Objetivo
 
-Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y bloqueos del motor PLD.
+Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y bloqueos del runtime `PLD` sobre un motor cuyo core permanezca agnostico al producto.
 
 ### Entregables
 
@@ -321,11 +321,14 @@ Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y b
 - bloqueos y alertas
 - versionado de reglas y parametros aplicados
 - versionado de pipeline y `DecisionTrace`
+- preservacion del desacoplamiento entre core generico y metricas especificas de `PLD`
+- compatibilidad con reglas declarativas cargables desde configuracion persistida del motor
 
 ### Criterios de aceptacion
 
 - el motor produce resultados comparables al legacy para casos definidos
 - cada evaluacion registra version de reglas, parametros, pipeline y traza estructurada
+- metricas como `RCI`, `oferta`, `cuota`, `tasa` y `plazo` no quedan hardcodeadas como contrato universal del core
 
 ---
 
@@ -333,7 +336,7 @@ Implementar elegibilidad, segmento, RCI, oferta, cuota, tasa, plazo, alertas y b
 
 - Tipo: QA / Engine
 - Prioridad: `P0`
-- Sprint sugerido: `Sprint 3`
+- Sprint sugerido: `Sprint 4`
 - Backlog origen: `E5-T8`, `E9-T1`, `E9-T3`
 - Dependencias: `ISSUE-011`
 
@@ -358,13 +361,17 @@ Construir pruebas automatizadas del motor contra casos representativos del legac
 
 - Tipo: Backend
 - Prioridad: `P0`
-- Sprint sugerido: `Sprint 3`
+- Sprint sugerido: `Sprint 4`
 - Backlog origen: `E6-T1`, `E6-T2`
 - Dependencias: `ISSUE-007`, `ISSUE-009`
 
+- Estado documental actual: `reopened`
+- Referencia de implementacion previa: `docs/analysis/ISSUE-013.md`
+- Nota: la implementacion existente sera reevaluada luego del `Sprint 3` de saneamiento para validar su encaje con las nuevas especificaciones administrativas del motor.
+
 ### Objetivo
 
-Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML.
+Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML y alineada con la jerarquia multiproducto por `product_code`.
 
 ### Entregables
 
@@ -375,6 +382,8 @@ Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML.
 
 - el endpoint retorna datos de cliente y campanas en JSON estructurado
 - los errores son consistentes con el contrato definido
+- la implementacion no acopla la capa de aplicacion a `PLD` como unico producto posible
+- la solucion resultante permanece coherente con el baseline saneado de productos, workflows, variables y fuentes declarativas del motor
 
 ---
 
@@ -382,13 +391,13 @@ Exponer la consulta de cliente y campanas PLD mediante API desacoplada de HTML.
 
 - Tipo: Backend
 - Prioridad: `P0`
-- Sprint sugerido: `Sprint 3`
+- Sprint sugerido: `Sprint 4`
 - Backlog origen: `E6-T3`, `E6-T4`, `E6-T4a`
 - Dependencias: `ISSUE-011`, `ISSUE-012`, `ISSUE-009`
 
 ### Objetivo
 
-Exponer la evaluacion del motor como caso de uso persistido, junto con su traza estructurada.
+Exponer la evaluacion del motor como caso de uso persistido, junto con su traza estructurada, reutilizando la base multiproducto ya existente en dominio y contratos.
 
 ### Entregables
 
@@ -410,7 +419,7 @@ Exponer la evaluacion del motor como caso de uso persistido, junto con su traza 
 
 - Tipo: Backend
 - Prioridad: `P0`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E6-T5`, `E6-T6`
 - Dependencias: `ISSUE-014`
 
@@ -435,7 +444,7 @@ Registrar solicitudes de credito con validaciones de negocio y trazabilidad.
 
 - Tipo: Backend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E6-T7`, `E6-T8`, `E6-T9`, `E6-T10`
 - Dependencias: `ISSUE-015`
 
@@ -463,7 +472,7 @@ Exponer la bandeja de solicitudes y las acciones de anulacion y cambio de estado
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E7-T1`, `E4-T3`
 - Dependencias: `ISSUE-005`, `ISSUE-008`
 
@@ -490,7 +499,7 @@ Construir la base navegable del frontend elegido, con manejo de sesion y protecc
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E7-T3`, `E7-T4`, `E7-T5`
 - Dependencias: `ISSUE-017`, `ISSUE-013`, `ISSUE-014`
 
@@ -516,7 +525,7 @@ Permitir consulta, evaluacion y visualizacion estructurada del resultado PLD des
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E7-T6`, `E7-T7`, `E7-T8`
 - Dependencias: `ISSUE-018`, `ISSUE-016`
 
@@ -542,7 +551,7 @@ Completar el flujo frontend de registro de solicitud, bandeja operativa y accion
 
 - Tipo: Security / Observability
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E2-T7`, `E4-T6`, `E4-T7`, `E9-T6`, `E9-T7`
 - Dependencias: `ISSUE-009`, `ISSUE-016`
 
@@ -570,7 +579,7 @@ Activar auditoria de acciones sensibles, logs estructurados y controles de segur
 
 - Tipo: QA
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E9-T4`, `E9-T5`
 - Dependencias: `ISSUE-019`, `ISSUE-020`
 
@@ -596,7 +605,7 @@ Cubrir el MVP con pruebas automatizadas de integracion y al menos un flujo E2E e
 
 - Tipo: Platform / DevOps
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E10-T1`, `E10-T2`, `E10-T3`, `E10-T4`
 - Dependencias: `ISSUE-004`, `ISSUE-005`, `ISSUE-021`
 
@@ -623,7 +632,7 @@ Preparar la receta reproducible de despliegue inicial y la automatizacion minima
 
 - Tipo: Backend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 4`
+- Sprint sugerido: `Sprint 5`
 - Backlog origen: `E6-T12`
 - Dependencias: `ISSUE-015`, `ISSUE-009`
 
@@ -650,7 +659,7 @@ Habilitar carga, listado y descarga de adjuntos ZIP por solicitud usando `filesy
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E7-T10`
 - Dependencias: `ISSUE-019`, `ISSUE-023`
 
@@ -675,7 +684,7 @@ Exponer en la UI la carga, consulta y descarga de adjuntos ZIP por solicitud.
 
 - Tipo: Backend / AI
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E12-T7`
 - Dependencias: `ISSUE-015`, `ISSUE-034`
 
@@ -701,7 +710,7 @@ Agregar asistencia AI al registro de solicitud para revisar consistencia del com
 
 - Tipo: Backend / AI
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E12-T8`
 - Dependencias: `ISSUE-016`, `ISSUE-034`
 
@@ -777,7 +786,7 @@ Definir la precedencia entre `docs/SPEC.md`, legacy, Excel de parametros y decis
 
 - Tipo: Backend / Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E6-T11`, `E7-T9`
 - Dependencias: `ISSUE-016`, `ISSUE-019`
 
@@ -801,7 +810,7 @@ Agregar exportacion desacoplada del DOM para la bandeja de solicitudes.
 
 - Tipo: Admin / Data
 - Prioridad: `P2`
-- Sprint sugerido: `Sprint 6`
+- Sprint sugerido: `Sprint 7`
 - Backlog origen: `E8-T1`, `E8-T2`
 - Dependencias: `ISSUE-006`, `ISSUE-007`
 
@@ -826,7 +835,7 @@ Permitir cargar parametros del motor desde Excel de forma controlada y versionad
 
 - Tipo: Data Strategy
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 6`
+- Sprint sugerido: `Sprint 7`
 - Backlog origen: `E8-T3`, `E8-T4`
 - Dependencias: `ISSUE-001`
 
@@ -851,13 +860,13 @@ Dejar formalizada la estrategia de base limpia del MVP y el uso del legacy solo 
 
 - Tipo: Architecture
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 6`
-- Backlog origen: `E11-T1`, `E11-T2`, `E11-T3`
+- Sprint sugerido: `Sprint 3`
+- Backlog origen: `E11-T1`, `E11-T2`, `E11-T3`, `E11-T4`, `E11-T5`, `E11-T6`
 - Dependencias: `ISSUE-001`, `ISSUE-006`, `ISSUE-010`
 
 ### Objetivo
 
-Dejar definida y validada la estrategia tecnica para incorporar otros tipos de prestamo sobre la misma plataforma sin comprometer el MVP PLD.
+Consolidar y validar la estrategia tecnica para incorporar otros tipos de prestamo sobre la misma plataforma, partiendo de una base multiproducto ya presente en el repositorio sin comprometer el MVP PLD.
 
 ### Entregables
 
@@ -865,12 +874,17 @@ Dejar definida y validada la estrategia tecnica para incorporar otros tipos de p
 - estrategia de extension del motor por producto
 - lineamientos de extension de API y persistencia
 - evidencia tecnica de onboarding de un segundo producto
+- definicion del ciclo `draft -> active` para productos y workflows
+- definicion del catalogo de variables por producto y de la herencia hacia workflows
+- definicion de fuentes declarativas de input (`campaign_db`, `user_input`, `derived`, `constant`)
 
 ### Criterios de aceptacion
 
 - la estrategia evita hardcode estructural de PLD en modulos compartidos
 - queda claro como introducir nuevos productos sin romper contratos base ni seguridad compartida
 - queda validado tecnicamente que un segundo producto puede convivir con el pipeline configurable del MVP
+- la documentacion distingue entre fundaciones ya implementadas y capacidades aun pendientes de administracion o onboarding real
+- queda definido que productos y workflows no requieren aprobacion de TI para su alta, pero si validacion y activacion posterior por negocio o riesgos autorizados
 
 ---
 
@@ -928,7 +942,7 @@ Crear el cliente de integracion con el proveedor del modelo de lenguaje, aisland
 
 - Tipo: Backend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 3`
+- Sprint sugerido: `Sprint 4`
 - Backlog origen: `E12-T4`, `E12-T5`
 - Dependencias: `ISSUE-014`, `ISSUE-034`
 
@@ -954,7 +968,7 @@ Implementar el endpoint que traduce una evaluacion PLD a texto explicativo y sug
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E12-T6`
 - Dependencias: `ISSUE-018`, `ISSUE-019`, `ISSUE-025`, `ISSUE-026`, `ISSUE-035`
 
@@ -982,18 +996,18 @@ Mostrar en la UI las capacidades AI del MVP de forma clara e interactiva, sin me
 
 - Tipo: Backend / Data
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 5`
+- Sprint sugerido: `Sprint 6`
 - Backlog origen: `E13-T1`, `E13-T2`, `E13-T4`, `E13-T5`
 - Dependencias: `ISSUE-007`, `ISSUE-014`, `ISSUE-016`
 
 ### Objetivo
 
-Implementar el almacenamiento inmutable de eventos de decision y la traza estructurada de evaluaciones.
+Implementar el almacenamiento inmutable de eventos de decision y la traza estructurada de evaluaciones sobre fundaciones de modelo ya existentes.
 
 ### Entregables
 
-- modelo SQLAlchemy para `decision_events`
-- modelo SQLAlchemy para `decision_traces`
+- integracion operativa de modelos SQLAlchemy ya existentes para `decision_events`
+- integracion operativa de modelos SQLAlchemy ya existentes para `decision_traces`
 - servicio de event store con escritura y consulta
 - integracion con evaluaciones y cambios de estado del MVP
 - integracion de `DecisionTrace` con evaluaciones y AI
@@ -1007,22 +1021,26 @@ Implementar el almacenamiento inmutable de eventos de decision y la traza estruc
 
 ---
 
-## ISSUE-038 - Implementar BRMS: reglas y configuracion de flujo
+## ISSUE-038 - Implementar BRMS: productos, workflows, variables, reglas y configuracion de flujo
 
 - Tipo: Backend / Engine
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 6`
+- Sprint sugerido: `Sprint 7`
 - Backlog origen: `E14-T1`, `E14-T2`, `E14-T3`, `E14-T4`
 - Dependencias: `ISSUE-007`, `ISSUE-011`
 
 ### Objetivo
 
-Almacenar las reglas de negocio y la configuracion gobernada de flujo en base de datos con versionado completo y vigencia por producto.
+Almacenar y administrar productos, workflows, variables, reglas de negocio y configuracion gobernada de flujo en base de datos con versionado completo y vigencia por producto, aprovechando fundaciones de modelo ya existentes.
 
 ### Entregables
 
-- modelo SQLAlchemy para `rule_sets` y `rule_versions`
-- modelo SQLAlchemy para `pipeline_strategies` y `pipeline_nodes`
+- activacion funcional de modelos SQLAlchemy ya existentes para `rule_sets` y `rule_versions`
+- activacion funcional de modelos SQLAlchemy ya existentes para `pipeline_strategies` y `pipeline_nodes`
+- alta administrable de productos y workflows en estado `draft`
+- catalogo administrable de variables por producto
+- reglas declarativas en JSON/DSL restringido por workflow
+- resolucion de herencia de variables y reglas entre producto y workflow
 - endpoints y servicio CRUD de reglas con versionado
 - migracion de reglas PLD actuales al nuevo esquema
 
@@ -1032,6 +1050,9 @@ Almacenar las reglas de negocio y la configuracion gobernada de flujo en base de
 - cada cambio genera una nueva version sin perder la anterior
 - los rule sets pueden activarse y desactivarse por periodo
 - las estrategias de pipeline quedan versionadas y sujetas a validacion de topologia
+- productos y workflows pueden registrarse sin aprobacion de TI y quedan inactivos hasta su activacion por negocio o riesgos autorizados
+- el catalogo de variables pertenece al producto y los workflows pueden heredar variables y reglas base con resolucion explicita
+- las variables de `campaign_db` se resuelven desde tablas internas del sistema nuevo
 
 ---
 
@@ -1039,20 +1060,21 @@ Almacenar las reglas de negocio y la configuracion gobernada de flujo en base de
 
 - Tipo: Engine / Architecture
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 7`
+- Sprint sugerido: `Sprint 8`
 - Backlog origen: `E14-T5`, `E14-T6`, `E14-T7`, `E14-T7a`
 - Dependencias: `ISSUE-010`, `ISSUE-038`
 
 ### Objetivo
 
-Reestructurar el motor de decisiones como un pipeline configurable por nodos gobernados.
+Completar la convergencia del motor de decisiones hacia un pipeline configurable por nodos gobernados sobre una base de orquestacion y topologia ya implementada.
 
 ### Entregables
 
-- interfaz `DecisionNode` y orquestador de pipeline
+- consolidacion de la interfaz `DecisionNode` y del orquestador de pipeline ya existentes
 - 5 nodos base implementados: Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing
-- tablas `pipeline_strategies` y `pipeline_nodes` con seleccion de pipeline por producto
-- validacion de topologia y branching controlado
+- seleccion operativa de pipeline por producto desde persistencia
+- validacion de topologia y branching controlado ya integradas al flujo administrable
+- integracion del runtime con catalogo de variables por producto, herencia hacia workflow y reglas declarativas resueltas por version activa
 
 ### Criterios de aceptacion
 
@@ -1060,30 +1082,92 @@ Reestructurar el motor de decisiones como un pipeline configurable por nodos gob
 - cada nodo es independiente y testeable por separado
 - los resultados son equivalentes a la implementacion anterior
 - se puede configurar un pipeline diferente por producto sin permitir grafos invalidos
+- la evaluacion resuelve correctamente producto, workflow, variables heredadas, fuentes de input y reglas activas antes de ejecutar el pipeline
 
 ---
 
-## ISSUE-040 - UI Administrativa de Reglas y Flujo
+## ISSUE-040 - UI Administrativa de Productos, Workflows, Variables, Reglas y Flujo
 
 - Tipo: Frontend
 - Prioridad: `P1`
-- Sprint sugerido: `Sprint 7`
+- Sprint sugerido: `Sprint 8`
 - Backlog origen: `E14-T8`, `E14-T9`, `E14-T10`, `E14-T11`
 - Dependencias: `ISSUE-017`, `ISSUE-038`, `ISSUE-039`
 
 ### Objetivo
 
-Exponer una interfaz web para que administradores gestionen reglas de negocio y secuencia del flujo con versionado, simulacion y flujo de aprobacion.
+Exponer una interfaz web para que administradores de negocio y riesgos gestionen productos, workflows, variables, reglas de negocio y secuencia del flujo con versionado, simulacion y flujo de activacion.
 
 ### Entregables
 
 - CRUD de `rule_sets` y `rule_versions` en frontend
+- CRUD de productos y workflows
+- CRUD de variables por producto y configuracion de fuentes de input
 - UI gobernada de `pipeline_strategies` y `pipeline_nodes`
 - sandbox de pruebas con casos historicos
-- flujo de aprobacion de cambios de reglas y flujo
 
 ### Criterios de aceptacion
 
+- negocio o riesgos puede crear productos y workflows en `draft` y activarlos desde la UI sin aprobacion de TI
+- la UI permite administrar variables por producto y visualizar su herencia hacia workflows
+- la UI permite definir reglas declarativas bajo el DSL restringido soportado por backend
+- la simulacion soporta inputs mixtos provenientes de `campaign_db` y `user_input`
 - admin puede listar, crear, editar y versionar reglas desde UI
 - admin puede simular cambios en reglas y flujo contra casos historicos antes de activarlos
 - cambios a reglas activas y pipelines activos requieren aprobacion de un supervisor
+
+---
+
+## ISSUE-041 - Alinear modelo de datos y contratos base del motor con nuevas especificaciones administrativas
+
+- Tipo: Architecture / Data / Engine
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 3`
+- Backlog origen: `E11-T4`, `E11-T5`, `E11-T6`
+- Dependencias: `ISSUE-006`, `ISSUE-007`, `ISSUE-010`, `ISSUE-032`
+
+### Objetivo
+
+Sanear la brecha entre el modelo actual del repositorio y las nuevas especificaciones del motor administrable, alineando contratos y persistencia base para productos, workflows, variables, fuentes de input y ciclo `draft -> active`.
+
+### Entregables
+
+- definicion de entidades canonicas para `workflow_definitions` y `variable_definitions`
+- definicion de campos faltantes en `loan_evaluations`, `decision_traces` y estrategias de pipeline para soportar `workflow_code` y versionado adicional
+- definicion de contratos base para variables por producto y fuentes declarativas de input
+- alineacion documental entre persistencia, contratos y trazabilidad del motor
+
+### Criterios de aceptacion
+
+- existe una ruta clara y consistente para representar productos, workflows y variables sin hardcode
+- queda explicito como persistir el ciclo `draft -> active` para productos y workflows
+- quedan definidos los contratos minimos para `campaign_db`, `user_input`, `derived` y `constant`
+- la especificacion resultante no contradice el core multiproducto ya implementado
+
+---
+
+## ISSUE-042 - Alinear runtime base del motor con productos, workflows, variables y fuentes declarativas
+
+- Tipo: Engine / Architecture
+- Prioridad: `P0`
+- Sprint sugerido: `Sprint 3`
+- Backlog origen: `E14-T4a`, `E14-T4b`, `E14-T4c`, `E14-T4d`
+- Dependencias: `ISSUE-010`, `ISSUE-032`, `ISSUE-041`
+
+### Objetivo
+
+Definir y dejar preparado el baseline tecnico para que el runtime del motor pueda resolver producto, workflow, catalogo de variables, herencia y fuentes declarativas antes de continuar con nuevas funcionalidades PLD sobre supuestos desactualizados.
+
+### Entregables
+
+- definicion de resolucion de runtime con herencia de variables y reglas desde producto hacia workflow
+- definicion del punto de integracion del JSON/DSL restringido de reglas con el runtime del motor
+- validaciones minimas para activacion de productos, workflows, variables y reglas
+- estrategia de trazabilidad de fuentes consumidas por evaluacion
+
+### Criterios de aceptacion
+
+- el baseline del runtime resuelve de forma coherente `product_code`, `workflow_code`, variables heredadas y reglas activas
+- queda definida la secuencia de validacion previa a la activacion de configuraciones administrables
+- `DecisionTrace` y snapshot de evaluacion contemplan las fuentes materiales consumidas por el motor
+- el equipo puede continuar con implementaciones PLD sin seguir ampliando brechas contra las nuevas especificaciones

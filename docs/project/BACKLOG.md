@@ -2,7 +2,7 @@
 
 ## 0. Proposito
 
-Este backlog convierte `docs/SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir la nueva plataforma `Decision Engine`, cuyo MVP inicial cubre `PLD / solicitudes de credito`.
+Este backlog convierte `docs/SPEC.md` en un plan de ejecucion tecnico. No reemplaza la especificacion original: la descompone en epicas, historias, tareas y criterios de aceptacion para construir la nueva plataforma `Decision Engine`, cuyo MVP inicial cubre funcionalmente `PLD / solicitudes de credito` sobre una base tecnica multiproducto.
 
 ## 1. Convenciones de trabajo
 
@@ -56,7 +56,7 @@ Objetivo:
 
 Objetivo:
 
-- aislar y reproducir las reglas criticas del flujo PLD
+- aislar y reproducir las reglas criticas del flujo PLD sobre un motor multiproducto
 
 ### Hito 4. Flujo PLD MVP completo
 
@@ -384,7 +384,7 @@ Tareas:
 
 ---
 
-## E5. Motor de decisiones PLD
+## E5. Motor de decisiones multiproducto con primer runtime PLD
 
 Prioridad: `P0`
 
@@ -456,13 +456,13 @@ Tareas:
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E5-T4`, `E3-T7`
-  - Aceptacion: motor reproduce marcas equivalentes para los casos canonicos.
+  - Aceptacion: el runtime `PLD` reproduce marcas equivalentes para los casos canonicos sin introducir acoplamiento estructural de PLD al core.
 
 - [ ] `E5-T6` Implementar calculo de RCI, oferta, cuota, tasa y plazo.
   - Prioridad: `P0`
   - Estimacion: `L`
   - Dependencias: `E5-T5`
-  - Aceptacion: resultados comparables con la logica de `validate2` para casos de prueba definidos.
+  - Aceptacion: resultados comparables con la logica de `validate2` para casos de prueba definidos, modelados como salidas del runtime `PLD` y no como campos universales del motor.
 
 - [ ] `E5-T7` Implementar bloqueos y alertas de solicitud.
   - Prioridad: `P0`
@@ -488,19 +488,21 @@ Resultado esperado:
 
 - API de consulta PLD operativa y desacoplada de HTML
 
+Nota de estado: existe una implementacion previa de consulta por producto, pero esta historia queda reabierta a nivel documental para reevaluacion despues del `Sprint 3` de saneamiento y su alineacion con el baseline actualizado del motor.
+
 Tareas:
 
 - [ ] `E6-T1` Definir servicio de consulta de cliente PLD.
   - Prioridad: `P0`
   - Estimacion: `S`
   - Dependencias: `E1-T4`, `E3-T3`
-  - Aceptacion: servicio retorna datos de cliente y campanas en contrato estable.
+  - Aceptacion: servicio retorna datos de cliente y campanas en contrato estable y queda alineado con el baseline saneado del motor y sus fuentes declarativas de input.
 
 - [ ] `E6-T2` Implementar endpoint `POST /api/v1/loans/{product_code}/consultas`.
   - Prioridad: `P0`
   - Estimacion: `M`
   - Dependencias: `E6-T1`, `E4-T5`
-  - Aceptacion: endpoint devuelve datos esperados con errores estructurados.
+  - Aceptacion: endpoint devuelve datos esperados con errores estructurados y supera la reevaluacion posterior al saneamiento del motor.
 
 ### Historia E6-H2. Evaluacion PLD
 
@@ -858,6 +860,8 @@ Tareas:
 
 Prioridad: `P1`
 
+Nota de estado: la base tecnica multiproducto ya esta presente en contratos, routing por `product_code`, registry del motor y modelo de datos compartido. Esta epica ya no representa la creacion inicial de esa base, sino su consolidacion documental y la validacion de onboarding de un producto adicional.
+
 ### Historia E11-H1. Base extensible de plataforma
 
 Resultado esperado:
@@ -883,6 +887,24 @@ Tareas:
   - Estimacion: `M`
   - Dependencias: `E11-T2`, `E14-T7`
   - Aceptacion: existe evidencia tecnica de que un segundo producto puede configurarse con contratos compartidos, estrategia de pipeline propia y sin reestructurar el motor base.
+
+- [ ] `E11-T4` Definir ciclo de vida administrable de productos y workflows.
+  - Prioridad: `P1`
+  - Estimacion: `S`
+  - Dependencias: `E11-T2`
+  - Aceptacion: queda documentado que productos y workflows se crean en `draft`, pasan validaciones automaticas y se activan luego por negocio o riesgos sin aprobacion de TI.
+
+- [ ] `E11-T5` Definir catalogo de variables por producto y reglas de herencia hacia workflows.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E11-T2`
+  - Aceptacion: queda definido que el catalogo de variables es por producto y que los workflows pueden heredar variables y reglas base de producto con resolucion explicita y versionada.
+
+- [ ] `E11-T6` Definir resolucion declarativa de fuentes de input del motor.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E11-T5`, `E1-T6b`
+  - Aceptacion: queda definido el soporte minimo para `campaign_db`, `user_input`, `derived` y `constant`, incluyendo validacion y manejo de dato faltante.
 
 ---
 
@@ -957,13 +979,15 @@ Tareas:
 
 Prioridad: `P1`
 
+Nota de estado: la base de persistencia para `decision_events` y `decision_traces` ya existe en el modelo de datos; lo pendiente en esta epica es completar su uso operativo, escritura y consulta end-to-end.
+
 ### Historia E13-H1. Implementacion del event store
 
 Resultado esperado:
 - cada evaluacion y cambio de estado se persiste como evento inmutable
 
 Tareas:
-- [ ] `E13-T1` Diseñar e implementar el modelo de datos para `decision_events`.
+- [x] `E13-T1` Diseñar e implementar el modelo de datos para `decision_events`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E3-T3`
@@ -985,7 +1009,7 @@ Resultado esperado:
 - cada evaluacion deja una traza estructurada consumible por AI y auditoria humana
 
 Tareas:
-- [ ] `E13-T4` Diseñar e implementar el modelo de datos para `decision_traces`.
+- [x] `E13-T4` Diseñar e implementar el modelo de datos para `decision_traces`.
   - Prioridad: `P1`
   - Estimacion: `S`
   - Dependencias: `E3-T5a`
@@ -999,6 +1023,8 @@ Tareas:
 ---
 
 ## E14. Business Rules Management System (BRMS)
+
+Nota de estado: el repositorio ya cuenta con fundaciones de modelo para `rule_sets`, `rule_versions`, `pipeline_strategies` y `pipeline_nodes`. Esta epica debe enfocarse en administracion, activacion, importacion y runtime gobernado sobre esas fundaciones.
 
 Prioridad: `P1`
 
@@ -1028,6 +1054,30 @@ Tareas:
   - Estimacion: `L`
   - Dependencias: `E14-T2`, `ISSUE-011`
   - Aceptacion: todas las reglas del motor PLD migradas a la nueva estructura y funcionando en pipeline.
+
+- [ ] `E14-T4a` Implementar DSL restringido para reglas declarativas del motor.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T1`, `E11-T5`
+  - Aceptacion: las reglas se almacenan y validan en un JSON/DSL restringido, sin codigo arbitrario, con referencias controladas a variables declaradas.
+
+- [ ] `E14-T4b` Implementar catalogo administrable de variables por producto y binding de fuentes.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E11-T5`, `E11-T6`, `E14-T1`
+  - Aceptacion: el backend permite crear variables por producto con `source_type`, `source_config`, validaciones y metadatos de evidencia.
+
+- [ ] `E14-T4c` Implementar alta y activacion de productos y workflows en modo `draft -> active`.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E11-T4`, `E14-T1`
+  - Aceptacion: productos y workflows pueden registrarse sin aprobacion de TI, quedan en `draft` al crearse y solo se habilitan para evaluacion tras activacion por negocio o riesgos autorizados.
+
+- [ ] `E14-T4d` Implementar resolucion de herencia de variables y reglas entre producto y workflow.
+  - Prioridad: `P1`
+  - Estimacion: `M`
+  - Dependencias: `E14-T4a`, `E14-T4b`, `E14-T4c`
+  - Aceptacion: el runtime resuelve de forma explicita y versionada las variables y reglas heredadas del producto antes de evaluar un workflow.
 
 ### Historia E14-H2. Pipeline configurable por nodos
 
@@ -1068,6 +1118,18 @@ Tareas:
   - Estimacion: `L`
   - Dependencias: `E14-T3`, `E7-T1`
   - Aceptacion: admin puede listar, crear, editar y versionar reglas desde la UI.
+
+- [ ] `E14-T8a` Implementar UI administrativa de productos y workflows.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T4c`, `E7-T1`
+  - Aceptacion: negocio o riesgos puede crear productos y workflows en `draft`, revisar validaciones y activarlos desde la UI sin aprobacion de TI.
+
+- [ ] `E14-T8b` Implementar UI administrativa de variables por producto y fuentes de input.
+  - Prioridad: `P1`
+  - Estimacion: `L`
+  - Dependencias: `E14-T4b`, `E7-T1`
+  - Aceptacion: la UI permite administrar variables por producto, seleccionar `campaign_db` o `user_input` como fuente y visualizar herencia hacia workflows.
 - [ ] `E14-T9` Implementar sandbox de pruebas de reglas en la UI.
   - Prioridad: `P1`
   - Estimacion: `L`

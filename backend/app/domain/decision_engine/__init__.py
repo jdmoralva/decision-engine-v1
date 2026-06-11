@@ -11,11 +11,14 @@ from backend.app.domain.decision_engine.contracts import (
     EngineEvaluationResult,
     EngineExternalInput,
 )
+from backend.app.domain.decision_engine.bootstrap import build_default_decision_engine_registry
 from backend.app.domain.decision_engine.exceptions import (
     DecisionEngineError,
     DecisionTopologyError,
     EngineRegistryError,
     EngineValidationError,
+    UnknownProductError,
+    UnknownWorkflowError,
 )
 from backend.app.domain.decision_engine.nodes import (
     DecisionNode,
@@ -28,6 +31,20 @@ from backend.app.domain.decision_engine.pipeline import (
     PipelineNodeDefinition,
     PipelineStrategy,
 )
+from backend.app.domain.decision_engine.pld import (
+    build_pld_nodes,
+    build_pld_product_definition,
+    build_pld_strategy,
+    compile_pld_runtime,
+)
+from backend.app.domain.decision_engine.runtime_definitions import (
+    ProductDefinition,
+    ProductRuntime,
+    RuleDefinition,
+    VariableDefinition,
+    WorkflowDefinition,
+    compile_product_runtime,
+)
 from backend.app.domain.decision_engine.registry import (
     DecisionEngineRegistry,
     ProductEngineRuntime,
@@ -35,6 +52,11 @@ from backend.app.domain.decision_engine.registry import (
 
 __all__ = [
     "AppliedVersions",
+    "build_default_decision_engine_registry",
+    "build_pld_nodes",
+    "build_pld_product_definition",
+    "build_pld_strategy",
+    "compile_pld_runtime",
     "DecisionEngineError",
     "DecisionEngineOrchestrator",
     "DecisionEngineRegistry",
@@ -54,6 +76,14 @@ __all__ = [
     "NodeExecutionResult",
     "PipelineNodeDefinition",
     "PipelineStrategy",
+    "ProductDefinition",
     "ProductEngineRuntime",
+    "ProductRuntime",
+    "RuleDefinition",
+    "UnknownProductError",
+    "UnknownWorkflowError",
+    "VariableDefinition",
+    "WorkflowDefinition",
+    "compile_product_runtime",
     "normalize_evaluation_request",
 ]

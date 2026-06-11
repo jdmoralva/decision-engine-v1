@@ -2,7 +2,7 @@
 
 ## Proposito
 
-Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejecutar el MVP del nuevo sistema, cuyo primer producto soportado es `PLD`.
+Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejecutar el MVP del nuevo sistema, cuyo primer producto soportado es `PLD`, sobre una base tecnica ya orientada a multiples productos.
 
 ## Supuestos
 
@@ -63,6 +63,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - Sprint 1 queda cerrado como fase de descubrimiento, contratos base y bootstrap inicial.
 - Quedan consolidados el alcance del MVP, los contratos iniciales, la estructura base, el backend inicial, el frontend inicial, el modelo de datos inicial y las politicas base de AI.
 - El equipo puede continuar con Sprint 2 sin reabrir decisiones estructurales del MVP.
+- Nota de rebaseline: este cierre corresponde a las especificaciones originales vigentes al momento del sprint. Las nuevas especificaciones administrativas del motor no reabren Sprint 1 y se canalizan a un sprint posterior de saneamiento.
 
 ---
 
@@ -103,17 +104,48 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 - El backend ya cuenta con ORM y migraciones, autenticacion temporal, RBAC base, core aislado del motor de decisiones y servicio base de conexion a LLM con proveedor activo configurable.
 - La documentacion de cierre tecnico relevante queda en `docs/analysis/ISSUE-007.md`, `docs/analysis/ISSUE-008.md`, `docs/analysis/ISSUE-009.md`, `docs/analysis/ISSUE-010.md` y `docs/analysis/ISSUE-034.md`.
 - El equipo puede avanzar a `Sprint 3` sin reabrir decisiones estructurales de seguridad, motor o integracion base con LLM.
+- Nota de rebaseline: este cierre corresponde a las especificaciones originales vigentes al momento del sprint. Las nuevas especificaciones administrativas del motor no reabren Sprint 2 y se canalizan a un sprint posterior de saneamiento.
 
 ---
 
-## Sprint 3 - Motor PLD y APIs nucleares
+## Sprint 3 - Saneamiento del motor frente a las nuevas especificaciones
 
 - Estado: `planned`
-- Objetivo: implementar las reglas centrales del negocio y exponer consulta, evaluacion, traza y explicacion AI
+- Objetivo: sanear las brechas entre la implementacion actual del motor y las nuevas especificaciones administrativas, sin reabrir los sprints ya cerrados
 
 ### Issues comprometidos
 
-- `ISSUE-011` Implementar reglas y formulas del motor PLD
+- `ISSUE-032` Definir y validar base multiproducto de la plataforma
+- `ISSUE-041` Alinear modelo de datos y contratos base del motor con nuevas especificaciones administrativas
+- `ISSUE-042` Alinear runtime base del motor con productos, workflows, variables y fuentes declarativas
+
+### Resultado esperado
+
+- baseline tecnico actualizado para productos y workflows en `draft -> active`
+- catalogo de variables por producto definido y alineado con persistencia y contratos
+- estrategia clara para herencia de variables y reglas entre producto y workflow
+- resolucion declarativa de inputs desde `campaign_db`, `user_input`, `derived` y `constant`
+- brechas criticas saneadas antes de continuar con funcionalidades PLD sobre supuestos desactualizados
+
+### Riesgos del sprint
+
+- subestimar el impacto del nuevo modelo administrativo sobre contratos y persistencia
+- introducir deuda adicional si se continua con features PLD sin sanear primero las brechas base
+
+### Criterio de cierre
+
+- las nuevas especificaciones del motor quedan aterrizadas en un baseline tecnico coherente y trazable para continuar la implementacion sin contradicciones mayores
+
+---
+
+## Sprint 4 - Runtime PLD y APIs nucleares
+
+- Estado: `active`
+- Objetivo: completar las reglas centrales del negocio sobre el core multiproducto y exponer evaluacion, traza y explicacion AI, partiendo de la consulta por producto ya implementada
+
+### Issues comprometidos
+
+- `ISSUE-011` Implementar reglas y formulas PLD sobre motor multiproducto
 - `ISSUE-012` Crear suite de regresion del motor
 - `ISSUE-013` Implementar API de consulta PLD
 - `ISSUE-014` Implementar API de evaluacion PLD
@@ -121,7 +153,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ### Resultado esperado
 
-- motor PLD funcional y probado
+- runtime PLD funcional y probado sobre core generico
 - consulta PLD disponible por API
 - evaluacion PLD disponible por API
 - `DecisionTrace` consultable por API
@@ -130,6 +162,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 ### Riesgos del sprint
 
 - diferencias entre resultados del legacy y el nuevo motor
+- riesgo de mantener contratos HTTP o documentacion mas PLD-centricos que la base tecnica real
 - reglas de negocio implicitas no detectadas a tiempo
 
 ### Criterio de cierre
@@ -138,7 +171,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ---
 
-## Sprint 4 - Solicitudes, UI operativa y ZIP backend
+## Sprint 5 - Solicitudes, UI operativa y ZIP backend
 
 - Estado: `planned`
 - Objetivo: completar registro de solicitud, bandeja base, experiencia frontend principal y adjuntos ZIP por backend
@@ -170,7 +203,7 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ---
 
-## Sprint 5 - Flujo operativo ampliado, AI completa y salida controlada
+## Sprint 6 - Flujo operativo ampliado, AI completa y salida controlada
 
 - Estado: `planned`
 - Objetivo: cerrar el flujo operativo del MVP, completar AI asistiva, trazabilidad estructurada y dejar lista la salida controlada
@@ -209,62 +242,65 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 ---
 
-## Sprint 6 - BRMS y extensibilidad de plataforma
+## Sprint 7 - BRMS y consolidacion de extensibilidad
 
 - Estado: `planned`
-- Objetivo: consolidar versionado de reglas y flujo, importacion de parametros y base multiproducto
+- Objetivo: consolidar versionado de reglas y flujo, alta administrable de productos y workflows, catalogo de variables por producto e importacion de parametros sobre una base multiproducto ya iniciada
 
 ### Issues comprometidos
 
 - `ISSUE-030` Importador de parametros desde Excel
 - `ISSUE-031` Documentar estrategia de base limpia y referencia legacy
-- `ISSUE-032` Definir base multiproducto de la plataforma
-- `ISSUE-038` Implementar BRMS: catalogacion de reglas
+- `ISSUE-038` Implementar BRMS: productos, workflows, variables, reglas y configuracion de flujo
 
 ### Resultado esperado
 
 - importador versionado de parametros
 - base limpia documentada y legacy acotado a uso referencial
-- lineamientos tecnicos para incorporar futuros productos de prestamo
+- lineamientos tecnicos para incorporar futuros productos de prestamo sobre la base ya construida
+- productos y workflows administrables en `draft` con activacion posterior por negocio o riesgos
+- catalogo de variables por producto y fuentes declarativas de input
 - reglas de negocio y flujo almacenados en BD con versionado completo
 - validacion tecnica de onboarding de un segundo producto sobre la misma base
 
 ### Riesgos del sprint
 
 - complejidad del modelo de reglas y vigencias
+- complejidad del modelo de herencia entre producto y workflow
 - ambiguedades al migrar reglas PLD al BRMS
 
 ### Criterio de cierre
 
-- el sistema ya soporta reglas versionadas administradas por backend y queda preparada la extension multiproducto
+- el sistema ya soporta reglas versionadas administradas por backend, productos y workflows activables por negocio o riesgos, y queda consolidada la extension multiproducto sin reabrir fundaciones ya resueltas en dominio
 
 ---
 
-## Sprint 7 - Pipeline configurable y cierre del MVP
+## Sprint 8 - Convergencia administrable del pipeline y cierre del MVP
 
 - Estado: `planned`
-- Objetivo: cerrar el MVP con pipeline configurable por nodos y UI administrativa de reglas y flujo
+- Objetivo: cerrar el MVP con pipeline configurable por nodos ya convergido con persistencia y UI administrativa de productos, workflows, variables, reglas y flujo
 
 ### Issues comprometidos
 
 - `ISSUE-039` Refactorizar motor a pipeline configurable por nodos
-- `ISSUE-040` UI Administrativa de Reglas y Flujo
+- `ISSUE-040` UI Administrativa de Productos, Workflows, Variables, Reglas y Flujo
 
 ### Resultado esperado
 
-- pipeline configurable por producto funcionando con branching controlado
-- administradores pueden gestionar reglas y flujo desde interfaz web
+- pipeline configurable por producto funcionando con branching controlado y administracion persistida
+- administradores pueden gestionar productos, workflows, variables, reglas y flujo desde interfaz web
 - sandbox de pruebas de reglas funcional
 - flujo de aprobacion de cambios de reglas y flujo operativo
 
 ### Riesgos del sprint
 
-- complejidad del refactor del motor
+- complejidad de la convergencia final entre fundaciones ya implementadas, persistencia y capa administrativa
+- complejidad de UX al exponer herencia, fuentes de input y ciclo `draft -> active`
 - ajustes de UX en la administracion de reglas
 
 ### Criterio de cierre
 
-- el MVP queda cerrado con BRMS, pipeline configurable por nodos y UI administrativa de reglas y flujo operativos
+- el MVP queda cerrado con BRMS, pipeline configurable por nodos y UI administrativa de productos, workflows, variables, reglas y flujo operativos
 
 ---
 
@@ -272,10 +308,11 @@ Este archivo organiza `ISSUES.md` en una secuencia de sprints sugerida para ejec
 
 - Sprint 2 depende del cierre material de Sprint 1
 - Sprint 3 depende de la persistencia y seguridad base de Sprint 2
-- Sprint 4 depende del motor y APIs nucleares de Sprint 3
-- Sprint 5 depende del flujo funcional ya implementado en Sprint 4
-- Sprint 6 depende del flujo operativo estable y de la persistencia madura de Sprint 5
-- Sprint 7 depende del BRMS backend de Sprint 6
+- Sprint 4 depende del saneamiento de Sprint 3
+- Sprint 5 depende del motor y APIs nucleares de Sprint 4
+- Sprint 6 depende del flujo funcional ya implementado en Sprint 5
+- Sprint 7 depende del flujo operativo estable y de la persistencia madura de Sprint 6
+- Sprint 8 depende del BRMS backend de Sprint 7
 
 ---
 
@@ -297,32 +334,34 @@ El camino critico recomendado es:
 12. `ISSUE-009`
 13. `ISSUE-010`
 14. `ISSUE-034` (Cliente LLM)
-15. `ISSUE-011`
-16. `ISSUE-012`
-17. `ISSUE-013`
-18. `ISSUE-014`
-19. `ISSUE-035` (Explicador AI por API)
-20. `ISSUE-015`
-21. `ISSUE-016`
-22. `ISSUE-017`
-23. `ISSUE-018`
-24. `ISSUE-023` (ZIP backend)
-25. `ISSUE-019`
-26. `ISSUE-024` (ZIP frontend)
-27. `ISSUE-025` (Assist AI)
-28. `ISSUE-026` (Bandeja AI)
-29. `ISSUE-029` (Exportacion)
-30. `ISSUE-036` (UI AI)
-31. `ISSUE-020`
-32. `ISSUE-021`
-33. `ISSUE-022`
-34. `ISSUE-037`
-35. `ISSUE-030`
-36. `ISSUE-031`
-37. `ISSUE-032`
-38. `ISSUE-038`
-39. `ISSUE-039`
-40. `ISSUE-040`
+15. `ISSUE-032`
+16. `ISSUE-041`
+17. `ISSUE-042`
+18. `ISSUE-011`
+19. `ISSUE-012`
+20. `ISSUE-013`
+21. `ISSUE-014`
+22. `ISSUE-035` (Explicador AI por API)
+23. `ISSUE-015`
+24. `ISSUE-016`
+25. `ISSUE-017`
+26. `ISSUE-018`
+27. `ISSUE-023` (ZIP backend)
+28. `ISSUE-019`
+29. `ISSUE-024` (ZIP frontend)
+30. `ISSUE-025` (Assist AI)
+31. `ISSUE-026` (Bandeja AI)
+32. `ISSUE-029` (Exportacion)
+33. `ISSUE-036` (UI AI)
+34. `ISSUE-020`
+35. `ISSUE-021`
+36. `ISSUE-022`
+37. `ISSUE-037`
+38. `ISSUE-030`
+39. `ISSUE-031`
+40. `ISSUE-038`
+41. `ISSUE-039`
+42. `ISSUE-040`
 
 ---
 
@@ -338,4 +377,4 @@ Antes de iniciar Sprint 1 conviene tomar decisiones explicitas sobre:
 
 Sin esas definiciones, `ISSUE-001`, `ISSUE-027`, `ISSUE-028` y `ISSUE-033` pueden bloquear el resto del camino critico.
 
-Aunque `PLD` sigue siendo el producto funcional del MVP, el diseno de sprints 1 a 7 debe dejar validado el onboarding tecnico de un segundo producto sin acoplar estructuralmente la plataforma a PLD.
+Aunque `PLD` sigue siendo el producto funcional del MVP, el diseno de sprints 1 a 8 debe dejar validado el onboarding tecnico de un segundo producto sin acoplar estructuralmente la plataforma a PLD, permitiendo que negocio y riesgos registren productos y workflows en `draft` y los activen sin intervencion de TI en el flujo normal.

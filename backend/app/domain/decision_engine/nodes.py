@@ -18,6 +18,10 @@ class NodeExecutionResult(BaseModel):
     eligible: bool | None = None
     alerts_added: list[str] = Field(default_factory=list)
     blocks_added: list[str] = Field(default_factory=list)
+    rules_applied: list[str] = Field(default_factory=list)
+    consumed_variables: list[str] = Field(default_factory=list)
+    produced_variables: list[str] = Field(default_factory=list)
+    produced_effects: list[str] = Field(default_factory=list)
     evidence: list[EngineDecisionEvidence] = Field(default_factory=list)
 
 
@@ -30,6 +34,7 @@ class EngineExecutionContext:
         self.blocks: list[str] = []
         self.trace = EngineDecisionTrace(
             product_code=request.product_code,
+            workflow_code=request.workflow_code,
             applied_versions=applied_versions,
         )
         self._eligible: bool = True
@@ -50,6 +55,10 @@ class EngineExecutionContext:
         self.blocks.extend(result.blocks_added)
         self.trace.alerts = list(self.alerts)
         self.trace.blocks = list(self.blocks)
+        self.trace.rules_applied.extend(result.rules_applied)
+        self.trace.consumed_variables.extend(result.consumed_variables)
+        self.trace.produced_variables.extend(result.produced_variables)
+        self.trace.produced_effects.extend(result.produced_effects)
         self.trace.evidence.extend(result.evidence)
         if result.eligible is not None:
             self._eligible = result.eligible
@@ -61,6 +70,10 @@ class EngineExecutionContext:
                 branch_selected=branch_selected,
                 alerts_added=list(result.alerts_added),
                 blocks_added=list(result.blocks_added),
+                rules_applied=list(result.rules_applied),
+                consumed_variables=list(result.consumed_variables),
+                produced_variables=list(result.produced_variables),
+                produced_effects=list(result.produced_effects),
                 evidence_keys=[
                     f"{item.source_type}:{item.source_key}:{item.field_name}"
                     for item in result.evidence

@@ -25,9 +25,21 @@ class Issue002OpenAPITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
 
-        self.assertIn("/api/v1/evaluations", payload["paths"])
-        self.assertIn("/api/v1/evaluations/{evaluation_id}", payload["paths"])
-        self.assertIn("/api/v1/evaluations/{evaluation_id}/decision-trace", payload["paths"])
+        self.assertIn("/api/v1/loans/{product_code}/evaluaciones", payload["paths"])
+        self.assertIn(
+            "/api/v1/loans/{product_code}/evaluaciones/{evaluation_id}",
+            payload["paths"],
+        )
+        self.assertIn(
+            "/api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace",
+            payload["paths"],
+        )
+        self.assertNotIn("/api/v1/evaluations", payload["paths"])
+        self.assertNotIn("/api/v1/evaluations/{evaluation_id}", payload["paths"])
+        self.assertNotIn(
+            "/api/v1/evaluations/{evaluation_id}/decision-trace",
+            payload["paths"],
+        )
         self.assertIn("/api/v1/credit-requests", payload["paths"])
         self.assertIn("/api/v1/credit-requests/{request_id}", payload["paths"])
         self.assertIn(
@@ -38,8 +50,8 @@ class Issue002OpenAPITests(unittest.TestCase):
         schemas = payload["components"]["schemas"]
 
         for schema_name in (
-            "EvaluationRequest",
-            "EvaluationResponse",
+            "PLDEvaluationRequest",
+            "PLDEvaluationResponse",
             "DecisionTraceResponse",
             "CreditRequestCreateRequest",
             "CreditRequestResponse",
@@ -53,16 +65,25 @@ class Issue002OpenAPITests(unittest.TestCase):
         ):
             self.assertIn(schema_name, schemas)
 
-        evaluation_request = schemas["EvaluationRequest"]
+        evaluation_request = schemas["PLDEvaluationRequest"]
         self.assertEqual(
             evaluation_request["required"],
-            ["product_code", "document", "requested_by", "product_context"],
+            [
+                "product_code",
+                "workflow_code",
+                "document",
+                "requested_by",
+                "product_context",
+            ],
         )
+        self.assertIn("workflow_code", evaluation_request["properties"])
+        self.assertIn("requested_rule_set_version", evaluation_request["properties"])
+        self.assertIn("requested_pipeline_version", evaluation_request["properties"])
         self.assertIn("product_context", evaluation_request["properties"])
         self.assertNotIn("rci", evaluation_request["properties"])
         self.assertNotIn("marca_sunedu", evaluation_request["properties"])
 
-        evaluation_response = schemas["EvaluationResponse"]
+        evaluation_response = schemas["PLDEvaluationResponse"]
         self.assertIn("product_result", evaluation_response["properties"])
         self.assertNotIn("rci", evaluation_response["properties"])
 
