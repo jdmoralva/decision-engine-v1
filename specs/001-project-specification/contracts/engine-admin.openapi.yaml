@@ -1,0 +1,225 @@
+openapi: 3.1.0
+info:
+  title: Decision Engine Admin API
+  version: 0.1.0
+  description: Contracto administrativo del motor para productos, workflows, variables y reglas del MVP.
+paths:
+  /api/v1/admin/engine/products:
+    post:
+      summary: Create product draft
+      tags: [engine-admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '201':
+          description: Product draft created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+  /api/v1/admin/engine/products/{productCode}/activation:
+    post:
+      summary: Activate product
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product activated
+  /api/v1/admin/engine/products/{productCode}/workflows:
+    post:
+      summary: Create workflow draft
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+      responses:
+        '201':
+          description: Workflow draft created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+  /api/v1/admin/engine/products/{productCode}/variables:
+    post:
+      summary: Create product variable draft
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariableCreateRequest'
+      responses:
+        '201':
+          description: Variable draft created
+  /api/v1/admin/engine/workflows/{workflowId}/versions:
+    post:
+      summary: Create workflow version draft
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowVersionCreateRequest'
+      responses:
+        '201':
+          description: Workflow version created
+  /api/v1/admin/engine/workflow-versions/{versionId}/activation:
+    post:
+      summary: Activate workflow version
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: versionId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow version activated
+  /api/v1/admin/engine/workflows/{workflowId}/rules:
+    post:
+      summary: Create rule draft for workflow
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleCreateRequest'
+      responses:
+        '201':
+          description: Rule draft created
+components:
+  schemas:
+    ProductCreateRequest:
+      type: object
+      required: [productCode, name]
+      properties:
+        productCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    ProductResponse:
+      type: object
+      required: [id, productCode, name, status]
+      properties:
+        id:
+          type: string
+        productCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, retired]
+    WorkflowCreateRequest:
+      type: object
+      required: [workflowCode, name]
+      properties:
+        workflowCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    WorkflowResponse:
+      type: object
+      required: [id, workflowCode, status]
+      properties:
+        id:
+          type: string
+        workflowCode:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, retired]
+    ProductVariableCreateRequest:
+      type: object
+      required: [variableKey, name, dataType, allowedSource]
+      properties:
+        variableKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        dataType:
+          type: string
+        required:
+          type: boolean
+        allowedSource:
+          type: string
+          enum: [campaign_db, user_input, both]
+    WorkflowVersionCreateRequest:
+      type: object
+      required: [variableCatalogVersionId, pipelineStrategyId]
+      properties:
+        variableCatalogVersionId:
+          type: string
+        pipelineStrategyId:
+          type: string
+        ruleVersionIds:
+          type: array
+          items:
+            type: string
+        changeNotes:
+          type: string
+    RuleCreateRequest:
+      type: object
+      required: [name, ruleType, conditionExpression, actionExpression]
+      properties:
+        name:
+          type: string
+        ruleType:
+          type: string
+        conditionExpression:
+          type: string
+        actionExpression:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true

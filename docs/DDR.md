@@ -105,6 +105,14 @@ graph TD
 - Casos de uso en capa de aplicacion.
 - Repositorios y adaptadores aislados en infraestructura.
 
+Los endpoints multiproducto bajo `/loans/{product_code}/...` no deben consolidar un
+schema PLD como contrato estructural universal. La capa HTTP debe resolver el contrato
+REST de entrada y salida segun `product_code`, manteniendo adapters explicitos por
+producto para traducir hacia el contrato interno generico del motor.
+
+Mientras existan contratos transicionales PLD-especificos en el borde HTTP, deben tratarse
+como compatibilidad temporal y no como la forma final de la API multiproducto.
+
 ### Motor de decisiones
 
 - Modulo interno, separado del framework web.
@@ -117,7 +125,11 @@ graph TD
 
 El motor debe evolucionar desde un core multiproducto hacia una capacidad administrable por negocio y riesgos, donde el alta de productos y la creacion de workflows no dependan de cambios en codigo ni de aprobacion de TI como mecanismo normal de operacion.
 
-En el estado actual del repositorio, esta base ya existe a nivel de dominio. `PLD` se registra como primer runtime concreto sobre infraestructura generica; lo pendiente sigue siendo completar los casos de uso funcionales y persistidos sobre esa base.
+En el estado actual del repositorio, esta base ya existe a nivel de dominio. `PLD` se
+registra como primer runtime concreto sobre infraestructura generica; lo pendiente sigue
+siendo completar los casos de uso funcionales y persistidos sobre esa base, converger el
+borde REST multiproducto y reemplazar el bootstrap manual de un unico producto por un
+registro extensible de runtimes.
 
 La arquitectura objetivo debe contemplar:
 
@@ -127,6 +139,35 @@ La arquitectura objetivo debe contemplar:
 - reglas declarativas por workflow en JSON/DSL restringido
 - herencia de variables y reglas base desde producto hacia workflow
 - resolucion de inputs desde tablas internas de campana y desde datos capturados en UI
+
+El registro de runtimes del motor debe soportar incorporacion extensible de productos, ya
+sea por modulos registradores, discovery controlado o carga desde persistencia o
+configuracion activa. `PLD` es el primer runtime concreto, no el unico runtime cableado de
+forma permanente en el bootstrap.
+
+### Resolucion de contratos y runtimes por producto
+
+`product_code` gobierna dos resoluciones distintas y complementarias:
+
+- resolucion del contrato REST de borde
+- resolucion del runtime interno del motor
+
+Ambas resoluciones deben ser explicitas y desacopladas. El contrato REST no es el contrato
+canonico del motor: su responsabilidad es validar el payload especifico del producto y
+traducirlo, mediante un mapper, al contrato interno generico del motor.
+
+La primera resolucion selecciona request y response schemas compatibles con el producto en
+el borde HTTP. La segunda selecciona estrategia de pipeline, normalizacion, catalogo de
+variables, reglas y nodos del motor para el producto y workflow solicitados.
+
+El estado actual del repositorio mantiene ambas resoluciones en una forma parcial:
+
+- el core del motor ya resuelve `product_code` y `workflow_code`
+- el borde REST todavia conserva contratos PLD-especificos en endpoints multiproducto
+- el bootstrap del registry todavia registra solo `PLD`
+
+La convergencia esperada del MVP es eliminar esas dos ultimas restricciones sin perder el
+aislamiento entre API, dominio y configuracion administrable.
 
 ### BRMS
 
@@ -379,6 +420,71 @@ Adoptar un modelo administrable en BD donde productos, workflows, variables y re
 - Mantener productos y workflows definidos en codigo: descartado por baja autonomia y alto costo operativo.
 - Permitir reglas totalmente libres o ejecutables sin restriccion: descartado por riesgo de seguridad, falta de validacion y baja auditabilidad.
 
+### ADR-011: Resolucion de contratos REST por producto
+
+**Status:** Accepted
+
+**Contexto**
+
+La API del MVP expone endpoints multiproducto bajo `/loans/{product_code}/...`, pero el
+estado actual del repositorio todavia conserva contratos PLD-especificos en algunos
+endpoints de evaluacion. Esto crea una divergencia entre el shape nominal de la API y la
+filosofia multiproducto del proyecto.
+
+**Decision**
+
+Adoptar un mecanismo explicito de resolucion de contratos REST por `product_code`, capaz de
+seleccionar request schema, response schema y mapper de borde para cada producto soportado.
+Los schemas de producto viven en la capa API; el contrato canonico del motor permanece en
+dominio y recibe entradas ya adaptadas desde el borde HTTP.
+
+**Consequences**
+
+- Positivas: alinea el borde HTTP con la estrategia multiproducto, evita consolidar `PLD`
+  como contrato universal y permite extender la API sin redisenar el core del motor.
+- Negativas: aumenta la complejidad del wiring de endpoints, de la publicacion OpenAPI y de
+  las pruebas de contrato por producto.
+
+**Alternatives Considered**
+
+- Mantener un unico schema REST PLD y reinterpretarlo internamente para otros productos:
+  descartado por acoplar el borde HTTP a `PLD` y degradar la evolucion de contratos.
+- Mover la variacion de contratos enteramente al frontend sin resolverla en backend:
+  descartado porque la API debe seguir siendo tipada, validable y consistente por producto.
+
+### ADR-012: Registro extensible de runtimes del motor
+
+**Status:** Accepted
+
+**Contexto**
+
+El registry del motor ya soporta resolucion por `product_code` y `workflow_code`, pero el
+bootstrap actual registra solo `PLD`. Eso valida el core multiproducto a nivel de dominio,
+pero no deja resuelto el punto de extension para incorporar nuevos productos sin modificar
+el bootstrap central.
+
+**Decision**
+
+Separar el bootstrap base del mecanismo de incorporacion de runtimes y adoptar un registro
+extensible de productos. La incorporacion puede materializarse mediante modulos
+registradores por producto, discovery controlado o carga desde persistencia o configuracion
+activa, siempre bajo validacion explicita.
+
+**Consequences**
+
+- Positivas: reduce el acoplamiento del bootstrap a `PLD`, mejora el onboarding tecnico de
+  nuevos productos y prepara la transicion desde runtimes codificados hacia configuracion
+  administrable.
+- Negativas: introduce mas disciplina de lifecycle, validacion y observabilidad del proceso
+  de registro de runtimes.
+
+**Alternatives Considered**
+
+- Mantener un bootstrap central con `if/else` por producto: descartado por escalar mal y
+  recentralizar el motor en cambios manuales recurrentes.
+- Cargar productos sin validacion desde cualquier modulo disponible: descartado por riesgo
+  operacional, baja trazabilidad y menor control sobre configuraciones activas.
+
 ## 7. Modelo De Datos
 
 ### Entidades base
@@ -500,8 +606,10 @@ Debe permitir representar reglas declarativas en JSON/DSL restringido y asociarl
 - Reglas implicitas no documentadas.
 - Complejidad de compatibilidad SQLite/SQL Server.
 - Acoplamiento accidental de UI y negocio.
+- API multiproducto nominal con contratos REST realmente PLD-centricos.
 - Fallo o indisponibilidad de la AI.
 - Complejidad de gobierno del flujo configurable.
+- Bootstrap multiproducto nominal con registro efectivo de un solo producto.
 
 ### Mitigaciones
 
@@ -509,10 +617,24 @@ Debe permitir representar reglas declarativas en JSON/DSL restringido y asociarl
 - Pipeline deterministico con tests por etapa.
 - Esquema relacional portable y sin SQL dependiente del motor.
 - Contratos API versionados y dominio aislado.
+- Resolucion explicita de schemas REST por `product_code` con adapters y pruebas de
+  contrato por producto.
 - AI opcional con fallback completo al flujo deterministico.
 - Validacion de topologia antes de activar un pipeline.
 - Aprobacion separada para cambios de reglas y cambios de secuencia.
+- Registro extensible de runtimes con validacion controlada, en lugar de bootstrap manual
+  permanente de un unico producto.
 
 ## 10. Conclusion
 
-La arquitectura recomendada para el MVP es un backend FastAPI modular, con motor deterministico aislado, BRMS y event store dentro del mismo sistema, frontend desacoplado y ZIP sobre filesystem. El motor se implementa con pipeline configurable por nodos gobernados, con `DecisionTrace` estructurado para AI y auditoria humana. Esta forma replica el flujo legado de PLD, elimina sus dependencias fragiles y deja una base real para incorporar un segundo producto al finalizar el MVP.
+La arquitectura recomendada para el MVP es un backend FastAPI modular, con motor
+deterministico aislado, BRMS y event store dentro del mismo sistema, frontend desacoplado
+y ZIP sobre filesystem. El motor se implementa con pipeline configurable por nodos
+gobernados, con `DecisionTrace` estructurado para AI y auditoria humana.
+
+El estado actual del repositorio ya valida el core multiproducto del motor, pero todavia no
+ha convergido por completo en dos frentes: el borde REST sigue parcialmente modelado con
+contratos PLD-especificos y el bootstrap del registry sigue registrando un unico runtime
+concreto. La direccion correcta del MVP es cerrar ambas brechas sin reintroducir los
+acoplamientos del legacy, de modo que la plataforma quede lista para incorporar un segundo
+producto sin redisenar sus capas compartidas.

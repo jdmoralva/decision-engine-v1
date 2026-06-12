@@ -46,3 +46,8 @@
 - Revisa `git status --short` antes de editar.
 - No toques cambios ajenos sin necesidad.
 - Si detectas discrepancia entre docs y legacy, prioriza `docs/SPEC.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read `specs/001-project-specification/plan.md`
+<!-- SPECKIT END -->

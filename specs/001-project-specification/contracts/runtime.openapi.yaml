@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: Decision Engine Runtime API
+  version: 0.1.0
+  description: Contratos runtime del MVP para consulta, evaluacion, trace y solicitudes.
+paths:
+  /api/v1/loans/{productCode}/consultas:
+    post:
+      summary: Consult customer and available campaigns
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanConsultationRequest'
+      responses:
+        '200':
+          description: Consultation result
+  /api/v1/loans/{productCode}/evaluaciones:
+    post:
+      summary: Execute product evaluation
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductEvaluationRequest'
+      responses:
+        '201':
+          description: Evaluation created
+  /api/v1/loans/{productCode}/evaluaciones/{evaluationId}:
+    get:
+      summary: Get evaluation by id
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: evaluationId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluation detail
+  /api/v1/loans/{productCode}/evaluaciones/{evaluationId}/trace:
+    get:
+      summary: Get decision trace
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: productCode
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: evaluationId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Decision trace detail
+  /api/v1/credit-requests:
+    post:
+      summary: Create credit request
+      tags: [runtime]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequestCreateRequest'
+      responses:
+        '201':
+          description: Credit request created
+  /api/v1/credit-requests/{requestId}/status-transitions:
+    post:
+      summary: Transition request status
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusTransitionRequest'
+      responses:
+        '200':
+          description: Updated credit request
+components:
+  schemas:
+    DocumentRef:
+      type: object
+      required: [documentType, documentNumber]
+      properties:
+        documentType:
+          type: string
+        documentNumber:
+          type: string
+    ActorRef:
+      type: object
+      required: [username]
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+    ExternalInputSnapshotItem:
+      type: object
+      required: [sourceType, sourceKey, fieldName, fieldValue]
+      properties:
+        sourceType:
+          type: string
+          enum: [campaign_db, user_input]
+        sourceKey:
+          type: string
+        fieldName:
+          type: string
+        fieldValue:
+          type: string
+    LoanConsultationRequest:
+      type: object
+      required: [document]
+      properties:
+        document:
+          $ref: '#/components/schemas/DocumentRef'
+    ProductEvaluationRequest:
+      type: object
+      required: [workflowCode, document, requestedBy]
+      properties:
+        workflowCode:
+          type: string
+        document:
+          $ref: '#/components/schemas/DocumentRef'
+        requestedBy:
+          $ref: '#/components/schemas/ActorRef'
+        productContext:
+          type: object
+          additionalProperties: true
+        externalInputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalInputSnapshotItem'
+        requestedRuleSetVersion:
+          type: string
+        requestedPipelineVersion:
+          type: string
+    CreditRequestCreateRequest:
+      type: object
+      required: [productCode, document, requestedAmount, comment, createdBy]
+      properties:
+        productCode:
+          type: string
+        evaluationId:
+          type: string
+        document:
+          $ref: '#/components/schemas/DocumentRef'
+        campaignCode:
+          type: string
+        requestedAmount:
+          type: number
+        comment:
+          type: string
+        createdBy:
+          $ref: '#/components/schemas/ActorRef'
+    StatusTransitionRequest:
+      type: object
+      required: [targetStatus]
+      properties:
+        targetStatus:
+          type: string
+        comment:
+          type: string
