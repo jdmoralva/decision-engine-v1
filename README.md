@@ -25,27 +25,8 @@ La raiz del repositorio ya contiene la base tecnica nueva del MVP.
 El estado real es:
 
 - `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `docs/SPEC.md` define la especificacion tecnica del proyecto: arquitectura (pipeline de etapas, event sourcing, BRMS, AI), modelo de datos, API, lineamientos de stack y roadmap por fases
-- `docs/project/BACKLOG.md` organiza el trabajo en 14 epicas (E1-E14) con tareas ejecutables, prioridades y dependencias
-- `docs/project/ISSUES.md` descompone el backlog en 40 issues operativos asignados a sprints
-- `docs/project/SPRINTS.md` secuencia la ejecucion en 7 sprints (Sprint 1-7), desde descubrimiento hasta cierre del MVP con BRMS, pipeline configurable y UI administrativa
 - `backend/` ya contiene el bootstrap FastAPI, configuracion, autenticacion base, RBAC inicial, ORM, migraciones, contratos API iniciales y el modulo aislado base del motor de decisiones
 - `frontend/` ya contiene el bootstrap `Vite + React + TypeScript` con arranque local y sesion basica
-- `docs/analysis/` contiene los cierres funcionales y tecnicos de los issues priorizados
-- `docs/sessions/SESSIONS.md` guarda referencias cortas de sesiones previas
-- `AGENTS.md` resume las restricciones y fuentes de verdad para futuras sesiones
-
-Decisiones funcionales ya cerradas:
-- El frontend del MVP se implementa con `Vite + React + TypeScript` y se despliega como assets estaticos compatibles con un reverse proxy o Nginx equivalente
-- El flujo de carga y descarga de archivos ZIP se **incluye** en el alcance del MVP
-- La migracion de historicos queda **descartada**; se inicia con base limpia
-- El MVP mantiene las capacidades AI asistivas definidas en `docs/SPEC.md`
-- `Event Store`, `BRMS`, `pipeline configurable` y `UI administrativa de reglas` forman parte del MVP
-- El almacenamiento inicial de archivos ZIP se implementara sobre `filesystem`
-- Los snapshots de evaluacion persistiran solo los campos efectivamente consumidos por el motor
-
-El proyecto ya cerró la decision de frontend, el bootstrap tecnico, el nucleo base del motor de decisiones y el servicio base de conexion a LLM.
-`Sprint 1` y `Sprint 2` quedaron tecnicamente consolidados; aun quedan por completar los flujos funcionales del MVP a partir de `Sprint 3`.
 
 ## Estado de Implementacion
 
@@ -56,28 +37,12 @@ El proyecto ya cerró la decision de frontend, el bootstrap tecnico, el nucleo b
 - Adaptadores finos entre la API REST y el contrato interno del motor implementados en `backend/app/api/mappers/evaluations.py`
 - Servicio base de conexion a LLM implementado con proveedor activo configurable entre `OpenAI` y `Gemini`, carga de claves desde entorno o `.env`, timeout y reintentos
 - Frontend bootstrap operativo con login local y restauracion basica de sesion
-- La logica de negocio PLD completa, la bandeja operativa, el registro real de solicitudes y la integracion funcional de evaluaciones aun no estan implementadas
-
-## Arquitectura del Motor de Decisiones
-
-```
-Input → [Preprocessing] → [Eligibility] → [Scoring Layer] → [Decision Strategy] → [Post-processing] → Output
-         ↑                                                            ↓
-         └────────────── Event Store (inmutable) ──────────────────────┘
-                        ↓
-         [AI Layer] → Explicacion asistiva + sugerencias
-                        ↓
-         [BRMS] → Reglas versionadas en BD + UI Administrativa
-```
 
 ## Referencias Clave
 
-- Especificacion: `docs/SPEC.md`
-- Backlog: `docs/project/BACKLOG.md`
-- Issues: `docs/project/ISSUES.md`
-- Sprints: `docs/project/SPRINTS.md`
-- Analisis funcional: `docs/analysis/`
-- Registro de sesiones: `docs/sessions/SESSIONS.md`
+- Especificacion: `specs/001-project-specification/spec.md`
+- Planificación: `specs/001-project-specification/plan.md`
+- Tasks: `specs/001-project-specification/tasks.md`
 - Guia operativa para agentes: `AGENTS.md`
 - Sistema legacy de referencia: `old-version/`
 
@@ -101,15 +66,3 @@ URLs locales:
 - Frontend: `http://127.0.0.1:5173/`
 - Swagger backend: `http://127.0.0.1:8000/docs`
 
-## Siguiente Paso Pendiente
-
-El siguiente paso prioritario es continuar con los issues funcionales del MVP, comenzando por:
-
-- `ISSUE-011` Implementar reglas y formulas del motor PLD
-- `ISSUE-013` Implementar API de consulta PLD
-- `ISSUE-014` Implementar API de evaluacion PLD
-
-`ISSUE-010` ya quedo cerrado a nivel tecnico y documental en `docs/analysis/ISSUE-010.md`.
-`ISSUE-034` ya quedo cerrado a nivel tecnico y documental en `docs/analysis/ISSUE-034.md`.
-
-Sin el avance de `ISSUE-011`, `ISSUE-013` y `ISSUE-014`, los flujos funcionales del MVP siguen incompletos aunque la base tecnica del backend ya este mas madura.
