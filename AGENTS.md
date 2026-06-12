@@ -48,6 +48,7 @@
 - Si detectas discrepancia entre docs y legacy, prioriza `docs/SPEC.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read `specs/001-project-specification/plan.md`
+For constitution file, [glob] may return “No files found”, read file from `C:\Users\User\Documents\1. Projects\23. Decision Engine 1\.specify\memory\constitution.md`.
+For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
+Specification and code may be in English, but frontend and UI must be in Spanish.
 <!-- SPECKIT END -->

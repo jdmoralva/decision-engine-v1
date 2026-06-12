@@ -26,7 +26,7 @@ Como analista, quiero consultar un cliente, revisar sus ofertas disponibles y ej
 
 1. Dado un cliente identificado por tipo y numero de documento, cuando el analista realiza una consulta, entonces el sistema muestra sus datos relevantes y las ofertas disponibles del producto aplicable.
 2. Dado que el analista selecciona una oferta y completa los datos complementarios requeridos, cuando solicita la evaluacion, entonces el sistema recalcula la oferta y devuelve un resultado estructurado con bloqueos, alertas y observaciones.
-3. Dado un resultado de evaluacion disponible, cuando el analista solicita soporte interpretativo, entonces el sistema muestra una explicacion en lenguaje claro, un resumen del caso y sugerencias de siguiente paso sin alterar el resultado deterministico.
+3. Dado un resultado de evaluacion disponible, cuando el analista solicita soporte interpretativo, entonces el sistema muestra una explicacion en lenguaje claro, un resumen del caso y sugerencias de siguiente paso sin alterar el resultado deterministico, dejando traza auditable del modelo, template, payload permitido y versiones del motor usadas para generar la asistencia.
 
 ### User Story 2 - Registrar y gestionar una solicitud
 
@@ -45,17 +45,17 @@ Como usuario operativo o auditor, quiero acceder a los adjuntos y a la trazabili
 #### Acceptance Scenario
 
 1. Dado una solicitud existente, cuando un usuario autorizado carga un archivo ZIP valido, entonces el sistema lo asocia a la solicitud y registra la accion en la traza operativa.
-2. Dado una solicitud con adjuntos, cuando un usuario autorizado consulta el detalle, entonces puede visualizar la lista de archivos disponibles y descargar el ZIP correspondiente.
-3. Dado una evaluacion o una accion operativa completada, cuando un auditor consulta la traza, entonces puede reconstruir entradas relevantes, resultado, eventos y acciones ejecutadas.
+2. Dado una solicitud con adjuntos, cuando un usuario autorizado consulta el detalle, entonces puede visualizar la lista de archivos disponibles, sus metadatos y el contenido listado del ZIP correspondiente antes de descargarlo.
+3. Dado una evaluacion o una accion operativa completada, cuando un auditor consulta la traza, entonces puede reconstruir entradas relevantes, resultado, eventos y acciones ejecutadas mediante una linea de tiempo paginada filtrable por evaluacion o solicitud.
 
-### User Story 4 - Administrar productos, workflows, variables y reglas del motor
+### User Story 4 - Administrar productos, workflows, variables, parametros, pipeline y reglas del motor
 
-Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y gobernar productos, workflows, variables y reglas del motor para habilitar cambios operativos sin depender de cambios de codigo como practica habitual.
+Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y gobernar productos, workflows, variables, parametros, pipeline y reglas del motor para habilitar cambios operativos sin depender de cambios de codigo como practica habitual.
 
 #### Acceptance Scenario
 
 1. Dado un producto nuevo, cuando un usuario autorizado lo registra, entonces el sistema lo guarda en estado `draft` con trazabilidad de quien lo creo.
-2. Dado un producto existente, cuando el usuario autorizado crea variables, catalogos, workflows y reglas asociados, entonces el sistema valida sus referencias y conserva el estado gobernado de cada configuracion.
+2. Dado un producto existente, cuando el usuario autorizado crea variables, catalogos, parametros, workflows, pipeline y reglas asociados, entonces el sistema valida sus referencias y conserva el estado gobernado de cada configuracion.
 3. Dado un workflow activo, cuando se requiere un cambio funcional, entonces el sistema obliga a crear una nueva version en lugar de editar la version activa y deja evidencia auditable de la activacion posterior.
 4. Dado un producto o workflow en estado distinto de `active`, cuando una evaluacion operacional intenta usarlo, entonces el sistema rechaza esa ejecucion.
 
@@ -66,6 +66,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - El sistema debe impedir anulaciones o cambios de estado no permitidos para el estado actual o para el rol del usuario.
 - El sistema debe manejar fallas de la asistencia AI sin bloquear la consulta, evaluacion, registro o consulta de bandeja.
 - El sistema debe rechazar adjuntos que no correspondan al formato ZIP esperado o que no puedan asociarse de forma valida a una solicitud existente.
+- El sistema debe manejar ZIP validos pero vacios, corruptos o con manifiesto ilegible sin perder la auditoria del intento realizado.
 - El sistema debe preservar la reproducibilidad de una evaluacion aunque reglas o parametros hayan cambiado posteriormente.
 - El sistema debe impedir la edicion directa de workflows en estado `active` y exigir una nueva version para cualquier cambio posterior.
 - El sistema debe impedir activar productos, workflows, catalogos o reglas con referencias incompletas o inconsistentes.
@@ -82,7 +83,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-005: El sistema debe permitir registrar una solicitud de credito solo cuando exista una evaluacion valida asociada al caso.
 - FR-006: El sistema debe permitir consultar una bandeja de solicitudes por periodo con informacion suficiente para seguimiento operativo.
 - FR-007: El sistema debe permitir anular solicitudes y actualizar su estado solo a usuarios autorizados y bajo reglas de flujo definidas.
-- FR-008: El sistema debe permitir exportar los resultados de la bandeja para uso operativo y seguimiento.
+- FR-008: El sistema debe permitir exportar los resultados de la bandeja en formato `CSV UTF-8`, incluyendo los filtros aplicados, para uso operativo y seguimiento.
 
 ### Traceability and Audit
 
@@ -92,8 +93,9 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 
 ### Attachments
 
-- FR-012: El sistema debe permitir cargar, listar, visualizar y descargar adjuntos ZIP asociados a una solicitud.
+- FR-012: El sistema debe permitir cargar, listar, visualizar metadatos y contenido listado, y descargar adjuntos ZIP asociados a una solicitud.
 - FR-013: El sistema debe registrar auditoria de las operaciones de carga y descarga de adjuntos.
+- FR-013A: El sistema debe exponer una consulta paginada de auditoria y trazabilidad por `evaluation_id` o `request_id`, incluyendo actor, rol, accion, entidad afectada, resultado, timestamp y referencia AI cuando aplique.
 
 ### Assisted AI
 
@@ -124,6 +126,9 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-035: El sistema no debe permitir la edicion directa de un workflow en estado `active`; cualquier cambio debe generar una nueva version gobernada y auditable.
 - FR-036: El sistema debe permitir publicar catalogos versionados de variables por producto y asignarlos a versiones de workflow.
 - FR-037: El sistema debe validar, antes de activar una configuracion del motor, que sus referencias a variables, reglas, pipeline y workflow sean consistentes y completas.
+- FR-037A: El sistema debe permitir administrar parametros versionados por producto y workflow bajo un ciclo de vida gobernado y auditable.
+- FR-037B: El sistema debe persistir en cada evaluacion las versiones efectivas de workflow, catalogo de variables, reglas, parametros y pipeline realmente aplicadas.
+- FR-037C: El sistema debe permitir administrar estrategias de pipeline y sus nodos bajo versionado, validacion topologica y activacion gobernada.
 
 ### Security and Operations
 
@@ -131,6 +136,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-039: El sistema debe ofrecer autenticacion operativa de frontend, restauracion de sesion y acceso por rol suficientes para ejecutar los flujos del MVP, sin impedir una futura integracion con un proveedor corporativo.
 - FR-040: El sistema debe desacoplar el control de acceso de restricciones basadas unicamente en IP o de acoplamientos con la interfaz.
 - FR-041: El sistema debe iniciar con base limpia, sin depender de migracion historica desde el sistema legado para operar el MVP.
+- FR-042: El sistema debe registrar cada interaccion AI asociada al caso con modelo, version de template, payload permitido (subconjunto de datos anonimizados o no sensibles de la evaluacion o solicitud conforme a la politica de seguridad de datos), respuesta, estado de fallback y referencias a las versiones del motor utilizadas.
 
 ## Key Entities
 
@@ -150,6 +156,10 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Catalogo de variables: version publicable del conjunto de variables activas de un producto consumible por una version de workflow.
 - Origen de variable: restriccion declarada que define si una variable puede recibir datos desde base de campana, captura por interfaz o ambas fuentes.
 - Regla de workflow: condicion o logica de decision administrable asociada a un workflow y gobernada por un ciclo de vida auditable.
+- Parametro versionado: conjunto administrable de constantes o umbrales usados por el motor y publicado bajo una version auditable.
+- Estrategia de pipeline: definicion administrable y versionada de la secuencia de nodos y branching permitido para un workflow.
+- Nodo de pipeline: etapa versionada del flujo de evaluacion con referencias validadas dentro de una estrategia gobernada.
+- Interaccion AI: registro auditable de una asistencia AI emitida para una evaluacion o solicitud con referencias de modelo, template, payload permitido (subconjunto filtrado de datos no identificables) y fallback.
 
 ## Assumptions
 
@@ -169,14 +179,15 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 
 ## Success Criteria
 
-- SC-001: En casos operativos estandar, un usuario autorizado puede completar consulta, evaluacion y registro de una solicitud en una sola sesion de trabajo sin recurrir al sistema legacy.
+- SC-001: En la suite de validacion operativa del MVP, un usuario autorizado puede completar consulta, evaluacion y registro de una solicitud en una sola sesion de trabajo sin recurrir al sistema legacy.
 - SC-002: El 100% de las evaluaciones registradas conserva una traza suficiente para que un auditor reconstruya entradas relevantes, resultado y acciones posteriores del caso.
 - SC-003: El 100% de los cambios de estado y anulaciones realizados por usuarios autorizados queda reflejado en la bandeja con su historial asociado.
-- SC-004: Ante indisponibilidad de la asistencia AI, al menos el 95% de los casos que cumplen reglas de negocio puede completar consulta, evaluacion, registro y bandeja sin bloqueo del flujo principal.
-- SC-005: El 100% de las solicitudes con adjuntos validos permite a usuarios autorizados cargar, listar y descargar archivos ZIP dentro del flujo operativo del caso.
+- SC-004: Ante indisponibilidad de la asistencia AI, al menos el 95% de los casos de la suite de validacion del MVP que cumplen reglas de negocio puede completar consulta, evaluacion, registro y bandeja sin bloqueo del flujo principal.
+- SC-005: El 100% de las solicitudes con adjuntos validos permite a usuarios autorizados cargar, listar metadatos, visualizar el contenido listado del ZIP y descargarlo dentro del flujo operativo del caso.
 - SC-006: La especificacion funcional del MVP deja identificadas y separadas las capacidades compartidas de plataforma y las capacidades exclusivas de `PLD`, de modo que el alcance base pueda extenderse a un segundo producto sin redefinir el flujo comun del sistema.
 - SC-007: El 100% de los productos y workflows usados en evaluaciones operativas se encuentra en estado `active`, con historial auditable de creacion, activacion y retiro.
 - SC-008: El 100% de las reglas aplicadas en evaluaciones operativas se encuentra en estado `active`, con historial auditable de creacion, activacion y retiro.
 - SC-009: El 100% de los cambios sobre workflows que ya estuvieron `active` queda registrado como una nueva version auditable, sin edicion directa de la version usada en evaluaciones previas.
 - SC-010: Los usuarios autorizados pueden autenticar, restaurar sesion y acceder solo a las acciones permitidas por su rol en los flujos del MVP.
 - SC-011: El sistema permite registrar y activar al menos un producto adicional al flujo `PLD` sin requerir cambios de codigo en las capas compartidas del motor.
+- SC-012: En la validacion de endurecimiento del MVP, `POST /consultas` y `POST /evaluaciones` cumplen `p95 <= 2s` y `p95 <= 4s` respectivamente con AI deshabilitada sobre la suite operativa base definida para el proyecto.

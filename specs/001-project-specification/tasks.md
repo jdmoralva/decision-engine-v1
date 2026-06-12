@@ -31,45 +31,46 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Evolve product persistence as the single source of truth in `backend/app/infrastructure/db/models.py` by extending `LoanProduct` and adding workflow, variable catalog, rule assignment, attachment, and audit entities
-- [ ] T006 Create Alembic migration for product source-of-truth, engine admin, and attachment tables in `backend/alembic/versions/20260611_0002_engine_admin_runtime.py`
-- [ ] T007 [P] Create repository interfaces and SQLAlchemy implementations for engine admin aggregates in `backend/app/infrastructure/repositories/engine_admin.py`
+- [ ] T005 Evolve product persistence as the single source of truth in `backend/app/infrastructure/db/models.py` by extending `LoanProduct` and adding workflow, variable catalog, parameter set, pipeline strategy/node, rule assignment, attachment, AI interaction, and audit entities
+- [ ] T006 Create Alembic migration for product source-of-truth, engine admin, attachment, and AI traceability tables in `backend/alembic/versions/20260611_0002_engine_admin_runtime.py`
+- [ ] T007 [P] Create repository interfaces and SQLAlchemy implementations for engine admin aggregates, including parameters and pipeline configuration, in `backend/app/infrastructure/repositories/engine_admin.py`
 - [ ] T008 [P] Create repository interfaces and SQLAlchemy implementations for evaluations and traces in `backend/app/infrastructure/repositories/evaluations.py`
-- [ ] T009 [P] Create repository interfaces and SQLAlchemy implementations for credit requests, status history, exports, and attachments in `backend/app/infrastructure/repositories/credit_requests.py`
-- [ ] T010 Define shared admin and runtime Pydantic schemas in `backend/app/api/schemas/engine_admin.py` and refine shared runtime/auth schemas in `backend/app/api/schemas/contracts.py` and `backend/app/api/schemas/auth.py`
+- [ ] T009 [P] Create repository interfaces and SQLAlchemy implementations for credit requests, status history, and queue exports in `backend/app/infrastructure/repositories/credit_requests.py`
+- [ ] T010 Define shared admin and runtime Pydantic schemas in `backend/app/api/schemas/engine_admin.py`, including parameters, pipeline configuration, export filters, and audit query contracts, and refine shared runtime/auth schemas in `backend/app/api/schemas/contracts.py` and `backend/app/api/schemas/auth.py`
 - [ ] T011 [P] Implement shared audit event writer reusing or extending `backend/app/infrastructure/db/models.py` and expose it from `backend/app/infrastructure/repositories/audit_events.py`
 - [ ] T012 [P] Extend RBAC permissions and dependency wiring for engine administration, evaluations, credit requests, exports, and attachments in `backend/app/security/permissions.py` and `backend/app/security/dependencies.py`
-- [ ] T013 Build runtime loader services that resolve `product_code`, `workflow_code`, active workflow version, variable catalog, rules, and pipeline in `backend/app/application/engine_admin/runtime_loader.py`
+- [ ] T013 Build runtime loader services that resolve `product_code`, `workflow_code`, active workflow version, variable catalog, parameter set, rules, and pipeline in `backend/app/application/engine_admin/runtime_loader.py`
 - [ ] T014 Refactor engine bootstrap to support persistence-backed runtime registration in `backend/app/domain/decision_engine/bootstrap.py` and `backend/app/domain/decision_engine/registry.py`
-- [ ] T015 [P] Add foundational tests for migrations, repositories, runtime loading, source-of-truth product semantics, and RBAC in `backend/tests/test_models.py`, `backend/tests/test_migrations.py`, `backend/tests/test_decision_engine_registry.py`, and `backend/tests/test_rbac.py`
+- [ ] T014A [P] Implement AI interaction persistence and repository access in `backend/app/infrastructure/repositories/ai_interactions.py`
+- [ ] T015 [P] Add foundational tests for migrations, repositories, runtime loading, source-of-truth product semantics, parameter/pipeline activation constraints, and RBAC in `backend/tests/test_models.py`, `backend/tests/test_migrations.py`, `backend/tests/test_decision_engine_registry.py`, and `backend/tests/test_rbac.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
 ---
 
-## Phase 3: User Story 4 - Administrar productos, workflows, variables y reglas del motor (Priority: P1) 🎯 MVP Foundation Story
+## Phase 3: User Story 4 - Administrar productos, workflows, variables, parametros, pipeline y reglas del motor (Priority: P1) 🎯 MVP Foundation Story
 
-**Goal**: Permitir a usuarios autorizados crear, versionar, activar y retirar productos, workflows, catalogos de variables y reglas sin cambios de codigo en las capas compartidas.
+**Goal**: Permitir a usuarios autorizados crear, versionar, activar y retirar productos, workflows, catalogos de variables, parametros, estrategias de pipeline y reglas sin cambios de codigo en las capas compartidas.
 
-**Independent Test**: Un usuario autorizado crea un producto `draft`, registra variables y un catalogo versionado, crea un workflow y reglas, activa la configuracion completa, intenta editar un workflow activo y el sistema obliga a crear una nueva version, dejando trazabilidad de todas las acciones.
+**Independent Test**: Un usuario autorizado crea un producto `draft`, registra variables y un catalogo versionado, publica parametros, crea un workflow con pipeline y reglas, activa la configuracion completa, intenta editar un workflow activo y el sistema obliga a crear una nueva version, dejando trazabilidad de todas las acciones.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T016 [P] [US4] Add contract tests for admin product, workflow, variable catalog, and rule endpoints in `backend/tests/contract/test_engine_admin_api.py`
-- [ ] T017 [P] [US4] Add integration tests for lifecycle transitions, activation guards, and workflow version immutability in `backend/tests/integration/test_engine_admin_flow.py`
+- [ ] T016 [P] [US4] Add contract tests for admin product, workflow, variable catalog, parameter, pipeline, and rule endpoints in `backend/tests/contract/test_engine_admin_api.py`
+- [ ] T017 [P] [US4] Add integration tests for lifecycle transitions, activation guards, parameter/pipeline dependencies, and workflow version immutability in `backend/tests/integration/test_engine_admin_flow.py`
 - [ ] T018 [P] [US4] Add regression tests for second-product onboarding without shared-layer code changes in `backend/tests/integration/test_engine_admin_second_product.py`
 
 ### Implementation for User Story 4
 
-- [ ] T019 [P] [US4] Implement engine admin application services for products, workflows, variable catalogs, and rules in `backend/app/application/engine_admin/service.py`
-- [ ] T020 [P] [US4] Implement lifecycle validation and activation guard rules in `backend/app/application/engine_admin/activation_rules.py`
+- [ ] T019 [P] [US4] Implement engine admin application services for products, workflows, variable catalogs, parameter sets, pipeline strategies, and rules in `backend/app/application/engine_admin/service.py`
+- [ ] T020 [P] [US4] Implement lifecycle validation and activation guard rules, including parameter and pipeline reference checks, in `backend/app/application/engine_admin/activation_rules.py`
 - [ ] T021 [P] [US4] Implement workflow versioning service in `backend/app/application/engine_admin/workflow_versions.py`
-- [ ] T022 [US4] Implement engine admin routes in `backend/app/api/routes/engine_admin.py`
+- [ ] T022 [US4] Implement engine admin routes for products, workflows, variable catalogs, parameter sets, pipeline strategies, and rules in `backend/app/api/routes/engine_admin.py`
 - [ ] T023 [US4] Implement admin request/response mappers in `backend/app/api/mappers/engine_admin.py`
 - [ ] T024 [US4] Implement engine admin frontend service client in `frontend/src/services/engine-admin-api.ts`
-- [ ] T025 [P] [US4] Implement product and workflow admin UI in `frontend/src/features/engine-admin/ProductsPage.tsx` and `frontend/src/features/engine-admin/WorkflowsPage.tsx`
-- [ ] T026 [P] [US4] Implement variable catalog and rule admin UI in `frontend/src/features/engine-admin/VariablesPage.tsx` and `frontend/src/features/engine-admin/RulesPage.tsx`
-- [ ] T027 [US4] Add frontend tests for engine admin lifecycle and versioning in `frontend/tests/engine-admin-flow.test.tsx`
+- [ ] T025 [P] [US4] Implement product, workflow, and pipeline admin UI in `frontend/src/features/engine-admin/ProductsPage.tsx`, `frontend/src/features/engine-admin/WorkflowsPage.tsx`, and `frontend/src/features/engine-admin/PipelinePage.tsx`
+- [ ] T026 [P] [US4] Implement variable catalog, parameter set, and rule admin UI in `frontend/src/features/engine-admin/VariablesPage.tsx`, `frontend/src/features/engine-admin/ParametersPage.tsx`, and `frontend/src/features/engine-admin/RulesPage.tsx`
+- [ ] T027 [US4] Add frontend tests for engine admin lifecycle, parameter publication, pipeline activation, and versioning in `frontend/tests/engine-admin-flow.test.tsx`
 
 **Checkpoint**: Motor administrable funcional y testeable de manera independiente.
 
@@ -84,19 +85,19 @@
 ### Tests for User Story 1 ⚠️
 
 - [ ] T028 [P] [US1] Add contract tests for login/session bootstrap and runtime consultation/evaluation endpoints in `backend/tests/contract/test_runtime_auth_and_evaluations.py`
-- [ ] T029 [P] [US1] Add integration tests for consultation, evaluation execution, trace retrieval, and AI fallback in `backend/tests/integration/test_pld_runtime_flow.py`
+- [ ] T029 [P] [US1] Add integration tests for consultation, evaluation execution, trace retrieval, variable-origin enforcement, effective-version persistence, and AI fallback in `backend/tests/integration/test_pld_runtime_flow.py`
 - [ ] T030 [P] [US1] Add mapper and determinism regression tests for product-specific HTTP contracts in `backend/tests/test_evaluation_contract_mappers.py` and `backend/tests/test_decision_engine_pipeline.py`
 
 ### Implementation for User Story 1
 
 - [ ] T031 [P] [US1] Implement frontend login/session bootstrap in `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/features/auth/auth-service.ts`, and `frontend/src/session-storage.ts`
 - [ ] T032 [P] [US1] Implement consultation application service orchestration in `backend/app/application/loan_consultations.py`
-- [ ] T033 [P] [US1] Implement evaluation application service with runtime loading, snapshot capture, trace persistence, and AI fallback handling in `backend/app/application/evaluations/service.py`
+- [ ] T033 [P] [US1] Implement evaluation application service with runtime loading, variable-origin validation, snapshot capture, effective-version persistence, and AI fallback handling in `backend/app/application/evaluations/service.py`
 - [ ] T034 [P] [US1] Refine product-specific to generic engine mapping in `backend/app/api/mappers/evaluations.py`
 - [ ] T035 [US1] Implement consultation route behavior in `backend/app/api/routes/loan_consultations.py`
 - [ ] T036 [US1] Implement evaluation and trace routes in `backend/app/api/routes/evaluations.py`
-- [ ] T037 [US1] Persist applied workflow, variable catalog, rule set, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
-- [ ] T038 [US1] Implement AI explanation and summary orchestration with explicit fallback in `backend/app/application/ai/evaluation_explanations.py`
+- [ ] T037 [US1] Persist applied workflow, variable catalog, parameter set, rule set, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
+- [ ] T038 [US1] Implement AI explanation and summary orchestration with explicit fallback and `ai_interactions` persistence in `backend/app/application/ai/evaluation_explanations.py`
 - [ ] T039 [US1] Add frontend service client for consultations and evaluations in `frontend/src/services/runtime-api.ts`
 - [ ] T040 [P] [US1] Implement consultation UI flow in `frontend/src/features/loan-consultations/ConsultationPage.tsx` and `frontend/src/features/loan-consultations/consultation-form.tsx`
 - [ ] T041 [P] [US1] Implement evaluation UI flow and trace viewer in `frontend/src/features/evaluations/EvaluationPage.tsx`, `frontend/src/features/evaluations/evaluation-form.tsx`, and `frontend/src/features/evaluations/trace-panel.tsx`
@@ -115,16 +116,16 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and queue export endpoints in `backend/tests/contract/test_credit_requests_api.py`
-- [ ] T045 [P] [US2] Add integration tests for request registration, status transitions, forbidden transitions, and queue export in `backend/tests/integration/test_credit_request_flow.py`
+- [ ] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and `CSV UTF-8` queue export endpoints with applied filters in `backend/tests/contract/test_credit_requests_api.py`
+- [ ] T045 [P] [US2] Add integration tests for request registration, status transitions, forbidden transitions, and queue export with filter echoing in `backend/tests/integration/test_credit_request_flow.py`
 
 ### Implementation for User Story 2
 
 - [ ] T046 [P] [US2] Implement credit request application services in `backend/app/application/credit_requests/service.py`
-- [ ] T047 [P] [US2] Implement credit request persistence, status history writes, evaluation linkage, and queue export support in `backend/app/infrastructure/repositories/credit_requests.py`
+- [ ] T047 [P] [US2] Implement credit request persistence, status history writes, evaluation linkage, and `CSV UTF-8` queue export support with audit metadata in `backend/app/infrastructure/repositories/credit_requests.py`
 - [ ] T048 [US2] Implement credit request, queue, and export routes in `backend/app/api/routes/credit_requests.py`
 - [ ] T049 [US2] Add request status transition validation and role-specific rules in `backend/app/application/credit_requests/status_rules.py`
-- [ ] T050 [US2] Implement request detail, queue, and export schemas/mappers in `backend/app/api/schemas/contracts.py` and `backend/app/api/mappers/credit_requests.py`
+- [ ] T050 [US2] Implement request detail, queue, export, and filter-echo schemas/mappers in `backend/app/api/schemas/contracts.py` and `backend/app/api/mappers/credit_requests.py`
 - [ ] T051 [US2] Add queue, request, and export services for the frontend in `frontend/src/services/credit-requests-api.ts`
 - [ ] T052 [P] [US2] Implement request registration UI in `frontend/src/features/credit-requests/CreditRequestPage.tsx` and `frontend/src/features/credit-requests/request-form.tsx`
 - [ ] T053 [P] [US2] Implement operational queue UI, export action, and status actions in `frontend/src/features/credit-requests/QueuePage.tsx` and `frontend/src/features/credit-requests/status-actions.tsx`
@@ -142,17 +143,17 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T055 [P] [US3] Add contract tests for attachment upload/download and audit retrieval endpoints in `backend/tests/contract/test_attachments_and_audit_api.py`
-- [ ] T056 [P] [US3] Add integration tests for ZIP lifecycle, audit events, and AI-failure-safe retrieval in `backend/tests/integration/test_attachments_and_audit_flow.py`
+- [ ] T055 [P] [US3] Add contract tests for attachment upload, metadata/listing, ZIP content listing, download, and audit retrieval endpoints in `backend/tests/contract/test_attachments_and_audit_api.py`
+- [ ] T056 [P] [US3] Add integration tests for ZIP lifecycle, ZIP manifest visualization, audit events, and AI-failure-safe retrieval in `backend/tests/integration/test_attachments_and_audit_flow.py`
 
 ### Implementation for User Story 3
 
-- [ ] T057 [P] [US3] Implement filesystem ZIP storage service in `backend/app/infrastructure/files/zip_storage.py`
+- [ ] T057 [P] [US3] Implement filesystem ZIP storage and ZIP manifest extraction service in `backend/app/infrastructure/files/zip_storage.py`
 - [ ] T058 [P] [US3] Implement attachment metadata repository and audit persistence in `backend/app/infrastructure/repositories/attachments.py`
-- [ ] T059 [US3] Implement attachment upload, list, and download application services in `backend/app/application/credit_requests/attachments_service.py`
-- [ ] T060 [US3] Implement attachment and audit routes in `backend/app/api/routes/attachments.py` and `backend/app/api/routes/audit.py`
+- [ ] T059 [US3] Implement attachment upload, list, ZIP content listing, and download application services in `backend/app/application/credit_requests/attachments_service.py`
+- [ ] T060 [US3] Implement attachment and paginated audit routes with `evaluation_id` and `request_id` filters in `backend/app/api/routes/attachments.py` and `backend/app/api/routes/audit.py`
 - [ ] T061 [US3] Extend frontend service clients for attachments and audit trace access in `frontend/src/services/attachments-api.ts` and `frontend/src/services/audit-api.ts`
-- [ ] T062 [P] [US3] Implement attachment management UI in `frontend/src/features/attachments/AttachmentsPanel.tsx` and `frontend/src/features/attachments/upload-form.tsx`
+- [ ] T062 [P] [US3] Implement attachment management UI with metadata and ZIP content listing in `frontend/src/features/attachments/AttachmentsPanel.tsx` and `frontend/src/features/attachments/upload-form.tsx`
 - [ ] T063 [P] [US3] Implement audit timeline UI in `frontend/src/features/attachments/AuditTimeline.tsx`
 - [ ] T064 [US3] Add frontend tests for attachments and audit timeline in `frontend/tests/attachments-flow.test.tsx` and `frontend/tests/audit-timeline.test.tsx`
 
@@ -166,9 +167,11 @@
 
 - [ ] T065 [P] Update OpenAPI examples and generated contract fixtures in `specs/001-project-specification/contracts/runtime.openapi.yaml`, `specs/001-project-specification/contracts/engine-admin.openapi.yaml`, and `backend/tests/contract/fixtures/`
 - [ ] T066 Harden observability, structured logging, request tracing, and AI degradation logging in `backend/app/main.py`, `backend/app/config/settings.py`, and `backend/app/application/`
-- [ ] T067 [P] Add regression coverage for versioning, active-state enforcement, second-product extensibility, and auditability in `backend/tests/integration/test_engine_admin_versioning.py` and `backend/tests/integration/test_runtime_reproducibility.py`
+- [ ] T067 [P] Add regression coverage for versioning, active-state enforcement, parameter/pipeline governance, second-product extensibility, AI traceability, and auditability in `backend/tests/integration/test_engine_admin_versioning.py` and `backend/tests/integration/test_runtime_reproducibility.py`
 - [ ] T068 [P] Add frontend regression coverage for session persistence and role-gated navigation in `frontend/tests/session-storage.test.ts` and `frontend/tests/navigation-guards.test.tsx`
-- [ ] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md` in `NOTES.md`
+- [ ] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md`, including export, adjuntos, auditoria, AI fallback, and p95 checks, in a project execution report
+- [ ] T069A [P] Implement automated performance validation tests for p95 targets (`SC-012`) in `backend/tests/integration/test_performance_validation.py` using a mock or local database baseline and synthetic operational workload
+- [ ] T069B [P] Create automated validation suite for ZIP content visual listing (`FR-012`, `SC-005`) in `backend/tests/integration/test_zip_manifest_validation.py`
 
 ---
 
@@ -187,7 +190,7 @@
 ### User Story Dependencies
 
 - **US4**: Can start after Phase 2 - no dependency on later stories
-- **US1**: Depends on US4 because evaluations must consume administrable products, workflows, variables, and rules
+- **US1**: Depends on US4 because evaluations must consume administrable products, workflows, variables, parameters, pipeline, and rules
 - **US2**: Depends on US1 evaluation persistence because requests must link to valid evaluations
 - **US3**: Depends on US2 request persistence and US1 trace/audit persistence
 
@@ -201,7 +204,7 @@
 ### Parallel Opportunities
 
 - T003-T004 can run in parallel after T001-T002
-- T007-T013 and T015 can run in parallel once T005-T006 are complete where file ownership does not collide
+- T007-T014A and T015 can run in parallel once T005-T006 are complete where file ownership does not collide
 - In US4, T016-T018 can run together; T019-T021 can run in parallel; T025-T026 can run in parallel
 - In US1, T028-T030 can run together; T031-T034 can run in parallel; T040-T041 can run in parallel
 - In US2, T044-T045 can run together; T046-T047 can run in parallel; T052-T053 can run in parallel
@@ -213,13 +216,13 @@
 
 ```bash
 # Launch US4 backend-first tests together
-Task: "Add contract tests for admin product, workflow, variable catalog, and rule endpoints in backend/tests/contract/test_engine_admin_api.py"
-Task: "Add integration tests for lifecycle transitions, activation guards, and workflow version immutability in backend/tests/integration/test_engine_admin_flow.py"
+Task: "Add contract tests for admin product, workflow, variable catalog, parameter, pipeline, and rule endpoints in backend/tests/contract/test_engine_admin_api.py"
+Task: "Add integration tests for lifecycle transitions, activation guards, parameter/pipeline dependencies, and workflow version immutability in backend/tests/integration/test_engine_admin_flow.py"
 Task: "Add regression tests for second-product onboarding without shared-layer code changes in backend/tests/integration/test_engine_admin_second_product.py"
 
 # Launch US4 admin UI tasks together after backend contracts stabilize
-Task: "Implement product and workflow admin UI in frontend/src/features/engine-admin/ProductsPage.tsx and frontend/src/features/engine-admin/WorkflowsPage.tsx"
-Task: "Implement variable catalog and rule admin UI in frontend/src/features/engine-admin/VariablesPage.tsx and frontend/src/features/engine-admin/RulesPage.tsx"
+Task: "Implement product, workflow, and pipeline admin UI in frontend/src/features/engine-admin/ProductsPage.tsx, frontend/src/features/engine-admin/WorkflowsPage.tsx, and frontend/src/features/engine-admin/PipelinePage.tsx"
+Task: "Implement variable catalog, parameter set, and rule admin UI in frontend/src/features/engine-admin/VariablesPage.tsx, frontend/src/features/engine-admin/ParametersPage.tsx, and frontend/src/features/engine-admin/RulesPage.tsx"
 ```
 
 ---
