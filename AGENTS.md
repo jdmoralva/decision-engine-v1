@@ -3,15 +3,16 @@
 ## Leer primero
 
 1. `README.md`
-2. `docs/SPEC.md`
-3. `docs/project/BACKLOG.md`
-4. `docs/project/ISSUES.md`
-5. `docs/project/SPRINTS.md`
-6. `docs/analysis/README.md`
-7. `backend/README.md`
-8. `frontend/README.md`
-9. `old-version/README.md`
-10. `old-version/api-build.R`
+2. `specs/001-project-specification/spec.md`
+3. `specs/001-project-specification/plan.md`
+4. `specs/001-project-specification/tasks.md`
+5. `specs/001-project-specification/data-model.md`
+6. `specs/001-project-specification/quickstart.md`
+7. `specs/001-project-specification/research.md`
+8. `backend/README.md`
+9. `frontend/README.md`
+10. `old-version/README.md`
+11. `old-version/api-build.R`
 
 ## Fuentes de verdad
 
@@ -45,10 +46,11 @@
 
 - Revisa `git status --short` antes de editar.
 - No toques cambios ajenos sin necesidad.
-- Si detectas discrepancia entre docs y legacy, prioriza `docs/SPEC.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
+- Si detectas discrepancia entre docs y legacy, prioriza `specs/001-project-specification/spec.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
+- El archivo `NOTES.md` es un documento de ayuda memoria para el programador.
 
 <!-- SPECKIT START -->
-For constitution file, [glob] may return “No files found”, read file from `C:\Users\User\Documents\1. Projects\23. Decision Engine 1\.specify\memory\constitution.md`.
+For constitution file, `glob` may return “No files found”, read file from `C:/Users/User/Documents/1. Projects/23. Decision Engine 1/.specify/memory/constitution.md`.
 For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
 Specification and code may be in English, but frontend and UI must be in Spanish.
 <!-- SPECKIT END -->

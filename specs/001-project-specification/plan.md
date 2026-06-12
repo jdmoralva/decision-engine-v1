@@ -6,7 +6,7 @@
 
 ## Summary
 
-Implementar el MVP de `Decision Engine` adoptando la arquitectura de `docs/DDR.md` como linea base: monolito modular con backend `FastAPI`, frontend `React`, motor deterministico aislado del framework web y un modelo administrable para productos, workflows, variables, parametros, reglas y estrategias de pipeline. El plan prioriza primero habilitar la administracion persistida y gobernada del motor, incluyendo trazabilidad de interacciones AI, y luego completar el flujo operacional `PLD` de punta a punta sin perder la base multiproducto ya iniciada en el repositorio. La decision arquitectonica principal es mantener la separacion entre contratos HTTP por producto y contrato canonico interno del motor, mientras la administracion del motor evoluciona hacia persistencia gobernada y versionada en lugar de registros hardcodeados.
+Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-old-specification/docs/DDR.md` como linea base: monolito modular con backend `FastAPI`, frontend `React`, motor deterministico aislado del framework web y un modelo administrable para productos, workflows, variables, parametros, reglas y estrategias de pipeline. El plan prioriza primero habilitar la administracion persistida y gobernada del motor, incluyendo trazabilidad de interacciones AI, y luego completar el flujo operacional `PLD` de punta a punta sin perder la base multiproducto ya iniciada en el repositorio. La decision arquitectonica principal es mantener la separacion entre contratos HTTP por producto y contrato canonico interno del motor, mientras la administracion del motor evoluciona hacia persistencia gobernada y versionada en lugar de registros hardcodeados.
 
 ## Technical Context
 
@@ -102,13 +102,13 @@ frontend/
 └── tests/
 ```
 
-**Structure Decision**: Se adopta la estructura web application ya presente en el repositorio. No se separa el motor en microservicio durante el MVP; en su lugar se profundiza el monolito modular propuesto por `DDR.md`, agregando modulos de aplicacion e infraestructura para administracion del motor, evaluaciones, solicitudes, adjuntos y AI asistiva.
+**Structure Decision**: Se adopta la estructura web application ya presente en el repositorio. No se separa el motor en microservicio durante el MVP; en su lugar se profundiza el monolito modular propuesto por `specs/000-old-specification/docs/DDR.md`, agregando modulos de aplicacion e infraestructura para administracion del motor, evaluaciones, solicitudes, adjuntos y AI asistiva.
 
 ## Implementation Phases
 
 ### Phase 0 - Research and baseline decisions
 
-1. Confirmar la adopcion del monolito modular de `DDR.md` como arquitectura oficial del MVP.
+1. Confirmar la adopcion del monolito modular de `specs/000-old-specification/docs/DDR.md` como arquitectura oficial del MVP.
 2. Cerrar el patron de contrato doble: contratos HTTP por producto en `api/` y contrato interno generico del motor en `domain/decision_engine/`.
 3. Definir el modelo administrativo minimo versionable para productos, workflows, catalogos de variables, parametros, reglas y estrategias de pipeline.
 4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad e interacciones AI trazables por modelo/template/payload.

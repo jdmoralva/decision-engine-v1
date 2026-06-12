@@ -1,6 +1,6 @@
 # Research - Decision Engine MVP
 
-## Decision 1: Adoptar la arquitectura de `DDR.md` como baseline del MVP
+## Decision 1: Adoptar la arquitectura de `specs/000-old-specification/docs/DDR.md` como baseline del MVP
 
 - Decision: Mantener un monolito modular con frontend desacoplado, backend `FastAPI`, motor deterministico interno, persistencia relacional y AI asistiva fuera del camino critico.
 - Rationale: El repositorio ya tiene bootstrap backend/frontend, un core de motor aislado y contratos REST iniciales. Separar a microservicios ahora agregaria complejidad operativa sin resolver ningun cuello de botella real del MVP.
@@ -11,7 +11,7 @@
 ## Decision 2: Separar contrato HTTP por producto del contrato canonico interno del motor
 
 - Decision: Mantener request/response HTTP especificos por producto en `api/schemas`, pero traducirlos con mappers a un contrato interno generico del motor resuelto por `product_code` y `workflow_code`.
-- Rationale: El repo ya tiene esta direccion parcialmente implementada y `DDR.md` la define como convergencia objetivo. Esto permite que `PLD` siga funcionando como contrato transicional sin contaminar el core multiproducto.
+- Rationale: El repo ya tiene esta direccion parcialmente implementada y `specs/000-old-specification/docs/DDR.md` la define como convergencia objetivo. Esto permite que `PLD` siga funcionando como contrato transicional sin contaminar el core multiproducto.
 - Alternatives considered:
   - Un unico contrato REST universal desde ya: descartado porque `PLD` aun tiene payload y resultado especificos.
   - Contratos PLD hardcodeados tambien en el motor: descartado por romper la extensibilidad inmediata.
@@ -43,7 +43,7 @@
 ## Decision 6: Registrar eventos minimos de auditoria para administracion y runtime
 
 - Decision: Registrar eventos append-only para crear, activar, retirar y versionar productos, workflows, reglas y pipelines, ademas de ejecutar evaluaciones, registrar solicitudes y operar adjuntos.
-- Rationale: La spec y `DDR.md` exigen trazabilidad completa. Los eventos permiten reconstruir quien cambio que, cuando y bajo que version opero una evaluacion o solicitud.
+- Rationale: La spec y `specs/000-old-specification/docs/DDR.md` exigen trazabilidad completa. Los eventos permiten reconstruir quien cambio que, cuando y bajo que version opero una evaluacion o solicitud.
 - Alternatives considered:
   - Auditar solo tablas finales: descartado por perder la secuencia de activacion y reemplazo.
   - Auditar solo runtime operativo: descartado porque deja ciegas las decisiones administrativas.

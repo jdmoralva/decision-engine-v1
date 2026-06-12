@@ -2,7 +2,7 @@
 
 ## Summary
 
-Esta especificacion consolida el alcance funcional y operativo del MVP de `Decision Engine` a partir de `docs/SPEC.md` y `docs/DDR.md`. El proyecto debe entregar una plataforma de evaluacion y gestion de solicitudes de credito que cubra el flujo `PLD` de punta a punta, mantenga trazabilidad completa, incorpore asistencia AI no decisoria y deje validada una base reutilizable para otros productos de prestamo.
+Esta especificacion consolida el alcance funcional y operativo del MVP de `Decision Engine` a partir de `specs/000-old-specification/docs/SPEC.md` y `specs/000-old-specification/docs/DDR.md`. El proyecto debe entregar una plataforma de evaluacion y gestion de solicitudes de credito que cubra el flujo `PLD` de punta a punta, mantenga trazabilidad completa, incorpore asistencia AI no decisoria y deje validada una base reutilizable para otros productos de prestamo.
 
 ## Clarifications
 
