@@ -16,13 +16,14 @@ Esta especificacion consolida el alcance funcional y operativo del MVP de `Decis
 
 ### Session 2026-06-12
 
-- Q: Que enfoque de validacion debe priorizar la implementacion de funcionalidades? → A: TDD con ciclo `Red -> Green -> Refactor`.
+- Q: Que enfoque de desarrollo debe priorizar la implementacion de funcionalidades? → A: TDD con ciclo `Red -> Green -> Refactor`.
+- Q: Cuales son los campos minimos que debe mostrar la bandeja operativa? → A: `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones disponibles segun rol.
 
 ## User Scenarios & Testing
 
 **Nota de dependencia del MVP**: Aunque las historias se presentan por capacidad funcional, `User Story 4` habilita la base administrable del motor que consumen `User Story 1`, `User Story 2` y `User Story 3`. En la implementacion del MVP, `US4` debe completarse antes de ejecutar evaluaciones operativas sobre configuraciones persistidas.
 
-**Nota de validacion**: La implementacion de funcionalidades debe priorizar `TDD`, siguiendo el ciclo `Red -> Green -> Refactor`; los cambios de comportamiento deben nacer con una prueba automatizada en falla, pasar a verde con la implementacion minima y luego refactorizar sin perder cobertura.
+**Nota de desarrollo**: La implementacion de funcionalidades debe priorizar `TDD`, siguiendo el ciclo `Red -> Green -> Refactor`; los cambios de comportamiento deben nacer con una prueba automatizada en falla, pasar a verde con la implementacion minima y luego refactorizar sin perder cobertura.
 
 ### User Story 1 - Consultar y evaluar una oferta de credito
 
@@ -41,7 +42,7 @@ Como analista o supervisor, quiero registrar una solicitud de credito y gestiona
 #### Acceptance Scenario
 
 1. Dado un resultado de evaluacion habilitante, cuando el usuario registra la solicitud, entonces el sistema guarda la solicitud con su estado inicial y la asocia a la traza de evaluacion correspondiente.
-2. Dado un rango de fechas o periodo operativo, cuando el usuario consulta la bandeja, entonces el sistema devuelve las solicitudes encontradas con su estado, datos relevantes y acciones permitidas segun rol.
+2. Dado un rango de fechas o periodo operativo, cuando el usuario consulta la bandeja, entonces el sistema devuelve las solicitudes encontradas mostrando como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones permitidas segun rol.
 3. Dado una solicitud existente, cuando un usuario autorizado la anula o cambia de estado, entonces el sistema registra el cambio, conserva la trazabilidad historica y refleja el nuevo estado en la bandeja.
 
 ### User Story 3 - Administrar adjuntos y auditoria
@@ -87,7 +88,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-003: El sistema debe permitir capturar datos complementarios requeridos para la evaluacion de una oferta.
 - FR-004: El sistema debe ejecutar una evaluacion deterministica de la oferta seleccionada y devolver un resultado estructurado que incluya al menos resultado de evaluacion, alertas, observaciones y motivos de bloqueo cuando existan.
 - FR-005: El sistema debe permitir registrar una solicitud de credito solo cuando exista una evaluacion valida asociada al caso.
-- FR-006: El sistema debe permitir consultar una bandeja de solicitudes por periodo con informacion suficiente para seguimiento operativo.
+- FR-006: El sistema debe permitir consultar una bandeja de solicitudes por periodo mostrando como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones disponibles segun rol.
 - FR-007: El sistema debe permitir anular solicitudes y actualizar su estado solo a usuarios autorizados y bajo reglas de flujo definidas.
 - FR-008: El sistema debe permitir exportar los resultados de la bandeja en formato `CSV UTF-8`, incluyendo los filtros aplicados, para uso operativo y seguimiento.
 
@@ -178,7 +179,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Las reglas del motor se administran dentro de cada workflow y solo las reglas activas participan en evaluaciones operativas.
 - Un workflow activo se considera inmutable para fines operativos; cualquier ajuste posterior se publica como una nueva version.
 - La fuente de verdad del producto en el MVP es un unico registro persistido de producto administrable reutilizado tanto por runtime como por solicitudes de credito.
-- La bandeja operativa se consulta por periodos y expone solo las acciones permitidas para el rol y estado vigentes.
+- La bandeja operativa se consulta por periodos y expone como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y las acciones permitidas para el rol y estado vigentes.
 - Los adjuntos admitidos para el MVP se limitan a archivos ZIP asociados a una solicitud.
 - La asistencia AI consume solo informacion permitida del caso y se utiliza como apoyo explicativo, no como autoridad de decision.
 - El legado sirve como referencia funcional, pero no impone dependencias de interfaz, autenticacion por IP ni estructura interna del nuevo sistema.
