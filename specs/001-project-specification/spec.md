@@ -19,11 +19,16 @@ Esta especificacion consolida el alcance funcional y operativo del MVP de `Decis
 - Q: Que enfoque de desarrollo debe priorizar la implementacion de funcionalidades? → A: TDD con ciclo `Red -> Green -> Refactor`.
 - Q: Cuales son los campos minimos que debe mostrar la bandeja operativa? → A: `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones disponibles segun rol.
 
+### Session 2026-06-13
+
+- Q: Cuando deben definirse y ejecutarse obligatoriamente las pruebas unitarias de nuevas funcionalidades? → A: Deben definirse antes o durante la implementacion y ejecutarse obligatoriamente cuando la funcionalidad quede lista para revision o cuando se complete una unidad funcional verificable.
+- Q: Que estados operativos minimos debe tener una solicitud de credito en el MVP? → A: `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido.
+
 ## User Scenarios & Testing
 
 **Nota de dependencia del MVP**: Aunque las historias se presentan por capacidad funcional, `User Story 4` habilita la base administrable del motor que consumen `User Story 1`, `User Story 2` y `User Story 3`. En la implementacion del MVP, `US4` debe completarse antes de ejecutar evaluaciones operativas sobre configuraciones persistidas.
 
-**Nota de desarrollo**: La implementacion de funcionalidades debe priorizar `TDD`, siguiendo el ciclo `Red -> Green -> Refactor`; los cambios de comportamiento deben nacer con una prueba automatizada en falla, pasar a verde con la implementacion minima y luego refactorizar sin perder cobertura.
+**Nota de desarrollo**: La implementacion de funcionalidades debe priorizar `TDD`, siguiendo el ciclo `Red -> Green -> Refactor`; los cambios de comportamiento deben nacer con una prueba automatizada en falla, pasar a verde con la implementacion minima y luego refactorizar sin perder cobertura. Las pruebas unitarias de nuevas funcionalidades deben definirse antes o durante la implementacion y ejecutarse obligatoriamente cuando la funcionalidad quede lista para revision o cuando se cierre una unidad funcional verificable.
 
 ### User Story 1 - Consultar y evaluar una oferta de credito
 
@@ -43,7 +48,8 @@ Como analista o supervisor, quiero registrar una solicitud de credito y gestiona
 
 1. Dado un resultado de evaluacion habilitante, cuando el usuario registra la solicitud, entonces el sistema guarda la solicitud con su estado inicial y la asocia a la traza de evaluacion correspondiente.
 2. Dado un rango de fechas o periodo operativo, cuando el usuario consulta la bandeja, entonces el sistema devuelve las solicitudes encontradas mostrando como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones permitidas segun rol.
-3. Dado una solicitud existente, cuando un usuario autorizado la anula o cambia de estado, entonces el sistema registra el cambio, conserva la trazabilidad historica y refleja el nuevo estado en la bandeja.
+3. Dado una solicitud existente, cuando un usuario autorizado consulta su detalle, entonces el sistema muestra sus datos operativos, la evaluacion vinculada, el historial de estados y los adjuntos disponibles segun rol.
+4. Dado una solicitud existente, cuando un usuario autorizado la anula o cambia de estado dentro del flujo `registrada -> en_revision -> aprobada/rechazada` o hacia `anulada` como estado terminal alternativo permitido, entonces el sistema registra el cambio, conserva la trazabilidad historica y refleja el nuevo estado en la bandeja.
 
 ### User Story 3 - Administrar adjuntos y auditoria
 
@@ -70,7 +76,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 
 - El sistema debe manejar clientes sin ofertas disponibles sin permitir que el flujo avance a evaluacion o registro.
 - El sistema debe rechazar intentos de registrar solicitudes sin una evaluacion valida y trazable.
-- El sistema debe impedir anulaciones o cambios de estado no permitidos para el estado actual o para el rol del usuario.
+- El sistema debe impedir anulaciones o cambios de estado no permitidos para el estado actual o para el rol del usuario, incluyendo transiciones fuera del flujo `registrada -> en_revision -> aprobada/rechazada` y usos invalidos de `anulada` como estado terminal alternativo.
 - El sistema debe manejar fallas de la asistencia AI sin bloquear la consulta, evaluacion, registro o consulta de bandeja.
 - El sistema debe rechazar adjuntos que no correspondan al formato ZIP esperado o que no puedan asociarse de forma valida a una solicitud existente.
 - El sistema debe manejar ZIP validos pero vacios, corruptos o con manifiesto ilegible sin perder la auditoria del intento realizado.
@@ -89,13 +95,14 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-004: El sistema debe ejecutar una evaluacion deterministica de la oferta seleccionada y devolver un resultado estructurado que incluya al menos resultado de evaluacion, alertas, observaciones y motivos de bloqueo cuando existan.
 - FR-005: El sistema debe permitir registrar una solicitud de credito solo cuando exista una evaluacion valida asociada al caso.
 - FR-006: El sistema debe permitir consultar una bandeja de solicitudes por periodo mostrando como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y acciones disponibles segun rol.
-- FR-007: El sistema debe permitir anular solicitudes y actualizar su estado solo a usuarios autorizados y bajo reglas de flujo definidas.
+- FR-006A: El sistema debe permitir consultar el detalle de una solicitud mostrando sus datos operativos, la evaluacion vinculada, el historial de estados y los adjuntos disponibles segun rol.
+- FR-007: El sistema debe permitir anular solicitudes y actualizar su estado solo a usuarios autorizados y bajo el flujo minimo `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido.
 - FR-008: El sistema debe permitir exportar los resultados de la bandeja en formato `CSV UTF-8`, incluyendo los filtros aplicados, para uso operativo y seguimiento.
 
 ### Traceability and Audit
 
-- FR-009: El sistema debe registrar trazabilidad completa de cada evaluacion y de cada accion operativa relevante sobre una solicitud.
-- FR-010: El sistema debe conservar la relacion entre consulta, evaluacion, solicitud, cambios de estado y adjuntos para permitir reconstruccion historica del caso.
+- FR-009: El sistema debe registrar eventos auditables de cada evaluacion y de cada accion operativa relevante sobre una solicitud, incluyendo actor, rol, accion, entidad afectada, resultado y timestamp.
+- FR-010: El sistema debe conservar la relacion entre consulta, evaluacion, solicitud, cambios de estado y adjuntos para permitir reconstruccion historica del caso de punta a punta.
 - FR-011: El sistema debe preservar versiones suficientes de reglas, parametros y contexto para reproducir el resultado de una evaluacion realizada.
 
 ### Attachments
@@ -145,6 +152,13 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-041: El sistema debe iniciar con base limpia, sin depender de migracion historica desde el sistema legado para operar el MVP.
 - FR-042: El sistema debe registrar cada interaccion AI asociada al caso con modelo, version de template, payload permitido (subconjunto de datos anonimizados o no sensibles de la evaluacion o solicitud conforme a la politica de seguridad de datos), respuesta, estado de fallback y referencias a las versiones del motor utilizadas.
 
+### Minimum RBAC Matrix
+
+- Analista: puede autenticarse, restaurar sesion, consultar clientes, ejecutar evaluaciones, ver trazas del caso, registrar solicitudes, consultar bandeja y detalle de solicitudes, cargar adjuntos ZIP y mover solicitudes solo de `registrada` a `en_revision`.
+- Supervisor: hereda permisos de analista y ademas puede aprobar, rechazar, anular solicitudes, exportar bandeja y consultar auditoria operacional.
+- Administrador: puede gestionar productos, workflows, catalogos de variables, parametros, pipeline, reglas y sus activaciones; tambien puede consultar trazabilidad administrativa y operacional.
+- Auditor: acceso de solo lectura a trazas, auditoria, detalle de solicitudes, historial de estados y metadatos de adjuntos, sin permiso para evaluar, registrar, transicionar ni administrar configuraciones.
+
 ## Key Entities
 
 - Cliente: persona consultada para iniciar una evaluacion y recuperar datos relevantes de contexto.
@@ -152,7 +166,7 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Evaluacion: resultado deterministico generado para una oferta a partir de datos del cliente y datos complementarios capturados.
 - Traza de decision: registro estructurado de entradas relevantes, reglas aplicadas, eventos, alertas, bloqueos y salida final de una evaluacion.
 - Solicitud de credito: caso operativo registrado a partir de una evaluacion valida, con estado y seguimiento propio.
-- Estado de solicitud: etapa operativa vigente de una solicitud junto con su historial de cambios.
+- Estado de solicitud: etapa operativa vigente de una solicitud junto con su historial de cambios dentro del flujo minimo `registrada`, `en_revision`, `aprobada`, `rechazada` o `anulada`.
 - Adjunto ZIP: archivo asociado a una solicitud como evidencia operativa.
 - Usuario operativo: actor con permisos segun rol para consultar, evaluar, registrar y administrar solicitudes.
 - Regla o parametro versionado: definicion gobernada que influye en la evaluacion o en el comportamiento del flujo y cuya version debe poder auditarse.
@@ -171,7 +185,8 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 ## Assumptions
 
 - El MVP funcional inicial cubre el flujo `PLD / solicitudes de credito` completo, mientras la base del sistema queda preparada para un segundo producto en una fase cercana.
-- Los roles operativos principales incluyen al menos perfiles equivalentes a analista, supervisor y administrador con permisos diferenciados.
+- Las nuevas funcionalidades se desarrollan bajo prioridad `TDD`; sus pruebas unitarias se definen antes o durante la implementacion y deben ejecutarse antes de revision cuando el cambio ya constituye una funcionalidad o unidad funcional verificable.
+- Los roles operativos principales incluyen al menos perfiles equivalentes a analista, supervisor, administrador y auditor con permisos diferenciados.
 - La autenticacion del MVP usa el mecanismo operativo disponible en la plataforma actual y cubre login, restauracion de sesion y autorizacion por rol para los flujos definidos, sin bloquear una futura migracion a un proveedor corporativo.
 - Los equipos de negocio y riesgos administran productos y workflows dentro de un esquema gobernado, sin depender de TI para el alta, activacion o retiro como operacion habitual.
 - Las variables del motor se administran en el nivel de producto y cada workflow reutiliza solo las variables que requiere.
@@ -180,9 +195,12 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Un workflow activo se considera inmutable para fines operativos; cualquier ajuste posterior se publica como una nueva version.
 - La fuente de verdad del producto en el MVP es un unico registro persistido de producto administrable reutilizado tanto por runtime como por solicitudes de credito.
 - La bandeja operativa se consulta por periodos y expone como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y las acciones permitidas para el rol y estado vigentes.
+- El ciclo de vida operativo minimo de una solicitud en el MVP es `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido bajo autorizacion.
 - Los adjuntos admitidos para el MVP se limitan a archivos ZIP asociados a una solicitud.
 - La asistencia AI consume solo informacion permitida del caso y se utiliza como apoyo explicativo, no como autoridad de decision.
 - El legado sirve como referencia funcional, pero no impone dependencias de interfaz, autenticacion por IP ni estructura interna del nuevo sistema.
+- La suite operativa base para validar `SC-012` ejecuta AI deshabilitada, datos semilla locales, base SQLite local, 5 iteraciones de calentamiento por endpoint y luego 30 consultas validas + 30 evaluaciones validas por producto/workflow activo con concurrencia 1 y payloads deterministas.
+- La evidencia minima para cumplir `SC-013` consiste en pruebas automatizadas definidas antes o durante la implementacion, una ejecucion en verde sobre el cambio funcional y registro de esa ejecucion en la revision o en el corte de la unidad funcional verificable.
 
 ## Success Criteria
 
@@ -198,3 +216,4 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - SC-010: Los usuarios autorizados pueden autenticar, restaurar sesion y acceder solo a las acciones permitidas por su rol en los flujos del MVP.
 - SC-011: El sistema permite registrar y activar al menos un producto adicional al flujo `PLD` sin requerir cambios de codigo en las capas compartidas del motor.
 - SC-012: En la validacion de endurecimiento del MVP, `POST /consultas` y `POST /evaluaciones` cumplen `p95 <= 2s` y `p95 <= 4s` respectivamente con AI deshabilitada sobre la suite operativa base definida para el proyecto.
+- SC-013: El 100% de las nuevas funcionalidades o unidades funcionales verificables incorporadas al MVP llega a revision con pruebas unitarias definidas antes o durante la implementacion, ejecutadas satisfactoriamente sobre el comportamiento cambiado y con evidencia de esa ejecucion adjunta a la revision o al corte funcional correspondiente.

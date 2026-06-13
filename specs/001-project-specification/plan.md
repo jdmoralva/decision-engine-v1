@@ -22,9 +22,9 @@ Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-
 
 **Project Type**: Web application con backend API, frontend SPA y motor de decisiones embebido
 
-**Performance Goals**: en la validacion de endurecimiento del MVP y con AI deshabilitada, `POST /consultas` debe cumplir `p95 <= 2s` y `POST /evaluaciones` debe cumplir `p95 <= 4s` sobre la suite operativa base definida para el proyecto; con AI habilitada, la degradacion aceptable del flujo principal debe seguir permitiendo fallback sin bloquear la operacion.
+**Performance Goals**: en la validacion de endurecimiento del MVP y con AI deshabilitada, `POST /consultas` debe cumplir `p95 <= 2s` y `POST /evaluaciones` debe cumplir `p95 <= 4s` sobre una suite operativa base reproducible: SQLite local, datos semilla, 5 iteraciones de calentamiento por endpoint y luego 30 consultas validas + 30 evaluaciones validas con concurrencia 1 y payloads deterministas; con AI habilitada, la degradacion aceptable del flujo principal debe seguir permitiendo fallback sin bloquear la operacion.
 
-**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible)
+**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible); matriz RBAC minima verificable para analista, supervisor, administrador y auditor
 
 **Scale/Scope**: un MVP funcional `PLD` con soporte para un segundo producto cercano, multiples workflows por producto, decenas de variables por producto, cientos de reglas por workflow y trazabilidad completa de evaluaciones y solicitudes
 
@@ -49,6 +49,7 @@ specs/001-project-specification/
 ├── research.md
 ├── data-model.md
 ├── quickstart.md
+├── execution-report.md
 ├── contracts/
 │   ├── engine-admin.openapi.yaml
 │   └── runtime.openapi.yaml
@@ -111,21 +112,21 @@ frontend/
 1. Confirmar la adopcion del monolito modular de `specs/000-old-specification/docs/DDR.md` como arquitectura oficial del MVP.
 2. Cerrar el patron de contrato doble: contratos HTTP por producto en `api/` y contrato interno generico del motor en `domain/decision_engine/`.
 3. Definir el modelo administrativo minimo versionable para productos, workflows, catalogos de variables, parametros, reglas y estrategias de pipeline.
-4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad e interacciones AI trazables por modelo/template/payload.
+4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad, matriz RBAC minima por rol/accion e interacciones AI trazables por modelo/template/payload.
 
 ### Phase 1 - Domain and persistence design
 
 1. Extender el modelo de datos actual con entidades administrativas de motor en vez de seguir hardcodeando runtimes en bootstrap.
 2. Definir las relaciones entre producto, workflow, version de workflow, variable, origen de variable, parametro, regla y estrategia de pipeline.
 3. Diseñar contratos API canonicos para administracion del motor y para operaciones runtime del MVP.
-4. Definir guia quickstart para validar administracion, evaluacion, solicitudes, exportacion, adjuntos y trazabilidad.
+4. Definir guia quickstart para validar administracion, evaluacion, solicitudes, detalle, exportacion, adjuntos y trazabilidad.
 
 ### Phase 2 - Backend implementation slices
 
 1. Slice A: persistencia y repositorios de administracion del motor.
 2. Slice B: endpoints administrativos, versionado, activacion gobernada y RBAC para productos, workflows, variables, parametros, estrategias de pipeline, catalogos y reglas.
 3. Slice C: integracion de evaluaciones `PLD` con runtime persistido, autenticacion frontend y `DecisionTrace` real.
-4. Slice D: solicitudes de credito, historial de estado, bandeja, exportacion y adjuntos ZIP.
+4. Slice D: solicitudes de credito, detalle, historial de estado, bandeja, exportacion y adjuntos ZIP.
 5. Slice E: AI asistiva fuera del camino critico con fallback verificado y persistencia trazable de interacciones.
 
 ### Phase 3 - Frontend MVP flows
@@ -134,7 +135,7 @@ frontend/
 2. Pantallas admin para productos, workflows, variables, parametros, estrategias de pipeline, catalogos y reglas.
 3. Consulta cliente/campana por producto.
 4. Evaluacion y explicacion de resultados.
-5. Registro de solicitud, bandeja operativa, exportacion y adjuntos.
+5. Registro de solicitud, detalle, bandeja operativa, exportacion, adjuntos y timeline de auditoria.
 
 ### Phase 4 - Validation and hardening
 
@@ -142,7 +143,7 @@ frontend/
 2. Tests de determinismo, versionado, fallback AI, trazabilidad AI y trazabilidad de versiones efectivas.
 3. Validaciones end-to-end del flujo `PLD`, de administracion del motor, exportacion de bandeja y visualizacion de adjuntos ZIP.
 4. Validacion de extensibilidad con un segundo producto no hardcodeado.
-5. Revision de observabilidad, autorizacion, compatibilidad SQLite y objetivos p95 del MVP.
+5. Revision de observabilidad, autorizacion contra la matriz RBAC minima, compatibilidad SQLite, evidencia TDD por slice y objetivos p95 del MVP sobre la suite operativa base canonica.
 
 ## Architecture Decisions For This Plan
 
@@ -151,7 +152,7 @@ frontend/
 3. **Mantener contratos REST por producto en el borde**. `PLD` puede seguir teniendo contratos transicionales propios, pero el contrato interno del motor permanece generico y canonico.
 4. **Versionar catalogos de variables**. Para sostener reproducibilidad, las variables definidas a nivel producto se publican en catalogos versionados consumidos por cada version de workflow.
 5. **Versionar parametros como artefacto de primer nivel**. Los parametros del motor no quedan implícitos en reglas o bootstrap; se publican en versiones auditables reutilizables por workflow.
-6. **Persistir evidencia minima y bundle de versiones aplicado**. Cada evaluacion debe guardar referencias a `workflow_version`, `variable_catalog_version`, `parameter_set_version`, `rule_set_version` y `pipeline_version`, mas snapshot de los campos realmente consumidos.
+6. **Persistir evidencia minima y bundle de versiones aplicado**. Cada evaluacion debe guardar referencias a `workflow_version`, `variable_catalog_version`, `parameter_set_version`, versiones publicadas de reglas y `pipeline_version`, mas snapshot de los campos realmente consumidos.
 7. **Gobernar el pipeline como configuracion administrable**. Estrategias y nodos del pipeline deben versionarse, validarse topologicamente y activarse bajo control separado del runtime.
 8. **Trazar cada asistencia AI**. Toda explicacion, resumen o sugerencia AI debe persistir modelo, template, payload permitido, respuesta, fallback y referencias al bundle de versiones del motor.
 9. **Usar una sola fuente de verdad de producto**. La tabla persistida de producto del MVP debe servir tanto al runtime del motor como a solicitudes de credito; no se mantendran dos registros paralelos con semantica divergente.

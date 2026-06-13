@@ -38,11 +38,11 @@
 - [ ] T009 [P] Create repository interfaces and SQLAlchemy implementations for credit requests, status history, and queue exports in `backend/app/infrastructure/repositories/credit_requests.py`
 - [ ] T010 Define shared admin and runtime Pydantic schemas in `backend/app/api/schemas/engine_admin.py`, including parameters, pipeline configuration, export filters, and audit query contracts, and refine shared runtime/auth schemas in `backend/app/api/schemas/contracts.py` and `backend/app/api/schemas/auth.py`
 - [ ] T011 [P] Implement shared audit event writer reusing or extending `backend/app/infrastructure/db/models.py` and expose it from `backend/app/infrastructure/repositories/audit_events.py`
-- [ ] T012 [P] Extend RBAC permissions and dependency wiring for engine administration, evaluations, credit requests, exports, and attachments in `backend/app/security/permissions.py` and `backend/app/security/dependencies.py`
+- [ ] T012 [P] Extend RBAC permissions and dependency wiring for engine administration, evaluations, credit requests, request detail, exports, attachments, and audit read access according to the minimum role matrix in `backend/app/security/permissions.py` and `backend/app/security/dependencies.py`
 - [ ] T013 Build runtime loader services that resolve `product_code`, `workflow_code`, active workflow version, variable catalog, parameter set, rules, and pipeline in `backend/app/application/engine_admin/runtime_loader.py`
 - [ ] T014 Refactor engine bootstrap to support persistence-backed runtime registration in `backend/app/domain/decision_engine/bootstrap.py` and `backend/app/domain/decision_engine/registry.py`
 - [ ] T014A [P] Implement AI interaction persistence and repository access in `backend/app/infrastructure/repositories/ai_interactions.py`
-- [ ] T015 [P] Add foundational tests for migrations, repositories, runtime loading, source-of-truth product semantics, parameter/pipeline activation constraints, and RBAC in `backend/tests/test_models.py`, `backend/tests/test_migrations.py`, `backend/tests/test_decision_engine_registry.py`, and `backend/tests/test_rbac.py`
+- [ ] T015 [P] Add foundational tests for migrations, repositories, runtime loading, source-of-truth product semantics, parameter/pipeline activation constraints, and minimum-role-matrix RBAC in `backend/tests/test_models.py`, `backend/tests/test_migrations.py`, `backend/tests/test_decision_engine_registry.py`, and `backend/tests/test_rbac.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
@@ -84,7 +84,7 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T028 [P] [US1] Add contract tests for login/session bootstrap and runtime consultation/evaluation endpoints in `backend/tests/contract/test_runtime_auth_and_evaluations.py`
+- [ ] T028 [P] [US1] Add contract tests for login/session bootstrap and runtime consultation/evaluation endpoints, including minimum role-matrix access rules, in `backend/tests/contract/test_runtime_auth_and_evaluations.py`
 - [ ] T029 [P] [US1] Add integration tests for consultation, evaluation execution, trace retrieval, variable-origin enforcement, effective-version persistence, and AI fallback in `backend/tests/integration/test_pld_runtime_flow.py`
 - [ ] T030 [P] [US1] Add mapper and determinism regression tests for product-specific HTTP contracts in `backend/tests/test_evaluation_contract_mappers.py` and `backend/tests/test_decision_engine_pipeline.py`
 
@@ -96,7 +96,7 @@
 - [ ] T034 [P] [US1] Refine product-specific to generic engine mapping in `backend/app/api/mappers/evaluations.py`
 - [ ] T035 [US1] Implement consultation route behavior in `backend/app/api/routes/loan_consultations.py`
 - [ ] T036 [US1] Implement evaluation and trace routes in `backend/app/api/routes/evaluations.py`
-- [ ] T037 [US1] Persist applied workflow, variable catalog, parameter set, rule set, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
+- [ ] T037 [US1] Persist applied workflow, variable catalog, parameter set, published rule versions, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
 - [ ] T038 [US1] Implement AI explanation and summary orchestration with explicit fallback and `ai_interactions` persistence in `backend/app/application/ai/evaluation_explanations.py`
 - [ ] T039 [US1] Add frontend service client for consultations and evaluations in `frontend/src/services/runtime-api.ts`
 - [ ] T040 [P] [US1] Implement consultation UI flow in `frontend/src/features/loan-consultations/ConsultationPage.tsx` and `frontend/src/features/loan-consultations/consultation-form.tsx`
@@ -116,18 +116,18 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and `CSV UTF-8` queue export endpoints with applied filters in `backend/tests/contract/test_credit_requests_api.py`
-- [ ] T045 [P] [US2] Add integration tests for request registration, status transitions, forbidden transitions, and queue export with filter echoing in `backend/tests/integration/test_credit_request_flow.py`
+- [ ] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and `CSV UTF-8` queue export endpoints with applied filters and minimum role-matrix access in `backend/tests/contract/test_credit_requests_api.py`
+- [ ] T045 [P] [US2] Add integration tests for request registration, request detail retrieval, status transitions across `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative, forbidden transitions, and queue export with filter echoing in `backend/tests/integration/test_credit_request_flow.py`
 
 ### Implementation for User Story 2
 
 - [ ] T046 [P] [US2] Implement credit request application services in `backend/app/application/credit_requests/service.py`
 - [ ] T047 [P] [US2] Implement credit request persistence, status history writes, evaluation linkage, and `CSV UTF-8` queue export support with audit metadata in `backend/app/infrastructure/repositories/credit_requests.py`
 - [ ] T048 [US2] Implement credit request, queue, and export routes in `backend/app/api/routes/credit_requests.py`
-- [ ] T049 [US2] Add request status transition validation and role-specific rules in `backend/app/application/credit_requests/status_rules.py`
+- [ ] T049 [US2] Add request status transition validation and role-specific rules for `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative in `backend/app/application/credit_requests/status_rules.py`
 - [ ] T050 [US2] Implement request detail, queue, export, and filter-echo schemas/mappers in `backend/app/api/schemas/contracts.py` and `backend/app/api/mappers/credit_requests.py`
-- [ ] T051 [US2] Add queue, request, and export services for the frontend in `frontend/src/services/credit-requests-api.ts`
-- [ ] T052 [P] [US2] Implement request registration UI in `frontend/src/features/credit-requests/CreditRequestPage.tsx` and `frontend/src/features/credit-requests/request-form.tsx`
+- [ ] T051 [US2] Add queue, request detail, and export services for the frontend in `frontend/src/services/credit-requests-api.ts`
+- [ ] T052 [P] [US2] Implement request registration and detail UI in `frontend/src/features/credit-requests/CreditRequestPage.tsx` and `frontend/src/features/credit-requests/request-form.tsx`
 - [ ] T053 [P] [US2] Implement operational queue UI, export action, and status actions in `frontend/src/features/credit-requests/QueuePage.tsx` and `frontend/src/features/credit-requests/status-actions.tsx`
 - [ ] T054 [US2] Add frontend tests for request creation, queue management, and export in `frontend/tests/credit-request-flow.test.tsx` and `frontend/tests/queue-flow.test.tsx`
 
@@ -143,8 +143,8 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T055 [P] [US3] Add contract tests for attachment upload, metadata/listing, ZIP content listing, download, and audit retrieval endpoints in `backend/tests/contract/test_attachments_and_audit_api.py`
-- [ ] T056 [P] [US3] Add integration tests for ZIP lifecycle, ZIP manifest visualization, audit events, and AI-failure-safe retrieval in `backend/tests/integration/test_attachments_and_audit_flow.py`
+- [ ] T055 [P] [US3] Add contract tests for attachment upload, metadata/listing, ZIP content listing, download, and audit retrieval endpoints, including role-based access for analista, supervisor, administrador, and auditor, in `backend/tests/contract/test_attachments_and_audit_api.py`
+- [ ] T056 [P] [US3] Add integration tests for ZIP lifecycle, ZIP manifest visualization, audit events, AI-failure-safe retrieval, and role-based access enforcement for analista, supervisor, administrador, and auditor in `backend/tests/integration/test_attachments_and_audit_flow.py`
 
 ### Implementation for User Story 3
 
@@ -155,7 +155,7 @@
 - [ ] T061 [US3] Extend frontend service clients for attachments and audit trace access in `frontend/src/services/attachments-api.ts` and `frontend/src/services/audit-api.ts`
 - [ ] T062 [P] [US3] Implement attachment management UI with metadata and ZIP content listing in `frontend/src/features/attachments/AttachmentsPanel.tsx` and `frontend/src/features/attachments/upload-form.tsx`
 - [ ] T063 [P] [US3] Implement audit timeline UI in `frontend/src/features/attachments/AuditTimeline.tsx`
-- [ ] T064 [US3] Add frontend tests for attachments and audit timeline in `frontend/tests/attachments-flow.test.tsx` and `frontend/tests/audit-timeline.test.tsx`
+- [ ] T064 [US3] Add frontend tests for attachments and audit timeline, including role-gated visibility and actions, in `frontend/tests/attachments-flow.test.tsx` and `frontend/tests/audit-timeline.test.tsx`
 
 **Checkpoint**: All user stories independently functional.
 
@@ -165,13 +165,14 @@
 
 **Purpose**: Improvements that affect multiple user stories.
 
-- [ ] T065 [P] Update OpenAPI examples and generated contract fixtures in `specs/001-project-specification/contracts/runtime.openapi.yaml`, `specs/001-project-specification/contracts/engine-admin.openapi.yaml`, and `backend/tests/contract/fixtures/`
+- [ ] T065 [P] Update OpenAPI examples and generated contract fixtures in `specs/001-project-specification/contracts/runtime.openapi.yaml`, `specs/001-project-specification/contracts/engine-admin.openapi.yaml`, and `backend/tests/contract/fixtures/`, including request detail and minimum role-matrix examples
 - [ ] T066 Harden observability, structured logging, request tracing, and AI degradation logging in `backend/app/main.py`, `backend/app/config/settings.py`, and `backend/app/application/`
 - [ ] T067 [P] Add regression coverage for versioning, active-state enforcement, parameter/pipeline governance, second-product extensibility, AI traceability, and auditability in `backend/tests/integration/test_engine_admin_versioning.py` and `backend/tests/integration/test_runtime_reproducibility.py`
 - [ ] T068 [P] Add frontend regression coverage for session persistence and role-gated navigation in `frontend/tests/session-storage.test.ts` and `frontend/tests/navigation-guards.test.tsx`
-- [ ] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md`, including export, adjuntos, auditoria, AI fallback, and p95 checks, in a project execution report
-- [ ] T069A [P] Implement automated performance validation tests for p95 targets (`SC-012`) in `backend/tests/integration/test_performance_validation.py` using a mock or local database baseline and synthetic operational workload
+- [ ] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md`, including export, adjuntos, auditoria, AI fallback, request detail, and p95 checks against the canonical workload defined in the spec, in `specs/001-project-specification/execution-report.md`
+- [ ] T069A [P] Implement automated performance validation tests for p95 targets (`SC-012`) in `backend/tests/integration/test_performance_validation.py` using the canonical workload defined in the spec over a local SQLite baseline and synthetic operational workload
 - [ ] T069B [P] Create automated validation suite for ZIP content visual listing (`FR-012`, `SC-005`) in `backend/tests/integration/test_zip_manifest_validation.py`
+- [ ] T070 Verify and document TDD evidence for each completed functional slice, including failing-first or test-authored-before-merge proof and green test execution summaries for review readiness (`SC-013`), in `specs/001-project-specification/execution-report.md`
 
 ---
 
