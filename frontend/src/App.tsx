@@ -1,5 +1,16 @@
 import { FormEvent, useEffect, useState } from "react";
 
+import { ParametersPage } from "./features/engine-admin/ParametersPage";
+import { PipelinePage } from "./features/engine-admin/PipelinePage";
+import { ProductsPage } from "./features/engine-admin/ProductsPage";
+import { RulesPage } from "./features/engine-admin/RulesPage";
+import { VariablesPage } from "./features/engine-admin/VariablesPage";
+import { WorkflowsPage } from "./features/engine-admin/WorkflowsPage";
+import {
+  emptyEngineAdminWorkspaceState,
+  EngineAdminApiClient,
+  type EngineAdminWorkspaceState,
+} from "./services/engine-admin-api";
 import {
   clearStoredSession,
   loadStoredSession,
@@ -39,6 +50,13 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRestoring, setIsRestoring] = useState(true);
+  const [workspace, setWorkspace] = useState<EngineAdminWorkspaceState>(
+    emptyEngineAdminWorkspaceState,
+  );
+  const [notice, setNotice] = useState<string | null>(null);
+  const [activeAdminTab, setActiveAdminTab] = useState<
+    "products" | "variables" | "parameters" | "pipeline" | "rules" | "workflows"
+  >("products");
 
   useEffect(() => {
     let isMounted = true;
@@ -132,6 +150,7 @@ function App() {
       setError(
         caughtError instanceof Error ? caughtError.message : "Ocurrio un error inesperado.",
       );
+      setNotice(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -142,7 +161,40 @@ function App() {
     setToken(null);
     setMe(null);
     setError(null);
+    setNotice(null);
     setPassword("admin123");
+  }
+
+  const adminClient = token ? new EngineAdminApiClient(token) : null;
+  const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
+
+  function renderAdminTab() {
+    if (adminClient === null) {
+      return null;
+    }
+
+    const sharedProps = {
+      client: adminClient,
+      workspace,
+      onWorkspaceChange: (patch: Partial<EngineAdminWorkspaceState>) =>
+        setWorkspace((current) => ({ ...current, ...patch })),
+      onNotice: setNotice,
+    };
+
+    switch (activeAdminTab) {
+      case "products":
+        return <ProductsPage {...sharedProps} />;
+      case "variables":
+        return <VariablesPage {...sharedProps} />;
+      case "parameters":
+        return <ParametersPage {...sharedProps} />;
+      case "pipeline":
+        return <PipelinePage {...sharedProps} />;
+      case "rules":
+        return <RulesPage {...sharedProps} />;
+      case "workflows":
+        return <WorkflowsPage {...sharedProps} />;
+    }
   }
 
   return (
@@ -234,6 +286,32 @@ function App() {
           <li>Adjuntos ZIP</li>
           <li>Paneles AI asistivos</li>
         </ul>
+
+        {canManageEngine ? (
+          <section className="admin-shell">
+            <div className="admin-shell-header">
+              <div>
+                <p className="eyebrow">Motor administrable</p>
+                <h2>Phase 3</h2>
+              </div>
+              <p className="workspace-hint">
+                Producto: {workspace.productCode} | Workflow: {workspace.workflowCode}
+              </p>
+            </div>
+
+            <div className="tab-strip">
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("products")}>Productos</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("variables")}>Variables</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("parameters")}>Parametros</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("pipeline")}>Pipeline</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("rules")}>Reglas</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("workflows")}>Versionado</button>
+            </div>
+
+            {notice ? <p className="success-banner">{notice}</p> : null}
+            {renderAdminTab()}
+          </section>
+        ) : null}
       </section>
     </main>
   );

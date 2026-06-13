@@ -65,12 +65,17 @@ Como usuario operativo o auditor, quiero acceder a los adjuntos y a la trazabili
 
 Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y gobernar productos, workflows, variables, parametros, pipeline y reglas del motor para habilitar cambios operativos sin depender de cambios de codigo como practica habitual.
 
+Alcance operativo de esta historia: las altas, ediciones sobre borradores, versionados, activaciones, retiros y reemplazos de configuracion forman parte de la operacion administrable normal del MVP. Los cambios de codigo quedan reservados para nuevas capacidades compartidas de plataforma, cambios estructurales del motor o integraciones fuera del modelo administrable previsto.
+
 #### Acceptance Scenario
 
 1. Dado un producto nuevo, cuando un usuario autorizado lo registra, entonces el sistema lo guarda en estado `draft` con trazabilidad de quien lo creo.
 2. Dado un producto existente, cuando el usuario autorizado crea variables, catalogos, parametros, workflows, pipeline y reglas asociados, entonces el sistema valida sus referencias y conserva el estado gobernado de cada configuracion.
 3. Dado un workflow activo, cuando se requiere un cambio funcional, entonces el sistema obliga a crear una nueva version en lugar de editar la version activa y deja evidencia auditable de la activacion posterior.
 4. Dado un producto o workflow en estado distinto de `active`, cuando una evaluacion operacional intenta usarlo, entonces el sistema rechaza esa ejecucion.
+5. Dado un producto existente, cuando un usuario autorizado agrega un nuevo workflow a ese producto, entonces el sistema permite administrarlo y activarlo sin alterar los workflows activos ya publicados para el mismo producto.
+6. Dado una configuracion incompleta o inconsistente, cuando un usuario intenta activarla, entonces el sistema bloquea la activacion, informa el motivo y mantiene sin cambios la configuracion `active` previamente valida.
+7. Dado una version activa publicada por error, cuando un usuario autorizado necesita reemplazarla, entonces el sistema crea una nueva version `draft`, conserva auditablemente la version anterior y permite retirar la version incorrecta solo despues de activar la version de reemplazo o de retirar el workflow afectado.
 
 ## Edge Cases
 
@@ -84,6 +89,10 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - El sistema debe impedir la edicion directa de workflows en estado `active` y exigir una nueva version para cualquier cambio posterior.
 - El sistema debe impedir activar productos, workflows, catalogos o reglas con referencias incompletas o inconsistentes.
 - El sistema debe manejar intentos de usar una variable desde un origen no permitido rechazando la evaluacion antes de ejecutar el motor.
+- El sistema debe impedir que un producto sin workflows `active` quede disponible para evaluaciones operativas.
+- El sistema debe impedir variables duplicadas dentro del mismo producto cuando compartan la misma identidad de negocio o `variable_key`.
+- El sistema debe impedir que una regla o workflow nuevo quede `active` si referencia variables retiradas, ausentes o con una politica de origen incompatible.
+- El retiro de un producto no debe dejar workflows o reglas `active` utilizables bajo ese producto; la gobernanza debe forzar retiro o reemplazo coherente de sus artefactos activos antes del cierre final.
 
 ## Functional Requirements
 
@@ -125,24 +134,39 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - FR-020: El sistema debe permitir definir y ejecutar flujos de evaluacion diferenciados por producto y por contexto operativo sin redisenar las capacidades compartidas.
 - FR-021: El sistema debe contemplar administracion gobernada y auditable de reglas, parametros y secuencia del flujo para habilitar evolucion posterior sin perder control operativo.
 - FR-022: El sistema debe permitir registrar nuevos productos del motor sin requerir cambios de codigo como mecanismo normal de operacion.
+- FR-022A: La definicion minima de un producto administrable debe incluir `product_code` unico, nombre, descripcion operativa, estado gobernado, responsables de creacion/activacion/retiro y trazabilidad temporal de esos cambios.
 - FR-023: El sistema debe permitir crear multiples workflows por producto para soportar distintos modos de evaluacion o politicas.
+- FR-023A: La definicion minima de un workflow debe incluir `workflow_code` unico dentro del producto, nombre, descripcion operativa, estado gobernado, version publicada vigente y trazabilidad de quien lo crea, activa, retira o reemplaza.
 - FR-024: Cada producto y workflow administrable debe seguir un ciclo de vida `draft -> active -> retired`.
+- FR-024A: La transicion `draft -> active` requiere validacion satisfactoria de referencias, permisos autorizados y evidencia auditable; la transicion `active -> retired` impide nuevas evaluaciones con ese artefacto pero conserva referencias historicas; `draft -> retired` se permite como descarte administrativo antes de publicacion; `active -> draft` no esta permitido.
 - FR-025: El sistema debe impedir que productos o workflows en estado distinto de `active` sean usados para evaluaciones operativas.
+- FR-025A: Un producto solo puede quedar disponible para runtime si tiene al menos un workflow `active`; si no tiene ninguno, debe considerarse no operativo aunque el producto exista.
+- FR-025B: Un mismo producto puede tener multiples workflows `active` en paralelo siempre que cada uno tenga `workflow_code` distinto y una politica operativa diferenciada; el runtime debe resolverlos explicitamente por `workflow_code`.
 - FR-026: El sistema debe conservar trazabilidad de quien creo, activo, retiro o modifico productos y workflows.
 - FR-027: El sistema debe permitir definir variables a nivel de producto para que puedan ser reutilizadas por multiples workflows del mismo producto.
+- FR-027A: Cada variable administrable debe incluir como minimo `variable_key` unico dentro del producto, nombre, significado de negocio, tipo de dato, obligatoriedad, estado gobernado y responsables de creacion/activacion/retiro.
+- FR-027B: Las variables administrables deben seguir un ciclo de vida `draft -> active -> retired` coherente con el resto de configuraciones gobernadas.
 - FR-028: Cada workflow debe poder seleccionar cuales variables de su producto utiliza en sus reglas y evaluaciones.
+- FR-028A: La seleccion de variables de un workflow significa inclusion explicita en su catalogo publicado, definicion de obligatoriedad en runtime y disponibilidad para reglas/evaluacion; no implica editar una variable activa ni redefinir su identidad base dentro del workflow.
 - FR-029: Cada variable de producto debe definir su origen permitido de datos entre base de campana, captura por interfaz o ambas opciones.
+- FR-029A: El origen permitido de una variable es una politica de configuracion definida en tiempo de dise\u00f1o administrativo y validada en cada evaluacion; no se resuelve libremente caso por caso fuera de esa politica publicada.
 - FR-030: El sistema debe validar que una evaluacion solo use valores de variables provenientes de los origenes permitidos para cada variable.
 - FR-031: El sistema debe permitir crear multiples reglas dentro de cada workflow para expresar politicas y logica de decision.
+- FR-031A: La definicion minima de una regla debe incluir `rule_key` o identificador versionable, nombre, descripcion, condicion o expresion declarativa, efecto esperado sobre la decision y estado gobernado auditable.
 - FR-032: Cada regla administrable debe seguir un ciclo de vida `draft -> active -> retired`.
+- FR-032A: La activacion de una regla requiere validacion sintactica, referencias vigentes a variables permitidas y aprobacion por un rol autorizado distinto o equivalente al que corresponda segun la politica de segregacion vigente.
 - FR-033: El sistema debe impedir que reglas en estado distinto de `active` participen en evaluaciones operativas.
 - FR-034: El sistema debe conservar trazabilidad de quien creo, activo, retiro o modifico reglas dentro de cada workflow.
 - FR-035: El sistema no debe permitir la edicion directa de un workflow en estado `active`; cualquier cambio debe generar una nueva version gobernada y auditable.
+- FR-035A: Una nueva version significa una nueva revision `draft` con identidad versionada propia, trazabilidad independiente y referencias publicables a catalogo, pipeline, parametros y reglas; puede originarse a partir de una configuracion previa, pero no reemplaza en sitio la version ya `active`.
+- FR-035B: Si se detecta una configuracion activa incorrecta, el sistema debe permitir crear una version de reemplazo y bloquear que el retiro final de la version anterior deje al producto sin una opcion operativa coherente salvo retiro explicito del workflow o del producto.
 - FR-036: El sistema debe permitir publicar catalogos versionados de variables por producto y asignarlos a versiones de workflow.
+- FR-036A: Las acciones de crear/editar borradores pueden ser realizadas por usuarios administrativos autorizados; las acciones de activar, retirar y versionar artefactos criticos del motor deben respetar segregacion de funciones entre negocio, riesgos y administracion privilegiada segun la matriz RBAC vigente.
 - FR-037: El sistema debe validar, antes de activar una configuracion del motor, que sus referencias a variables, reglas, pipeline y workflow sean consistentes y completas.
 - FR-037A: El sistema debe permitir administrar parametros versionados por producto y workflow bajo un ciclo de vida gobernado y auditable.
 - FR-037B: El sistema debe persistir en cada evaluacion las versiones efectivas de workflow, catalogo de variables, reglas, parametros y pipeline realmente aplicadas.
 - FR-037C: El sistema debe permitir administrar estrategias de pipeline y sus nodos bajo versionado, validacion topologica y activacion gobernada.
+- FR-037D: La validacion de activacion debe bloquear, como minimo, referencias inexistentes, variables duplicadas o retiradas, fuentes de variable incompatibles, ausencia de pipeline o reglas requeridas, y conflictos de estado entre producto, workflow y artefactos dependientes.
 
 ### Security and Operations
 
@@ -157,6 +181,9 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Analista: puede autenticarse, restaurar sesion, consultar clientes, ejecutar evaluaciones, ver trazas del caso, registrar solicitudes, consultar bandeja y detalle de solicitudes, cargar adjuntos ZIP y mover solicitudes solo de `registrada` a `en_revision`.
 - Supervisor: hereda permisos de analista y ademas puede aprobar, rechazar, anular solicitudes, exportar bandeja y consultar auditoria operacional.
 - Administrador: puede gestionar productos, workflows, catalogos de variables, parametros, pipeline, reglas y sus activaciones; tambien puede consultar trazabilidad administrativa y operacional.
+- Administrador de negocio: puede crear y editar productos, workflows, variables y catalogos en estado `draft`, solicitar versionados y consultar bloqueos de activacion, pero no debe aprobar por si solo la activacion final de reglas o configuraciones que requieran control de riesgos.
+- Administrador de riesgos: puede crear y editar reglas, parametros, politicas de origen y criterios de activacion en estado `draft`, y puede aprobar o rechazar activaciones de configuraciones criticas segun la segregacion vigente.
+- Administracion privilegiada de plataforma: puede administrar permisos, usuarios y trazabilidad administrativa, pero no debe saltarse la segregacion de negocio/riesgos para publicar configuraciones del motor como operacion normal.
 - Auditor: acceso de solo lectura a trazas, auditoria, detalle de solicitudes, historial de estados y metadatos de adjuntos, sin permiso para evaluar, registrar, transicionar ni administrar configuraciones.
 
 ## Key Entities
@@ -170,13 +197,13 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Adjunto ZIP: archivo asociado a una solicitud como evidencia operativa.
 - Usuario operativo: actor con permisos segun rol para consultar, evaluar, registrar y administrar solicitudes.
 - Regla o parametro versionado: definicion gobernada que influye en la evaluacion o en el comportamiento del flujo y cuya version debe poder auditarse.
-- Producto de prestamo: configuracion de negocio que agrupa reglas, variaciones de flujo y datos propios de un tipo de prestamo.
-- Workflow de producto: modalidad de evaluacion asociada a un producto que define reglas activas y comportamiento operativo dentro de un ciclo de vida administrable.
-- Version de workflow: revision gobernada de un workflow que permite introducir cambios sin alterar una configuracion ya activa.
-- Variable de producto: dimension administrable definida para un producto y reutilizable por uno o varios workflows para construir reglas y evaluaciones.
+- Producto de prestamo: configuracion de negocio que agrupa reglas, variaciones de flujo y datos propios de un tipo de prestamo; su definicion minima incluye `product_code` unico, nombre, descripcion operativa, estado gobernado y trazabilidad de creacion, activacion y retiro.
+- Workflow de producto: modalidad de evaluacion asociada a un producto que define reglas activas y comportamiento operativo dentro de un ciclo de vida administrable; su definicion minima incluye `workflow_code` unico dentro del producto, nombre, descripcion y estado.
+- Version de workflow: revision gobernada de un workflow que permite introducir cambios sin alterar una configuracion ya activa; una nueva version es una revision `draft` con identidad versionada propia y referencias publicables a catalogo, reglas, parametros y pipeline, y puede derivarse de una version previa sin editarla en sitio.
+- Variable de producto: dimension administrable definida para un producto y reutilizable por uno o varios workflows para construir reglas y evaluaciones; su definicion minima incluye `variable_key` unico, nombre, significado de negocio, tipo de dato, obligatoriedad, origen permitido y estado.
 - Catalogo de variables: version publicable del conjunto de variables activas de un producto consumible por una version de workflow.
-- Origen de variable: restriccion declarada que define si una variable puede recibir datos desde base de campana, captura por interfaz o ambas fuentes.
-- Regla de workflow: condicion o logica de decision administrable asociada a un workflow y gobernada por un ciclo de vida auditable.
+- Origen de variable: restriccion declarada de dise\u00f1o administrativo que define si una variable puede recibir datos desde base de campana, captura por interfaz o ambas fuentes; el runtime solo valida contra esa politica publicada.
+- Regla de workflow: condicion o logica de decision administrable asociada a un workflow y gobernada por un ciclo de vida auditable; su definicion minima incluye identificador versionable, nombre, descripcion, condicion declarativa y efecto esperado sobre la decision.
 - Parametro versionado: conjunto administrable de constantes o umbrales usados por el motor y publicado bajo una version auditable.
 - Estrategia de pipeline: definicion administrable y versionada de la secuencia de nodos y branching permitido para un workflow.
 - Nodo de pipeline: etapa versionada del flujo de evaluacion con referencias validadas dentro de una estrategia gobernada.
@@ -189,10 +216,13 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - Los roles operativos principales incluyen al menos perfiles equivalentes a analista, supervisor, administrador y auditor con permisos diferenciados.
 - La autenticacion del MVP usa el mecanismo operativo disponible en la plataforma actual y cubre login, restauracion de sesion y autorizacion por rol para los flujos definidos, sin bloquear una futura migracion a un proveedor corporativo.
 - Los equipos de negocio y riesgos administran productos y workflows dentro de un esquema gobernado, sin depender de TI para el alta, activacion o retiro como operacion habitual.
+- Los equipos de negocio y riesgos operan bajo segregacion de funciones para configuraciones criticas: la creacion/edicion de borradores y la aprobacion/activacion final no deben depender de una misma accion no controlada como mecanismo normal.
 - Las variables del motor se administran en el nivel de producto y cada workflow reutiliza solo las variables que requiere.
 - Cada variable declara de forma explicita si sus datos pueden provenir de base de campana, de captura por interfaz o de ambas fuentes.
 - Las reglas del motor se administran dentro de cada workflow y solo las reglas activas participan en evaluaciones operativas.
 - Un workflow activo se considera inmutable para fines operativos; cualquier ajuste posterior se publica como una nueva version.
+- La seleccion de variables de un workflow se resuelve mediante inclusion en catalogos versionados y definicion de obligatoriedad de runtime, no mediante duplicacion libre de variables dentro del workflow.
+- Un producto retirado no mantiene artefactos `active` utilizables en runtime; sus workflows y reglas activas deben retirarse o reemplazarse de forma coherente antes de completar el retiro.
 - La fuente de verdad del producto en el MVP es un unico registro persistido de producto administrable reutilizado tanto por runtime como por solicitudes de credito.
 - La bandeja operativa se consulta por periodos y expone como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y las acciones permitidas para el rol y estado vigentes.
 - El ciclo de vida operativo minimo de una solicitud en el MVP es `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido bajo autorizacion.
@@ -217,3 +247,8 @@ Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y
 - SC-011: El sistema permite registrar y activar al menos un producto adicional al flujo `PLD` sin requerir cambios de codigo en las capas compartidas del motor.
 - SC-012: En la validacion de endurecimiento del MVP, `POST /consultas` y `POST /evaluaciones` cumplen `p95 <= 2s` y `p95 <= 4s` respectivamente con AI deshabilitada sobre la suite operativa base definida para el proyecto.
 - SC-013: El 100% de las nuevas funcionalidades o unidades funcionales verificables incorporadas al MVP llega a revision con pruebas unitarias definidas antes o durante la implementacion, ejecutadas satisfactoriamente sobre el comportamiento cambiado y con evidencia de esa ejecucion adjunta a la revision o al corte funcional correspondiente.
+- SC-014: En la suite administrativa del MVP, usuarios autorizados de negocio y riesgos pueden crear, versionar, activar y retirar configuraciones del motor sin cambios de codigo en el 100% de los escenarios administrativos definidos para el producto y sus workflows.
+- SC-015: El 100% de los intentos de activar configuraciones incompletas o inconsistentes es rechazado con motivo auditable antes de que la configuracion quede disponible para runtime.
+- SC-016: El 100% de las evaluaciones operativas rechaza antes de ejecutar el motor cualquier variable cuyo origen de datos no coincida con la politica publicada para esa variable.
+- SC-017: El 100% de los cambios de version de workflow conserva la version previa auditable e inmutable y permite agregar un nuevo workflow a un producto existente sin alterar workflows activos no relacionados.
+- SC-018: El 100% de los productos retirados y de los productos sin workflows `active` queda fuera del runtime operativo sin perder la reproducibilidad historica de evaluaciones previas.

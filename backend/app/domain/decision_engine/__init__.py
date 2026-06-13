@@ -11,7 +11,10 @@ from backend.app.domain.decision_engine.contracts import (
     EngineEvaluationResult,
     EngineExternalInput,
 )
-from backend.app.domain.decision_engine.bootstrap import build_default_decision_engine_registry
+from backend.app.domain.decision_engine.bootstrap import (
+    build_default_decision_engine_registry,
+    build_persistence_backed_decision_engine_registry,
+)
 from backend.app.domain.decision_engine.exceptions import (
     DecisionEngineError,
     DecisionTopologyError,
@@ -53,6 +56,7 @@ from backend.app.domain.decision_engine.registry import (
 __all__ = [
     "AppliedVersions",
     "build_default_decision_engine_registry",
+    "build_persistence_backed_decision_engine_registry",
     "build_pld_nodes",
     "build_pld_product_definition",
     "build_pld_strategy",

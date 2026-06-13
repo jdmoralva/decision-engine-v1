@@ -1,7 +1,11 @@
 import asyncio
+import os
 import sys
+import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -169,3 +173,200 @@ class DecisionEngineRegistryTests(unittest.TestCase):
 
         with self.assertRaises(EngineRegistryError):
             registry.resolve("ALPHA", "missing")
+
+    def test_persistence_backed_registry_loads_active_runtime(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        try:
+            db_path = Path(temp_dir.name) / "registry_runtime.db"
+            os.environ["APP_ENV"] = "test"
+            os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{db_path.as_posix()}"
+
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches, get_session_factory
+
+            clear_settings_cache()
+            clear_database_caches()
+
+            from backend.app.infrastructure.db.base import Base
+            from backend.app.infrastructure.db.models import (
+                LoanProduct,
+                ParameterSet,
+                PipelineNode,
+                PipelineStrategy,
+                ProductVariable,
+                ProductWorkflow,
+                RuleSet,
+                RuleVersion,
+                User,
+                VariableCatalogItem,
+                VariableCatalogVersion,
+                WorkflowRuleAssignment,
+                WorkflowVersion,
+            )
+
+            session_factory = get_session_factory()
+            Base.metadata.create_all(bind=session_factory.kw["bind"])
+
+            with session_factory() as session:
+                user = User(
+                    id=str(uuid4()),
+                    username="system",
+                    display_name="System",
+                    password_hash="hash",
+                    is_active=True,
+                    created_at=datetime.now(UTC),
+                )
+                product = LoanProduct(
+                    code="PLD",
+                    name="Prestamo Libre Disponibilidad",
+                    description="Producto base",
+                    status="active",
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                workflow = ProductWorkflow(
+                    id=str(uuid4()),
+                    product_code="PLD",
+                    workflow_code="standard",
+                    name="Standard",
+                    description="Workflow principal",
+                    status="active",
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                variable = ProductVariable(
+                    id=str(uuid4()),
+                    product_code="PLD",
+                    variable_key="validated_income",
+                    name="Ingreso validado",
+                    business_meaning="Ingreso usado por el motor",
+                    data_type="number",
+                    is_required=True,
+                    allowed_sources="both",
+                    status="active",
+                    created_by=user.id,
+                    created_at=datetime.now(UTC),
+                )
+                catalog = VariableCatalogVersion(
+                    id=str(uuid4()),
+                    product_code="PLD",
+                    version_number=1,
+                    status="active",
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                parameter_set = ParameterSet(
+                    id=str(uuid4()),
+                    product_code="PLD",
+                    workflow_code="standard",
+                    version_number=1,
+                    status="active",
+                    payload='{"max_rci": 0.5}',
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                strategy = PipelineStrategy(
+                    id=str(uuid4()),
+                    loan_product_code="PLD",
+                    version_number=1,
+                    graph_definition='{"start_node_key": "start"}',
+                    status="active",
+                    approved_by=user.id,
+                    created_by=user.id,
+                    created_at=datetime.now(UTC),
+                )
+                rule_set = RuleSet(
+                    id=str(uuid4()),
+                    loan_product_code="PLD",
+                    name="Core rules",
+                    description="Reglas base",
+                    effective_from=datetime.now(UTC),
+                    status="active",
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                rule_version = RuleVersion(
+                    id=str(uuid4()),
+                    rule_set_id=rule_set.id,
+                    version_number=1,
+                    rule_key="income-check",
+                    rule_name="Income check",
+                    rule_type="validation",
+                    condition_expression="validated_income > 0",
+                    action_expression="allow",
+                    parameters=None,
+                    status="active",
+                    change_notes=None,
+                    approved_by=user.id,
+                    created_by=user.id,
+                    created_at=datetime.now(UTC),
+                )
+                workflow_version = WorkflowVersion(
+                    id=str(uuid4()),
+                    workflow_id=workflow.id,
+                    version_number=1,
+                    status="active",
+                    variable_catalog_version_id=catalog.id,
+                    parameter_set_id=parameter_set.id,
+                    pipeline_strategy_id=strategy.id,
+                    change_notes=None,
+                    created_by=user.id,
+                    activated_by=user.id,
+                    activated_at=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                )
+                session.add_all([user, product, workflow, variable, catalog, parameter_set, strategy, rule_set, rule_version, workflow_version])
+                session.flush()
+                session.add_all([
+                    VariableCatalogItem(
+                        id=str(uuid4()),
+                        catalog_version_id=catalog.id,
+                        product_variable_id=variable.id,
+                        is_required_in_runtime=True,
+                        default_value=None,
+                        source_policy_payload='{"allowed_sources": "both"}',
+                    ),
+                    PipelineNode(
+                        id=str(uuid4()),
+                        pipeline_strategy_id=strategy.id,
+                        node_key="start",
+                        node_type="shared",
+                        position_x=0,
+                        position_y=0,
+                        config_payload="{}",
+                        created_at=datetime.now(UTC),
+                    ),
+                    WorkflowRuleAssignment(
+                        id=str(uuid4()),
+                        workflow_version_id=workflow_version.id,
+                        rule_version_id=rule_version.id,
+                        execution_order=1,
+                        is_active=True,
+                    ),
+                ])
+                session.commit()
+
+            from backend.app.application.engine_admin.runtime_loader import RuntimeLoader
+
+            runtime = RuntimeLoader(session_factory).load_runtime("PLD", "standard")
+
+            self.assertEqual(runtime.product_code, "PLD")
+            self.assertEqual(runtime.workflow_code, "standard")
+            self.assertEqual(runtime.strategy.product_code, "PLD")
+        finally:
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches
+
+            clear_settings_cache()
+            clear_database_caches()
+            temp_dir.cleanup()

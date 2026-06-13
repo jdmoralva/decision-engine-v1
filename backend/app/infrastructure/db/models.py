@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.infrastructure.db.base import Base
@@ -38,8 +38,215 @@ class LoanProduct(Base):
 
     code: Mapped[str] = mapped_column(String(50), primary_key=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class ProductWorkflow(Base):
+    __tablename__ = "product_workflows"
+    __table_args__ = (UniqueConstraint("product_code", "workflow_code", name="uq_product_workflow_code"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    workflow_code: Mapped[str] = mapped_column(String(80), nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class ProductVariable(Base):
+    __tablename__ = "product_variables"
+    __table_args__ = (UniqueConstraint("product_code", "variable_key", name="uq_product_variable_key"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    variable_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    business_meaning: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    data_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    is_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    allowed_sources: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class VariableCatalogVersion(Base):
+    __tablename__ = "variable_catalog_versions"
+    __table_args__ = (UniqueConstraint("product_code", "version_number", name="uq_catalog_product_version"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class VariableCatalogItem(Base):
+    __tablename__ = "variable_catalog_items"
+    __table_args__ = (
+        UniqueConstraint("catalog_version_id", "product_variable_id", name="uq_catalog_item_variable"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    catalog_version_id: Mapped[str] = mapped_column(
+        ForeignKey("variable_catalog_versions.id"), nullable=False
+    )
+    product_variable_id: Mapped[str] = mapped_column(ForeignKey("product_variables.id"), nullable=False)
+    is_required_in_runtime: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    default_value: Mapped[str | None] = mapped_column(Text)
+    source_policy_payload: Mapped[str | None] = mapped_column(Text)
+
+
+class ParameterSet(Base):
+    __tablename__ = "parameter_sets"
+    __table_args__ = (
+        UniqueConstraint("product_code", "workflow_code", "version_number", name="uq_parameter_set_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    workflow_code: Mapped[str] = mapped_column(String(80), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    payload: Mapped[str] = mapped_column(Text, nullable=False)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class RuleSet(Base):
+    __tablename__ = "rule_sets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    effective_from: Mapped[str] = mapped_column(DateTime, nullable=False)
+    effective_to: Mapped[str | None] = mapped_column(DateTime)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class RuleVersion(Base):
+    __tablename__ = "rule_versions"
+    __table_args__ = (UniqueConstraint("rule_set_id", "version_number", name="uq_rule_version_number"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    rule_set_id: Mapped[str] = mapped_column(ForeignKey("rule_sets.id"), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    rule_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    rule_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    rule_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    condition_expression: Mapped[str] = mapped_column(Text, nullable=False)
+    action_expression: Mapped[str] = mapped_column(Text, nullable=False)
+    parameters: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    change_notes: Mapped[str | None] = mapped_column(Text)
+    approved_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class PipelineStrategy(Base):
+    __tablename__ = "pipeline_strategies"
+    __table_args__ = (
+        UniqueConstraint("loan_product_code", "version_number", name="uq_pipeline_strategy_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    graph_definition: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    approved_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class PipelineNode(Base):
+    __tablename__ = "pipeline_nodes"
+    __table_args__ = (
+        UniqueConstraint("pipeline_strategy_id", "node_key", name="uq_pipeline_node_key"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    pipeline_strategy_id: Mapped[str] = mapped_column(ForeignKey("pipeline_strategies.id"), nullable=False)
+    node_key: Mapped[str] = mapped_column(String(80), nullable=False)
+    node_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    position_x: Mapped[int | None] = mapped_column(Integer)
+    position_y: Mapped[int | None] = mapped_column(Integer)
+    config_payload: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class WorkflowVersion(Base):
+    __tablename__ = "workflow_versions"
+    __table_args__ = (
+        UniqueConstraint("workflow_id", "version_number", name="uq_workflow_version_number"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(ForeignKey("product_workflows.id"), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="draft", nullable=False)
+    variable_catalog_version_id: Mapped[str] = mapped_column(
+        ForeignKey("variable_catalog_versions.id"), nullable=False
+    )
+    parameter_set_id: Mapped[str] = mapped_column(ForeignKey("parameter_sets.id"), nullable=False)
+    pipeline_strategy_id: Mapped[str] = mapped_column(ForeignKey("pipeline_strategies.id"), nullable=False)
+    change_notes: Mapped[str | None] = mapped_column(Text)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    activated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    activated_at: Mapped[str | None] = mapped_column(DateTime)
+    retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    retired_at: Mapped[str | None] = mapped_column(DateTime)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class WorkflowRuleAssignment(Base):
+    __tablename__ = "workflow_rule_assignments"
+    __table_args__ = (
+        UniqueConstraint("workflow_version_id", "rule_version_id", name="uq_workflow_rule_assignment"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workflow_version_id: Mapped[str] = mapped_column(ForeignKey("workflow_versions.id"), nullable=False)
+    rule_version_id: Mapped[str] = mapped_column(ForeignKey("rule_versions.id"), nullable=False)
+    execution_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
 class CreditRequest(Base):
@@ -47,6 +254,8 @@ class CreditRequest(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    evaluation_id: Mapped[str | None] = mapped_column(ForeignKey("loan_evaluations.id"))
+    workflow_code: Mapped[str | None] = mapped_column(String(80))
     document_type: Mapped[str] = mapped_column(String(20), nullable=False)
     document_number: Mapped[str] = mapped_column(String(30), nullable=False)
     campaign_code: Mapped[str] = mapped_column(String(80), nullable=False)
@@ -79,17 +288,38 @@ class CreditRequestStatusHistory(Base):
     changed_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
+class CreditRequestAttachment(Base):
+    __tablename__ = "credit_request_attachments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    request_id: Mapped[str] = mapped_column(ForeignKey("credit_requests.id"), nullable=False)
+    storage_path: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(120), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="active", nullable=False)
+    uploaded_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    uploaded_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
 class LoanEvaluation(Base):
     __tablename__ = "loan_evaluations"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
+    workflow_code: Mapped[str | None] = mapped_column(String(80))
+    workflow_version_id: Mapped[str | None] = mapped_column(ForeignKey("workflow_versions.id"))
+    variable_catalog_version_id: Mapped[str | None] = mapped_column(
+        ForeignKey("variable_catalog_versions.id")
+    )
+    parameter_set_id: Mapped[str | None] = mapped_column(ForeignKey("parameter_sets.id"))
     document_type: Mapped[str] = mapped_column(String(20), nullable=False)
     document_number: Mapped[str] = mapped_column(String(30), nullable=False)
     campaign_code: Mapped[str] = mapped_column(String(80), nullable=False)
     rule_set_version: Mapped[str] = mapped_column(String(100), nullable=False)
     parameter_version: Mapped[str] = mapped_column(String(100), nullable=False)
     pipeline_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    decision_outcome: Mapped[str | None] = mapped_column(String(50))
+    eligible: Mapped[bool | None] = mapped_column(Boolean)
     executed_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     executed_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
@@ -130,60 +360,15 @@ class DecisionEvent(Base):
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
-class RuleSet(Base):
-    __tablename__ = "rule_sets"
+class AdministrativeAuditEvent(Base):
+    __tablename__ = "administrative_audit_events"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text)
-    effective_from: Mapped[str] = mapped_column(DateTime, nullable=False)
-    effective_to: Mapped[str | None] = mapped_column(DateTime)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    aggregate_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    aggregate_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    event_payload: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
-
-
-class RuleVersion(Base):
-    __tablename__ = "rule_versions"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    rule_set_id: Mapped[str] = mapped_column(ForeignKey("rule_sets.id"), nullable=False)
-    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    rule_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    condition_expression: Mapped[str] = mapped_column(Text, nullable=False)
-    action_expression: Mapped[str] = mapped_column(Text, nullable=False)
-    parameters: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(30), nullable=False)
-    change_notes: Mapped[str | None] = mapped_column(Text)
-    approved_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
-    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
-
-
-class PipelineStrategy(Base):
-    __tablename__ = "pipeline_strategies"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    loan_product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
-    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    graph_definition: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(String(30), nullable=False)
-    approved_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
-    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
-
-
-class PipelineNode(Base):
-    __tablename__ = "pipeline_nodes"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    pipeline_strategy_id: Mapped[str] = mapped_column(ForeignKey("pipeline_strategies.id"), nullable=False)
-    node_key: Mapped[str] = mapped_column(String(80), nullable=False)
-    node_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    position_x: Mapped[int | None] = mapped_column(Integer)
-    position_y: Mapped[int | None] = mapped_column(Integer)
-    config_payload: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 

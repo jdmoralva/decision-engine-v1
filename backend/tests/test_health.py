@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import os
 import sys
 import unittest
@@ -16,7 +17,14 @@ class HealthEndpointTests(unittest.TestCase):
     def test_health_endpoint_reports_ok_and_environment(self):
         os.environ["APP_ENV"] = "test"
 
-        from backend.app.main import app
+        from backend.app.config.settings import clear_settings_cache
+
+        clear_settings_cache()
+
+        import backend.app.main as main_module
+
+        main_module = importlib.reload(main_module)
+        app = main_module.app
 
         async def run_request():
             transport = ASGITransport(app=app)

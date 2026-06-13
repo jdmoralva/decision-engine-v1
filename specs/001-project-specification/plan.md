@@ -24,7 +24,7 @@ Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-
 
 **Performance Goals**: en la validacion de endurecimiento del MVP y con AI deshabilitada, `POST /consultas` debe cumplir `p95 <= 2s` y `POST /evaluaciones` debe cumplir `p95 <= 4s` sobre una suite operativa base reproducible: SQLite local, datos semilla, 5 iteraciones de calentamiento por endpoint y luego 30 consultas validas + 30 evaluaciones validas con concurrencia 1 y payloads deterministas; con AI habilitada, la degradacion aceptable del flujo principal debe seguir permitiendo fallback sin bloquear la operacion.
 
-**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible); matriz RBAC minima verificable para analista, supervisor, administrador y auditor
+**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible); matriz RBAC verificable para analista, supervisor, auditor, administrador general, administrador de negocio, administrador de riesgos y administracion privilegiada de plataforma
 
 **Scale/Scope**: un MVP funcional `PLD` con soporte para un segundo producto cercano, multiples workflows por producto, decenas de variables por producto, cientos de reglas por workflow y trazabilidad completa de evaluaciones y solicitudes
 
@@ -112,7 +112,7 @@ frontend/
 1. Confirmar la adopcion del monolito modular de `specs/000-old-specification/docs/DDR.md` como arquitectura oficial del MVP.
 2. Cerrar el patron de contrato doble: contratos HTTP por producto en `api/` y contrato interno generico del motor en `domain/decision_engine/`.
 3. Definir el modelo administrativo minimo versionable para productos, workflows, catalogos de variables, parametros, reglas y estrategias de pipeline.
-4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad, matriz RBAC minima por rol/accion e interacciones AI trazables por modelo/template/payload.
+4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad, matriz RBAC por rol/accion con segregacion de funciones para activaciones criticas e interacciones AI trazables por modelo/template/payload.
 
 ### Phase 1 - Domain and persistence design
 
@@ -143,7 +143,7 @@ frontend/
 2. Tests de determinismo, versionado, fallback AI, trazabilidad AI y trazabilidad de versiones efectivas.
 3. Validaciones end-to-end del flujo `PLD`, de administracion del motor, exportacion de bandeja y visualizacion de adjuntos ZIP.
 4. Validacion de extensibilidad con un segundo producto no hardcodeado.
-5. Revision de observabilidad, autorizacion contra la matriz RBAC minima, compatibilidad SQLite, evidencia TDD por slice y objetivos p95 del MVP sobre la suite operativa base canonica.
+5. Revision de observabilidad, autorizacion contra la matriz RBAC ampliada y la segregacion de funciones, compatibilidad SQLite, evidencia TDD por slice y objetivos p95 del MVP sobre la suite operativa base canonica.
 
 ## Architecture Decisions For This Plan
 

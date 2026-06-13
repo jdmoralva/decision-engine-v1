@@ -48,7 +48,16 @@ class RBACPermissionTests(unittest.TestCase):
                     name=code.capitalize(),
                     created_at=datetime.now(UTC),
                 )
-                for code in ("admin", "analista", "evaluador", "supervisor")
+                for code in (
+                    "admin",
+                    "analista",
+                    "evaluador",
+                    "supervisor",
+                    "auditor",
+                    "admin_negocio",
+                    "admin_riesgos",
+                    "admin_plataforma",
+                )
             }
             users = {
                 username: User(
@@ -59,7 +68,16 @@ class RBACPermissionTests(unittest.TestCase):
                     is_active=True,
                     created_at=datetime.now(UTC),
                 )
-                for username in ("admin", "analista", "evaluador", "supervisor")
+                for username in (
+                    "admin",
+                    "analista",
+                    "evaluador",
+                    "supervisor",
+                    "auditor",
+                    "admin_negocio",
+                    "admin_riesgos",
+                    "admin_plataforma",
+                )
             }
 
             session.add_all([*roles.values(), *users.values()])
@@ -99,7 +117,7 @@ class RBACPermissionTests(unittest.TestCase):
             async with AsyncClient(transport=transport, base_url="http://testserver") as client:
                 token = await self._login(client, "analista")
                 response = await client.get(
-                    "/api/v1/evaluations/example-evaluation/decision-trace",
+                    "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
                     headers={"Authorization": f"Bearer {token}"},
                 )
                 self.assertEqual(response.status_code, 403)
@@ -114,7 +132,7 @@ class RBACPermissionTests(unittest.TestCase):
             async with AsyncClient(transport=transport, base_url="http://testserver") as client:
                 token = await self._login(client, "evaluador")
                 response = await client.get(
-                    "/api/v1/evaluations/example-evaluation/decision-trace",
+                    "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
                     headers={"Authorization": f"Bearer {token}"},
                 )
                 self.assertEqual(response.status_code, 501)
@@ -249,6 +267,51 @@ class RBACPermissionTests(unittest.TestCase):
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://testserver") as client:
                 token = await self._login(client, "admin")
+                response = await client.get(
+                    "/api/v1/admin/rules",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                self.assertEqual(response.status_code, 501)
+
+        asyncio.run(run_test())
+
+    def test_auditor_can_consult_decision_trace(self):
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "auditor")
+                response = await client.get(
+                    "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                self.assertEqual(response.status_code, 501)
+
+        asyncio.run(run_test())
+
+    def test_admin_negocio_cannot_access_rule_administration_endpoint(self):
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "admin_negocio")
+                response = await client.get(
+                    "/api/v1/admin/rules",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                self.assertEqual(response.status_code, 403)
+
+        asyncio.run(run_test())
+
+    def test_admin_riesgos_can_access_rule_administration_endpoint(self):
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "admin_riesgos")
                 response = await client.get(
                     "/api/v1/admin/rules",
                     headers={"Authorization": f"Bearer {token}"},
