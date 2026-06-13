@@ -13,6 +13,20 @@ Backend del nuevo `Decision Engine` con `FastAPI`, `SQLAlchemy`, `Alembic` y un 
 .venv\Scripts\python -m uvicorn backend.app.main:app --reload
 ```
 
+## Mapa de modulos MVP
+
+- `backend/app/api/`: borde HTTP, rutas REST, schemas y mappers.
+- `backend/app/application/`: casos de uso y orquestacion.
+- `backend/app/application/ai/`: integracion AI opcional fuera del camino critico.
+- `backend/app/application/engine_admin/`: servicios del motor administrable.
+- `backend/app/application/evaluations/`: evaluaciones runtime y trazabilidad asociada.
+- `backend/app/application/credit_requests/`: solicitudes de credito, estados y adjuntos.
+- `backend/app/domain/decision_engine/`: motor deterministico aislado de FastAPI.
+- `backend/app/infrastructure/db/`: ORM, sesiones y seed local.
+- `backend/app/infrastructure/repositories/`: repositorios SQLAlchemy y adaptadores de persistencia.
+- `backend/app/infrastructure/files/`: almacenamiento y procesamiento de archivos operativos.
+- `backend/app/security/`: autenticacion temporal, RBAC y dependencias de seguridad.
+
 ## Endpoints actuales
 
 - `GET /api/v1/health`
@@ -149,6 +163,14 @@ Suite ampliada relevante al estado actual:
 
 ```bash
 .venv\Scripts\python -m unittest backend.tests.test_settings backend.tests.test_health backend.tests.test_models backend.tests.test_migrations backend.tests.test_auth backend.tests.test_seed backend.tests.test_rbac backend.tests.test_issue_002_openapi backend.tests.test_decision_engine_contracts backend.tests.test_decision_engine_normalization backend.tests.test_decision_engine_pipeline backend.tests.test_decision_engine_registry backend.tests.test_evaluation_contract_mappers backend.tests.test_ai_settings backend.tests.test_ai_client_factory backend.tests.test_ai_openai_client backend.tests.test_ai_gemini_client
+```
+
+Comandos locales de validacion rapida:
+
+```bash
+.venv\Scripts\python -m alembic -c backend/alembic.ini upgrade head
+.venv\Scripts\python -m backend.app.infrastructure.db.seed
+.venv\Scripts\python -m unittest backend.tests.test_issue_013_consultations_api
 ```
 
 ## Autenticacion y RBAC actuales

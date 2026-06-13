@@ -1,4 +1,5 @@
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 *.log
@@ -21,11 +22,16 @@ tmp/
 node_modules/
 vite.log
 .env
+.env.*
 .opencode
 .specify
 .agents
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+coverage/
 
 SESSIONS.md
-
 
 

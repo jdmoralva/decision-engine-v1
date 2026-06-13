@@ -18,10 +18,10 @@
 
 **Purpose**: Prepare the repo for MVP slices aligned with the plan.
 
-- [ ] T001 Create backend module folders `backend/app/application/engine_admin`, `backend/app/application/evaluations`, `backend/app/application/credit_requests`, `backend/app/infrastructure/repositories`, and `backend/app/infrastructure/files`
-- [ ] T002 Create backend test folders `backend/tests/contract` and `backend/tests/integration`
-- [ ] T003 [P] Create frontend feature folders `frontend/src/features/auth`, `frontend/src/features/engine-admin`, `frontend/src/features/loan-consultations`, `frontend/src/features/evaluations`, `frontend/src/features/credit-requests`, and `frontend/src/features/attachments`
-- [ ] T004 [P] Update `backend/README.md` and `frontend/README.md` with the MVP module map and local validation commands
+- [X] T001 Create backend module folders `backend/app/application/engine_admin`, `backend/app/application/evaluations`, `backend/app/application/credit_requests`, `backend/app/infrastructure/repositories`, and `backend/app/infrastructure/files`
+- [X] T002 Create backend test folders `backend/tests/contract` and `backend/tests/integration`
+- [X] T003 [P] Create frontend feature folders `frontend/src/features/auth`, `frontend/src/features/engine-admin`, `frontend/src/features/loan-consultations`, `frontend/src/features/evaluations`, `frontend/src/features/credit-requests`, and `frontend/src/features/attachments`
+- [X] T004 [P] Update `backend/README.md` and `frontend/README.md` with the MVP module map and local validation commands
 
 ---
 
