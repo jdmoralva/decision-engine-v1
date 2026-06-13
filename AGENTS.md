@@ -1,56 +1,63 @@
 # AGENTS.md
 
-## Leer primero
+## Read First
 
-1. `README.md`
-2. `specs/001-project-specification/spec.md`
-3. `specs/001-project-specification/plan.md`
-4. `specs/001-project-specification/tasks.md`
-5. `specs/001-project-specification/data-model.md`
-6. `specs/001-project-specification/quickstart.md`
-7. `specs/001-project-specification/research.md`
-8. `backend/README.md`
-9. `frontend/README.md`
-10. `old-version/README.md`
-11. `old-version/api-build.R`
+- `README.md` for current repo scope and local URLs.
+- `pyproject.toml` and `frontend/package.json` for real backend/frontend commands.
+- `backend/app/main.py`, `backend/app/config/settings.py`, and `frontend/vite.config.ts` for actual wiring.
+- `.specify/memory/constitution.md` for project constraints that override local habits.
+- If legacy behavior matters, use `old-version/api-build.R` as the main runtime reference, not the other `api-build-*` files.
 
-## Fuentes de verdad
+## Project specs 
 
-- Para comandos y toolchain, manda el archivo ejecutable sobre el texto: `pyproject.toml`, `frontend/package.json`, `backend/app/main.py`, `frontend/src/App.tsx`.
-- Si docs y config chocan, confia en la config o en el codigo ejecutable.
+- `specs/001-project-specification/spec.md`
+- `specs/001-project-specification/plan.md`
+- `specs/001-project-specification/tasks.md`
 
-## Forma del repo
+## Repo Shape
 
-- El MVP nuevo cubre `PLD` (`Prestamo de Libre Disponibilidad`) y `solicitudes de credito`.
-- `backend/` y `frontend/` ya son la implementacion nueva; `old-version/` es solo referencia funcional y de reglas.
-- No reintroduzcas autenticacion por IP, HTML generado por backend, ni reglas de negocio acopladas a tablas/UI.
-- `Cobranzas` existe solo en el legado y queda fuera de alcance salvo pedido explicito.
-- La nueva plataforma debe seguir preparada para otros productos de prestamo; no modeles todo como si PLD fuera el unico.
+- `backend/` and `frontend/` are the new implementation. `old-version/` is behavior/rules reference only.
+- Keep shared layers product-agnostic. `PLD` is the first product, not the universal model.
+- `Cobranzas` is out of scope unless the user asks for it explicitly.
+- Do not reintroduce IP-based auth, backend-rendered HTML, or runtime dependence on Excel/DOM structure.
 
-## Entry points y comandos
+## Verified Commands
 
-- Backend: `python -m uvicorn backend.app.main:app --reload`.
-- Backend tests: `python -m unittest backend.tests.test_settings backend.tests.test_health backend.tests.test_models backend.tests.test_migrations backend.tests.test_auth backend.tests.test_seed`.
-- Alembic: `python -m alembic -c backend/alembic.ini upgrade head`.
-- Seed local: `python -m backend.app.infrastructure.db.seed`.
-- Frontend: en `frontend/`, `npm install`, `npm run dev`, `npm run build`, `npm run test`.
-- Python debe ejecutarse con `.venv\\Scripts\\python` cuando aplique.
+- Backend dev server from repo root: `.venv\Scripts\python -m uvicorn backend.app.main:app --reload`
+- Run migrations: `.venv\Scripts\python -m alembic -c backend/alembic.ini upgrade head`
+- Seed local users/roles: `.venv\Scripts\python -m backend.app.infrastructure.db.seed`
+- Run one backend test module: `.venv\Scripts\python -m unittest backend.tests.test_issue_013_consultations_api`
+- Frontend dev server from `frontend/`: `npm install`, then `npm run dev`
+- Frontend build from `frontend/`: `npm run build`
+- Frontend tests from `frontend/`: `npm run test`
+- Run one frontend test file from `frontend/`: `npm run test -- tests/session-storage.test.ts`
 
-## Legacy
+## Runtime And Test Gotchas
 
-- El backend legacy funcional principal es `old-version/api-build.R`; los otros `api-build-*` no son la referencia primaria.
-- El legado sirve como guía de comportamiento, datos y reglas, no como plantilla de arquitectura.
-- `ParametrosPLD-v3.xlsx` es fuente de migracion de parametros, no dependencia runtime por defecto.
+- Backend settings auto-load the repo-root `.env`; override with `DECISION_ENGINE_ENV_FILE` when needed. `.env` is gitignored and may contain real secrets, so never print or commit it.
+- `get_settings()`, `get_engine()`, and `get_session_factory()` are cached. Tests that change env or DB settings must call `clear_settings_cache()` and `clear_database_caches()` first.
+- `seed_identity_data_for_local_dev()` creates tables with `Base.metadata.create_all()`. Use Alembic when you need migration coverage; seed is only a local bootstrap shortcut.
+- Frontend `/api/*` calls rely on the Vite proxy in `frontend/vite.config.ts` targeting `http://127.0.0.1:8000`; local UI work that hits the API needs both servers running.
+- `frontend/vite.config.js` and `frontend/vite.config.d.ts` are tracked build artifacts for `vite.config.ts`; if you change the TS config, keep the generated siblings in sync.
 
-## Trabajo diario
+## Current Real Entry Points
 
-- Revisa `git status --short` antes de editar.
-- No toques cambios ajenos sin necesidad.
-- Si detectas discrepancia entre docs y legacy, prioriza `specs/001-project-specification/spec.md` para el sistema nuevo y `old-version/api-build.R` para el sistema viejo.
-- El archivo `NOTES.md` es un documento de ayuda memoria para el programador.
+- FastAPI app entrypoint is `backend.app.main:app`; routers are mounted there.
+- The decision engine bootstrap lives in `backend/app/domain/decision_engine/bootstrap.py` and currently registers `PLD` with workflow code `standard`.
+- The only implemented business runtime endpoint today is `POST /api/v1/loans/{product_code}/consultas`.
+- That consultation flow uses an in-memory local-dev provider in `backend/app/infrastructure/loan_consultations.py`; the built-in happy-path demo record is `PLD` + `DNI 12345678`.
+- Evaluation and credit-request routes exist as contracts, but current handlers still return `501`.
+- The frontend is still a thin bootstrap: `frontend/src/App.tsx` is the main screen and currently implements login/session restoration in Spanish.
+
+## Working Conventions
+
+- Prefer executable truth over prose when docs disagree.
+- If you need behavior from the legacy system, port the behavior, not the legacy architecture.
+- Frontend/UI copy should stay in Spanish.
 
 <!-- SPECKIT START -->
 For constitution file, `glob` may return “No files found”, read file from `C:/Users/User/Documents/1. Projects/23. Decision Engine 1/.specify/memory/constitution.md`.
 For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
 Specification and code may be in English, but frontend and UI must be in Spanish.
 <!-- SPECKIT END -->
+

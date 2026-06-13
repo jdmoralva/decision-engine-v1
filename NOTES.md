@@ -1,11 +1,15 @@
+# Notas
+
+Este archivo sirve como ayuda memoria para el desarrollador.
+Ignorar su contenido.
+
+spec-kit
 [https://github.github.com/spec-kit/quickstart.html]
 
 
-Sprint 3
+## Ongoing
 
-ISSUE-032
-ISSUE-041
-ISSUE-042
+Sprint 3
 
 
 

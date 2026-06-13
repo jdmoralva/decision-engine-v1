@@ -14,9 +14,15 @@ Esta especificacion consolida el alcance funcional y operativo del MVP de `Decis
 - Q: Que ciclo de vida deben tener las reglas del motor? → A: `draft -> active -> retired`
 - Q: Como deben modificarse los workflows activos? → A: Un workflow `active` no se edita; cualquier cambio crea una nueva version.
 
+### Session 2026-06-12
+
+- Q: Que enfoque de validacion debe priorizar la implementacion de funcionalidades? → A: TDD con ciclo `Red -> Green -> Refactor`.
+
 ## User Scenarios & Testing
 
 **Nota de dependencia del MVP**: Aunque las historias se presentan por capacidad funcional, `User Story 4` habilita la base administrable del motor que consumen `User Story 1`, `User Story 2` y `User Story 3`. En la implementacion del MVP, `US4` debe completarse antes de ejecutar evaluaciones operativas sobre configuraciones persistidas.
+
+**Nota de validacion**: La implementacion de funcionalidades debe priorizar `TDD`, siguiendo el ciclo `Red -> Green -> Refactor`; los cambios de comportamiento deben nacer con una prueba automatizada en falla, pasar a verde con la implementacion minima y luego refactorizar sin perder cobertura.
 
 ### User Story 1 - Consultar y evaluar una oferta de credito
 
