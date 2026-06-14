@@ -14,9 +14,10 @@ type EvaluationPageProps = {
   client: RuntimeApiClient;
   me: SessionMe;
   consultation: ConsultationResponse | null;
+  onEvaluationChange?: (result: EvaluationResponse | null) => void;
 };
 
-export function EvaluationPage({ client, me, consultation }: EvaluationPageProps) {
+export function EvaluationPage({ client, me, consultation, onEvaluationChange }: EvaluationPageProps) {
   const [campaignCode, setCampaignCode] = useState("PLD_48M");
   const [reportedDebt, setReportedDebt] = useState("400");
   const [result, setResult] = useState<EvaluationResponse | null>(null);
@@ -64,9 +65,11 @@ export function EvaluationPage({ client, me, consultation }: EvaluationPageProps
       const fetchedTrace = await client.getTrace("PLD", evaluation.evaluation_id);
       setResult(evaluation);
       setTrace(fetchedTrace);
+      onEvaluationChange?.(evaluation);
     } catch (caughtError) {
       setResult(null);
       setTrace(null);
+      onEvaluationChange?.(null);
       setError(caughtError instanceof Error ? caughtError.message : "No se pudo ejecutar la evaluacion.");
     } finally {
       setIsSubmitting(false);

@@ -137,12 +137,57 @@ class CreditRequestResponse(BaseModel):
     request_id: str
     product_code: str
     evaluation_id: str | None = None
+    workflow_code: str | None = None
     status: str
     document: DocumentRef
     campaign_code: str | None = None
     requested_amount: float
     comment: str
     created_by: ActorRef
+
+
+class CreditRequestStatusHistoryEntry(BaseModel):
+    status: str
+    comment: str | None = None
+    changed_by: ActorRef
+    changed_at: str
+
+
+class CreditRequestAttachmentSummary(BaseModel):
+    attachment_id: str
+    original_filename: str
+    mime_type: str
+    uploaded_at: str
+
+
+class CreditRequestDetailResponse(CreditRequestResponse):
+    customer_name: str | None = None
+    created_at: str
+    updated_at: str
+    offered_amount: float | None = None
+    installment_amount: float | None = None
+    term_months: int | None = None
+    rate: float | None = None
+    status_history: list[CreditRequestStatusHistoryEntry] = Field(default_factory=list)
+    attachments: list[CreditRequestAttachmentSummary] = Field(default_factory=list)
+
+
+class CreditRequestQueueItem(BaseModel):
+    request_id: str
+    product_code: str
+    workflow_code: str | None = None
+    evaluation_id: str | None = None
+    document: DocumentRef
+    customer_name: str | None = None
+    status: str
+    created_at: str
+    updated_at: str
+    available_actions: list[str] = Field(default_factory=list)
+
+
+class CreditRequestQueueResponse(BaseModel):
+    applied_filters: dict[str, str] = Field(default_factory=dict)
+    items: list[CreditRequestQueueItem] = Field(default_factory=list)
 
 
 class CreditRequestStatusTransitionRequest(BaseModel):

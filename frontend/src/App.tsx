@@ -9,14 +9,21 @@ import { ProductsPage } from "./features/engine-admin/ProductsPage";
 import { RulesPage } from "./features/engine-admin/RulesPage";
 import { VariablesPage } from "./features/engine-admin/VariablesPage";
 import { WorkflowsPage } from "./features/engine-admin/WorkflowsPage";
+import { CreditRequestPage } from "./features/credit-requests/CreditRequestPage";
+import { QueuePage } from "./features/credit-requests/QueuePage";
 import { EvaluationPage } from "./features/evaluations/EvaluationPage";
 import { ConsultationPage } from "./features/loan-consultations/ConsultationPage";
+import { CreditRequestsApiClient } from "./services/credit-requests-api";
 import {
   emptyEngineAdminWorkspaceState,
   EngineAdminApiClient,
   type EngineAdminWorkspaceState,
 } from "./services/engine-admin-api";
-import { RuntimeApiClient, type ConsultationResponse } from "./services/runtime-api";
+import {
+  RuntimeApiClient,
+  type ConsultationResponse,
+  type EvaluationResponse,
+} from "./services/runtime-api";
 import {
   clearStoredSession,
   loadStoredSession,
@@ -24,7 +31,7 @@ import {
   type SessionMe,
 } from "./session-storage";
 
-type AppRoute = "consultas" | "evaluaciones" | "admin";
+type AppRoute = "consultas" | "evaluaciones" | "solicitudes" | "admin";
 
 function readRoute(): AppRoute {
   const hash = window.location.hash.replace(/^#\/?/, "");
@@ -33,6 +40,9 @@ function readRoute(): AppRoute {
   }
   if (hash === "admin") {
     return "admin";
+  }
+  if (hash === "solicitudes") {
+    return "solicitudes";
   }
   return "consultas";
 }
@@ -45,6 +55,7 @@ function App() {
   const [isRestoring, setIsRestoring] = useState(true);
   const [route, setRoute] = useState<AppRoute>(readRoute());
   const [lastConsultation, setLastConsultation] = useState<ConsultationResponse | null>(null);
+  const [lastEvaluation, setLastEvaluation] = useState<EvaluationResponse | null>(null);
   const [workspace, setWorkspace] = useState<EngineAdminWorkspaceState>(
     emptyEngineAdminWorkspaceState,
   );
@@ -130,6 +141,7 @@ function App() {
     setToken(null);
     setMe(null);
     setLastConsultation(null);
+    setLastEvaluation(null);
     setError(null);
     setNotice(null);
     window.location.hash = "";
@@ -138,6 +150,7 @@ function App() {
 
   const adminClient = token ? new EngineAdminApiClient(token) : null;
   const runtimeClient = token ? new RuntimeApiClient(token) : null;
+  const creditRequestsClient = token ? new CreditRequestsApiClient(token) : null;
   const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
 
   function renderAdminTab() {
@@ -177,7 +190,28 @@ function App() {
     }
 
     if (route === "evaluaciones") {
-      return <EvaluationPage client={runtimeClient} me={me} consultation={lastConsultation} />;
+      return (
+        <EvaluationPage
+          client={runtimeClient}
+          me={me}
+          consultation={lastConsultation}
+          onEvaluationChange={setLastEvaluation}
+        />
+      );
+    }
+
+    if (route === "solicitudes" && creditRequestsClient !== null) {
+      return (
+        <>
+          <CreditRequestPage
+            client={creditRequestsClient}
+            me={me}
+            consultation={lastConsultation}
+            evaluation={lastEvaluation}
+          />
+          <QueuePage client={creditRequestsClient} me={me} />
+        </>
+      );
     }
 
     if (route === "admin" && canManageEngine) {
@@ -255,6 +289,7 @@ function App() {
               <div className="tab-strip">
                 <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/consultas"; setRoute("consultas"); }}>Consultas</button>
                 <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/evaluaciones"; setRoute("evaluaciones"); }}>Evaluaciones</button>
+                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/solicitudes"; setRoute("solicitudes"); }}>Solicitudes</button>
                 {canManageEngine ? (
                   <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/admin"; setRoute("admin"); }}>Motor</button>
                 ) : null}

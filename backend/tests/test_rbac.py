@@ -179,7 +179,7 @@ class RBACPermissionTests(unittest.TestCase):
                         "created_by": {"username": "analista"},
                     },
                 )
-                self.assertEqual(response.status_code, 501)
+                self.assertEqual(response.status_code, 400)
 
         asyncio.run(run_test())
 
@@ -211,7 +211,7 @@ class RBACPermissionTests(unittest.TestCase):
                     headers={"Authorization": f"Bearer {token}"},
                     json={"target_status": "approved", "changed_by": {"username": "evaluador"}},
                 )
-                self.assertEqual(response.status_code, 501)
+                self.assertEqual(response.status_code, 404)
 
         asyncio.run(run_test())
 

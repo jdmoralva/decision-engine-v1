@@ -118,20 +118,20 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and `CSV UTF-8` queue export endpoints with applied filters and minimum role-matrix access in `backend/tests/contract/test_credit_requests_api.py`
-- [ ] T045 [P] [US2] Add integration tests for request registration, request detail retrieval, status transitions across `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative, forbidden transitions, and queue export with filter echoing in `backend/tests/integration/test_credit_request_flow.py`
+- [X] T044 [P] [US2] Add contract tests for `POST /api/v1/credit-requests`, `GET /api/v1/credit-requests/{request_id}`, `POST /api/v1/credit-requests/{request_id}/status-transitions`, and `CSV UTF-8` queue export endpoints with applied filters and minimum role-matrix access in `backend/tests/contract/test_credit_requests_api.py`
+- [X] T045 [P] [US2] Add integration tests for request registration, request detail retrieval, status transitions across `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative, forbidden transitions, and queue export with filter echoing in `backend/tests/integration/test_credit_request_flow.py`
 
 ### Implementation for User Story 2
 
-- [ ] T046 [P] [US2] Implement credit request application services in `backend/app/application/credit_requests/service.py`
-- [ ] T047 [P] [US2] Implement credit request persistence, status history writes, evaluation linkage, and `CSV UTF-8` queue export support with audit metadata in `backend/app/infrastructure/repositories/credit_requests.py`
-- [ ] T048 [US2] Implement credit request, queue, and export routes in `backend/app/api/routes/credit_requests.py`
-- [ ] T049 [US2] Add request status transition validation and role-specific rules for `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative in `backend/app/application/credit_requests/status_rules.py`
-- [ ] T050 [US2] Implement request detail, queue, export, and filter-echo schemas/mappers in `backend/app/api/schemas/contracts.py` and `backend/app/api/mappers/credit_requests.py`
-- [ ] T051 [US2] Add queue, request detail, and export services for the frontend in `frontend/src/services/credit-requests-api.ts`
-- [ ] T052 [P] [US2] Implement request registration and detail UI in `frontend/src/features/credit-requests/CreditRequestPage.tsx` and `frontend/src/features/credit-requests/request-form.tsx`
-- [ ] T053 [P] [US2] Implement operational queue UI, export action, and status actions in `frontend/src/features/credit-requests/QueuePage.tsx` and `frontend/src/features/credit-requests/status-actions.tsx`
-- [ ] T054 [US2] Add frontend tests for request creation, queue management, and export in `frontend/tests/credit-request-flow.test.tsx` and `frontend/tests/queue-flow.test.tsx`
+- [X] T046 [P] [US2] Implement credit request application services in `backend/app/application/credit_requests/service.py`
+- [X] T047 [P] [US2] Implement credit request persistence, status history writes, evaluation linkage, and `CSV UTF-8` queue export support with audit metadata in `backend/app/infrastructure/repositories/credit_requests.py`
+- [X] T048 [US2] Implement credit request, queue, and export routes in `backend/app/api/routes/credit_requests.py`
+- [X] T049 [US2] Add request status transition validation and role-specific rules for `registrada -> en_revision -> aprobada/rechazada` plus `anulada` as terminal alternative in `backend/app/application/credit_requests/status_rules.py`
+- [X] T050 [US2] Implement request detail, queue, export, and filter-echo schemas/mappers in `backend/app/api/schemas/contracts.py` and `backend/app/api/mappers/credit_requests.py`
+- [X] T051 [US2] Add queue, request detail, and export services for the frontend in `frontend/src/services/credit-requests-api.ts`
+- [X] T052 [P] [US2] Implement request registration and detail UI in `frontend/src/features/credit-requests/CreditRequestPage.tsx` and `frontend/src/features/credit-requests/request-form.tsx`
+- [X] T053 [P] [US2] Implement operational queue UI, export action, and status actions in `frontend/src/features/credit-requests/QueuePage.tsx` and `frontend/src/features/credit-requests/status-actions.tsx`
+- [X] T054 [US2] Add frontend tests for request creation, queue management, and export in `frontend/tests/credit-request-flow.test.tsx` and `frontend/tests/queue-flow.test.tsx`
 
 **Checkpoint**: User Stories 1 and 2 both work independently.
 
