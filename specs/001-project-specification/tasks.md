@@ -167,14 +167,14 @@
 
 **Purpose**: Improvements that affect multiple user stories.
 
-- [ ] T065 [P] Update OpenAPI examples and generated contract fixtures in `specs/001-project-specification/contracts/runtime.openapi.yaml`, `specs/001-project-specification/contracts/engine-admin.openapi.yaml`, and `backend/tests/contract/fixtures/`, including request detail and minimum role-matrix examples
-- [ ] T066 Harden observability, structured logging, request tracing, and AI degradation logging in `backend/app/main.py`, `backend/app/config/settings.py`, and `backend/app/application/`
-- [ ] T067 [P] Add regression coverage for versioning, active-state enforcement, parameter/pipeline governance, second-product extensibility, AI traceability, and auditability (`SC-017`) in `backend/tests/integration/test_engine_admin_versioning.py` and `backend/tests/integration/test_runtime_reproducibility.py`
-- [ ] T068 [P] Add frontend regression coverage for session persistence and role-gated navigation in `frontend/tests/session-storage.test.ts` and `frontend/tests/navigation-guards.test.tsx`
-- [ ] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md`, including export, adjuntos, auditoria, AI fallback, request detail, and p95 checks against the canonical workload defined in the spec, and administrative validation evidence for `SC-014` to `SC-017`, in `specs/001-project-specification/execution-report.md`
-- [ ] T069A [P] Implement automated performance validation tests for p95 targets (`SC-012`) in `backend/tests/integration/test_performance_validation.py` using the canonical workload defined in the spec over a local SQLite baseline and synthetic operational workload
-- [ ] T069B [P] Create automated validation suite for ZIP content visual listing (`FR-012`, `SC-005`) in `backend/tests/integration/test_zip_manifest_validation.py`
-- [ ] T070 Verify and document TDD evidence for each completed functional slice, including failing-first or test-authored-before-merge proof and green test execution summaries for review readiness (`SC-013`) and cross-reference the executed evidence for `SC-014` to `SC-017`, in `specs/001-project-specification/execution-report.md`
+- [X] T065 [P] Update OpenAPI examples and generated contract fixtures in `specs/001-project-specification/contracts/runtime.openapi.yaml`, `specs/001-project-specification/contracts/engine-admin.openapi.yaml`, and `backend/tests/contract/fixtures/`, including request detail and minimum role-matrix examples
+- [X] T066 Harden observability, structured logging, request tracing, and AI degradation logging in `backend/app/main.py`, `backend/app/config/settings.py`, and `backend/app/application/`
+- [X] T067 [P] Add regression coverage for versioning, active-state enforcement, parameter/pipeline governance, second-product extensibility, AI traceability, and auditability (`SC-017`) in `backend/tests/integration/test_engine_admin_versioning.py` and `backend/tests/integration/test_runtime_reproducibility.py`
+- [X] T068 [P] Add frontend regression coverage for session persistence and role-gated navigation in `frontend/tests/session-storage.test.ts` and `frontend/tests/navigation-guards.test.tsx`
+- [X] T069 Run and document end-to-end validation from `specs/001-project-specification/quickstart.md`, including export, adjuntos, auditoria, AI fallback, request detail, and p95 checks against the canonical workload defined in the spec, and administrative validation evidence for `SC-014` to `SC-017`, in `specs/001-project-specification/execution-report.md`
+- [X] T069A [P] Implement automated performance validation tests for p95 targets (`SC-012`) in `backend/tests/integration/test_performance_validation.py` using the canonical workload defined in the spec over a local SQLite baseline and synthetic operational workload
+- [X] T069B [P] Create automated validation suite for ZIP content visual listing (`FR-012`, `SC-005`) in `backend/tests/integration/test_zip_manifest_validation.py`
+- [X] T070 Verify and document TDD evidence for each completed functional slice, including failing-first or test-authored-before-merge proof and green test execution summaries for review readiness (`SC-013`) and cross-reference the executed evidence for `SC-014` to `SC-017`, in `specs/001-project-specification/execution-report.md`
 
 ---
 

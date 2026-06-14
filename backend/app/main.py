@@ -1,6 +1,10 @@
+import logging
+from uuid import uuid4
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
+from backend.app.application.observability import log_event, now_seconds, reset_request_id, set_request_id
 from backend.app.api.schemas.contracts import ContractError, StructuredErrorResponse
 from backend.app.api.routes.admin import router as admin_router
 from backend.app.api.routes.attachments import router as attachments_router
@@ -17,7 +21,36 @@ from backend.app.security.exceptions import AuthenticationRequiredError, Invalid
 
 settings = get_settings()
 
+logging.basicConfig(level=getattr(logging, settings.log_level, logging.INFO))
+http_logger = logging.getLogger("decision_engine.http")
+
 app = FastAPI(title=settings.app_name)
+
+
+@app.middleware("http")
+async def add_request_tracing(request: Request, call_next):
+    header_name = settings.request_id_header_name
+    request_id = request.headers.get(header_name) or str(uuid4())
+    token = set_request_id(request_id)
+    request.state.request_id = request_id
+    started_at = now_seconds()
+    try:
+        response = await call_next(request)
+    finally:
+        reset_request_id(token)
+
+    response.headers[header_name] = request_id
+    log_event(
+        http_logger,
+        logging.INFO,
+        "http_request_completed",
+        request_id=request_id,
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=round((now_seconds() - started_at) * 1000, 2),
+    )
+    return response
 
 
 def _structured_error_response(status_code: int, code: str, message: str) -> JSONResponse:

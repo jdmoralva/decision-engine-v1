@@ -91,6 +91,34 @@ paths:
       responses:
         '201':
           description: Credit request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditRequestResponse'
+  /api/v1/credit-requests/export:
+    get:
+      summary: Export filtered queue as CSV UTF-8
+      tags: [runtime]
+      responses:
+        '200':
+          description: Queue export content
+  /api/v1/credit-requests/{requestId}:
+    get:
+      summary: Get credit request detail
+      tags: [runtime]
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit request detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditRequestDetailResponse'
   /api/v1/credit-requests/{requestId}/status-transitions:
     post:
       summary: Transition request status
@@ -115,6 +143,9 @@ components:
     DocumentRef:
       type: object
       required: [documentType, documentNumber]
+      example:
+        documentType: DNI
+        documentNumber: '12345678'
       properties:
         documentType:
           type: string
@@ -123,6 +154,9 @@ components:
     ActorRef:
       type: object
       required: [username]
+      example:
+        userId: user-analista-001
+        username: analista
       properties:
         userId:
           type: string
@@ -131,6 +165,11 @@ components:
     ExternalInputSnapshotItem:
       type: object
       required: [sourceType, sourceKey, fieldName, fieldValue]
+      example:
+        sourceType: user_input
+        sourceKey: form:pld
+        fieldName: reported_debt
+        fieldValue: '400'
       properties:
         sourceType:
           type: string
@@ -144,12 +183,32 @@ components:
     LoanConsultationRequest:
       type: object
       required: [document]
+      example:
+        document:
+          documentType: DNI
+          documentNumber: '12345678'
       properties:
         document:
           $ref: '#/components/schemas/DocumentRef'
     ProductEvaluationRequest:
       type: object
       required: [workflowCode, document, requestedBy]
+      example:
+        workflowCode: standard
+        document:
+          documentType: DNI
+          documentNumber: '12345678'
+        requestedBy:
+          username: analista
+        productContext:
+          campaign_code: PLD_48M
+          validated_income: 2500
+          customer_type: CLIENTE
+        externalInputs:
+          - sourceType: user_input
+            sourceKey: form:pld
+            fieldName: reported_debt
+            fieldValue: '400'
       properties:
         workflowCode:
           type: string
@@ -171,6 +230,17 @@ components:
     CreditRequestCreateRequest:
       type: object
       required: [productCode, document, requestedAmount, comment, createdBy]
+      example:
+        productCode: PLD
+        evaluationId: eval-001
+        document:
+          documentType: DNI
+          documentNumber: '12345678'
+        campaignCode: PLD_48M
+        requestedAmount: 9800
+        comment: Solicitud lista para revision
+        createdBy:
+          username: analista
       properties:
         productCode:
           type: string
@@ -189,8 +259,104 @@ components:
     StatusTransitionRequest:
       type: object
       required: [targetStatus]
+      example:
+        targetStatus: en_revision
+        comment: Pasa a evaluador
       properties:
         targetStatus:
           type: string
         comment:
           type: string
+    CreditRequestResponse:
+      type: object
+      required: [requestId, productCode, status, document, requestedAmount, comment, createdBy]
+      example:
+        requestId: req-001
+        productCode: PLD
+        evaluationId: eval-001
+        workflowCode: standard
+        status: registrada
+        document:
+          documentType: DNI
+          documentNumber: '12345678'
+        campaignCode: PLD_48M
+        requestedAmount: 9800
+        comment: Solicitud lista para revision
+        createdBy:
+          username: analista
+      properties:
+        requestId:
+          type: string
+        productCode:
+          type: string
+        evaluationId:
+          type: string
+        workflowCode:
+          type: string
+        status:
+          type: string
+        document:
+          $ref: '#/components/schemas/DocumentRef'
+        campaignCode:
+          type: string
+        requestedAmount:
+          type: number
+        comment:
+          type: string
+        createdBy:
+          $ref: '#/components/schemas/ActorRef'
+    CreditRequestDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/CreditRequestResponse'
+        - type: object
+          example:
+            requestId: req-001
+            productCode: PLD
+            evaluationId: eval-001
+            workflowCode: standard
+            status: en_revision
+            document:
+              documentType: DNI
+              documentNumber: '12345678'
+            campaignCode: PLD_48M
+            requestedAmount: 9800
+            comment: Solicitud lista para revision
+            createdBy:
+              username: analista
+            customerName: Cliente Demo
+            createdAt: '2026-06-14T17:30:00Z'
+            updatedAt: '2026-06-14T17:32:00Z'
+            offeredAmount: 12000
+            installmentAmount: 410
+            termMonths: 48
+            rate: 18.5
+            statusHistory:
+              - status: registrada
+                comment: Alta inicial
+                changedBy:
+                  username: analista
+                changedAt: '2026-06-14T17:30:00Z'
+            attachments: []
+          properties:
+            customerName:
+              type: string
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+            offeredAmount:
+              type: number
+            installmentAmount:
+              type: number
+            termMonths:
+              type: integer
+            rate:
+              type: number
+            statusHistory:
+              type: array
+              items:
+                type: object
+            attachments:
+              type: array
+              items:
+                type: object

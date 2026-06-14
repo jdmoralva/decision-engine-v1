@@ -1,0 +1,34 @@
+{
+  "runtime": {
+    "analista": [
+      "consultar_cliente",
+      "ejecutar_evaluacion",
+      "registrar_solicitud"
+    ],
+    "evaluador": [
+      "consultar_solicitud",
+      "aprobar_solicitud",
+      "exportar_bandeja"
+    ],
+    "auditor": [
+      "consultar_trace",
+      "consultar_auditoria",
+      "consultar_detalle_solicitud"
+    ]
+  },
+  "admin": {
+    "admin_negocio": [
+      "crear_producto",
+      "crear_workflow",
+      "crear_catalogo_variables"
+    ],
+    "admin_riesgos": [
+      "activar_producto",
+      "activar_workflow_version",
+      "activar_regla"
+    ],
+    "plataforma": [
+      "gestionar_permisos_perfil"
+    ]
+  }
+}

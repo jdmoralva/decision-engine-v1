@@ -127,11 +127,54 @@ paths:
       responses:
         '201':
           description: Rule draft created
+  /api/v1/admin/engine/profiles/{roleCode}/permissions:
+    get:
+      summary: Get effective permissions for a profile
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: roleCode
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilePermissionResponse'
+    put:
+      summary: Replace effective permissions for a profile
+      tags: [engine-admin]
+      parameters:
+        - in: path
+          name: roleCode
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfilePermissionAssignmentRequest'
+      responses:
+        '200':
+          description: Updated profile permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilePermissionResponse'
 components:
   schemas:
     ProductCreateRequest:
       type: object
       required: [productCode, name]
+      example:
+        productCode: AUTO
+        name: Auto Convenios
+        description: Producto para creditos vehiculares
       properties:
         productCode:
           type: string
@@ -157,6 +200,10 @@ components:
     WorkflowCreateRequest:
       type: object
       required: [workflowCode, name]
+      example:
+        workflowCode: standard
+        name: Originacion Auto
+        description: Workflow inicial para el producto
       properties:
         workflowCode:
           type: string
@@ -180,6 +227,13 @@ components:
     ProductVariableCreateRequest:
       type: object
       required: [variableKey, name, dataType, allowedSource]
+      example:
+        variableKey: validated_income
+        name: Ingreso validado
+        description: Ingreso mensual aprobado para scoring
+        dataType: number
+        required: true
+        allowedSource: campaign_db
       properties:
         variableKey:
           type: string
@@ -197,6 +251,13 @@ components:
     WorkflowVersionCreateRequest:
       type: object
       required: [variableCatalogVersionId, pipelineStrategyId]
+      example:
+        variableCatalogVersionId: catalog-001
+        parameterSetId: parameter-001
+        pipelineStrategyId: pipeline-001
+        ruleVersionIds:
+          - rule-version-001
+        changeNotes: Ajuste aprobado por riesgos
       properties:
         variableCatalogVersionId:
           type: string
@@ -211,6 +272,13 @@ components:
     RuleCreateRequest:
       type: object
       required: [name, ruleType, conditionExpression, actionExpression]
+      example:
+        name: Max debt
+        ruleType: eligibility
+        conditionExpression: reported_debt < 1000
+        actionExpression: allow
+        parameters:
+          threshold: 1000
       properties:
         name:
           type: string
@@ -223,3 +291,44 @@ components:
         parameters:
           type: object
           additionalProperties: true
+    ProfilePermissionAssignmentRequest:
+      type: object
+      required: [permissionCodes]
+      example:
+        permissionCodes:
+          - crear_producto
+          - consultar_auditoria
+      properties:
+        permissionCodes:
+          type: array
+          items:
+            type: string
+    PermissionResponse:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    ProfilePermissionResponse:
+      type: object
+      required: [roleCode, permissions]
+      example:
+        roleCode: admin_negocio
+        permissions:
+          - code: crear_producto
+            name: Crear producto
+            description: Permite registrar productos draft
+          - code: consultar_auditoria
+            name: Consultar auditoria
+            description: Lectura operativa y administrativa
+      properties:
+        roleCode:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionResponse'

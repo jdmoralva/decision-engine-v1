@@ -61,4 +61,13 @@ describe("session storage", () => {
 
     expect(loadStoredSession()).toBeNull();
   });
+
+  it("drops structurally invalid session payloads", () => {
+    localStorage.setItem(
+      "decision-engine.session",
+      JSON.stringify({ accessToken: 123, me: { username: "admin" } }),
+    );
+
+    expect(loadStoredSession()).toBeNull();
+  });
 });

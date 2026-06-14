@@ -49,6 +49,11 @@ function readRoute(): AppRoute {
   return "consultas";
 }
 
+
+function navigateTo(route: AppRoute): void {
+  window.location.hash = `#/${route}`;
+}
+
 function App() {
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<SessionMe | null>(null);
@@ -123,7 +128,7 @@ function App() {
       setToken(session.accessToken);
       setMe(session.me);
       saveStoredSession(session);
-      window.location.hash = "#/consultas";
+      navigateTo("consultas");
       setRoute("consultas");
     } catch (caughtError) {
       setToken(null);
@@ -156,6 +161,16 @@ function App() {
   const runtimeClient = token ? new RuntimeApiClient(token) : null;
   const creditRequestsClient = token ? new CreditRequestsApiClient(token) : null;
   const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
+
+  useEffect(() => {
+    if (me === null) {
+      return;
+    }
+    if (route === "admin" && !canManageEngine) {
+      navigateTo("consultas");
+      setRoute("consultas");
+    }
+  }, [canManageEngine, me, route]);
 
   function renderAdminTab() {
     if (adminClient === null) {
@@ -293,11 +308,11 @@ function App() {
                 </div>
               </dl>
               <div className="tab-strip">
-                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/consultas"; setRoute("consultas"); }}>Consultas</button>
-                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/evaluaciones"; setRoute("evaluaciones"); }}>Evaluaciones</button>
-                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/solicitudes"; setRoute("solicitudes"); }}>Solicitudes</button>
+                <button className="secondary-button" type="button" onClick={() => { navigateTo("consultas"); setRoute("consultas"); }}>Consultas</button>
+                <button className="secondary-button" type="button" onClick={() => { navigateTo("evaluaciones"); setRoute("evaluaciones"); }}>Evaluaciones</button>
+                <button className="secondary-button" type="button" onClick={() => { navigateTo("solicitudes"); setRoute("solicitudes"); }}>Solicitudes</button>
                 {canManageEngine ? (
-                  <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/admin"; setRoute("admin"); }}>Motor</button>
+                  <button className="secondary-button" type="button" onClick={() => { navigateTo("admin"); setRoute("admin"); }}>Motor</button>
                 ) : null}
               </div>
               <button className="secondary-button" type="button" onClick={handleResetSession}>

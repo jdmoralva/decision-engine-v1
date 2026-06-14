@@ -1,0 +1,15 @@
+{
+  "roleCode": "admin_negocio",
+  "permissions": [
+    {
+      "code": "crear_producto",
+      "name": "Crear producto",
+      "description": "Permite registrar productos draft"
+    },
+    {
+      "code": "consultar_auditoria",
+      "name": "Consultar auditoria",
+      "description": "Lectura operativa y administrativa"
+    }
+  ]
+}

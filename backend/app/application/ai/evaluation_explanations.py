@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from backend.app.application.ai.contracts import AIModelRequest
 from backend.app.application.ai.exceptions import AIServiceError
 from backend.app.application.ai.factory import build_ai_model_client
+from backend.app.application.observability import log_event
 from backend.app.config.settings import get_settings
 from backend.app.domain.decision_engine import EngineEvaluationRequest, EngineEvaluationResult
 from backend.app.infrastructure.repositories.ai_interactions import AIInteractionWrite, AIInteractionsRepository
+
+
+logger = logging.getLogger("decision_engine.ai")
 
 
 class EvaluationExplanationService:
@@ -50,10 +55,28 @@ class EvaluationExplanationService:
             )
             response_text = response.output_text.strip() or fallback_summary
             model_name = response.model_name
-        except AIServiceError:
+        except AIServiceError as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "ai_degraded",
+                evaluation_id=evaluation_id,
+                actor_user_id=actor_user_id,
+                provider=get_settings().ai_provider,
+                reason=str(exc),
+            )
             response_text = fallback_summary
             model_name = "fallback"
-        except Exception:
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "ai_degraded",
+                evaluation_id=evaluation_id,
+                actor_user_id=actor_user_id,
+                provider=get_settings().ai_provider,
+                reason=str(exc),
+            )
             response_text = fallback_summary
             model_name = "fallback"
 
