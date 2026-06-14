@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 
 from backend.app.api.schemas.contracts import ContractError, StructuredErrorResponse
 from backend.app.api.routes.admin import router as admin_router
+from backend.app.api.routes.attachments import router as attachments_router
+from backend.app.api.routes.audit import router as audit_router
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.credit_requests import router as credit_requests_router
 from backend.app.api.routes.engine_admin import router as engine_admin_router
@@ -53,7 +55,9 @@ async def handle_permission_denied(_request: Request, exc: PermissionDeniedError
 app.include_router(health_router, prefix=settings.api_v1_prefix)
 app.include_router(auth_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_router, prefix=settings.api_v1_prefix)
+app.include_router(audit_router, prefix=settings.api_v1_prefix)
 app.include_router(engine_admin_router, prefix=settings.api_v1_prefix)
 app.include_router(loan_consultations_router, prefix=settings.api_v1_prefix)
 app.include_router(evaluations_router, prefix=settings.api_v1_prefix)
 app.include_router(credit_requests_router, prefix=settings.api_v1_prefix)
+app.include_router(attachments_router, prefix=settings.api_v1_prefix)

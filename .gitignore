@@ -31,7 +31,7 @@ Thumbs.db
 .vscode/
 .idea/
 coverage/
-
+frontend/node_modules/.vite/deps/_metadata.json
 SESSIONS.md
 
 

@@ -145,19 +145,19 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T055 [P] [US3] Add contract tests for attachment upload, metadata/listing, ZIP content listing, download, and audit retrieval endpoints, including role-based access for analista, evaluador, administrador, and auditor, in `backend/tests/contract/test_attachments_and_audit_api.py`
-- [ ] T056 [P] [US3] Add integration tests for ZIP lifecycle, ZIP manifest visualization, audit events, AI-failure-safe retrieval, and role-based access enforcement for analista, evaluador, administrador, and auditor in `backend/tests/integration/test_attachments_and_audit_flow.py`
+- [X] T055 [P] [US3] Add contract tests for attachment upload, metadata/listing, ZIP content listing, download, and audit retrieval endpoints, including role-based access for analista, evaluador, administrador, and auditor, in `backend/tests/contract/test_attachments_and_audit_api.py`
+- [X] T056 [P] [US3] Add integration tests for ZIP lifecycle, ZIP manifest visualization, audit events, AI-failure-safe retrieval, and role-based access enforcement for analista, evaluador, administrador, and auditor in `backend/tests/integration/test_attachments_and_audit_flow.py`
 
 ### Implementation for User Story 3
 
-- [ ] T057 [P] [US3] Implement filesystem ZIP storage and ZIP manifest extraction service in `backend/app/infrastructure/files/zip_storage.py`
-- [ ] T058 [P] [US3] Implement attachment metadata repository and audit persistence in `backend/app/infrastructure/repositories/attachments.py`
-- [ ] T059 [US3] Implement attachment upload, list, ZIP content listing, and download application services in `backend/app/application/credit_requests/attachments_service.py`
-- [ ] T060 [US3] Implement attachment and paginated audit routes with `evaluation_id` and `request_id` filters in `backend/app/api/routes/attachments.py` and `backend/app/api/routes/audit.py`
-- [ ] T061 [US3] Extend frontend service clients for attachments and audit trace access in `frontend/src/services/attachments-api.ts` and `frontend/src/services/audit-api.ts`
-- [ ] T062 [P] [US3] Implement attachment management UI with metadata and ZIP content listing in `frontend/src/features/attachments/AttachmentsPanel.tsx` and `frontend/src/features/attachments/upload-form.tsx`
-- [ ] T063 [P] [US3] Implement audit timeline UI in `frontend/src/features/attachments/AuditTimeline.tsx`
-- [ ] T064 [US3] Add frontend tests for attachments and audit timeline, including role-gated visibility and actions, in `frontend/tests/attachments-flow.test.tsx` and `frontend/tests/audit-timeline.test.tsx`
+- [X] T057 [P] [US3] Implement filesystem ZIP storage and ZIP manifest extraction service in `backend/app/infrastructure/files/zip_storage.py`
+- [X] T058 [P] [US3] Implement attachment metadata repository and audit persistence in `backend/app/infrastructure/repositories/attachments.py`
+- [X] T059 [US3] Implement attachment upload, list, ZIP content listing, and download application services in `backend/app/application/credit_requests/attachments_service.py`
+- [X] T060 [US3] Implement attachment and paginated audit routes with `evaluation_id` and `request_id` filters in `backend/app/api/routes/attachments.py` and `backend/app/api/routes/audit.py`
+- [X] T061 [US3] Extend frontend service clients for attachments and audit trace access in `frontend/src/services/attachments-api.ts` and `frontend/src/services/audit-api.ts`
+- [X] T062 [P] [US3] Implement attachment management UI with metadata and ZIP content listing in `frontend/src/features/attachments/AttachmentsPanel.tsx` and `frontend/src/features/attachments/upload-form.tsx`
+- [X] T063 [P] [US3] Implement audit timeline UI in `frontend/src/features/attachments/AuditTimeline.tsx`
+- [X] T064 [US3] Add frontend tests for attachments and audit timeline, including role-gated visibility and actions, in `frontend/tests/attachments-flow.test.tsx` and `frontend/tests/audit-timeline.test.tsx`
 
 **Checkpoint**: All user stories independently functional.
 

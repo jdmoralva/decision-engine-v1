@@ -93,4 +93,5 @@ def _map_attachment_item(item: CreditRequestAttachmentRecord) -> CreditRequestAt
         original_filename=item.original_filename,
         mime_type=item.mime_type,
         uploaded_at=item.uploaded_at,
+        entry_count=None,
     )

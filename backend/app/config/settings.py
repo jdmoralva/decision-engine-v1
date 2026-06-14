@@ -57,6 +57,7 @@ class Settings:
     gemini_api_key: str | None = None
     gemini_model_name: str = "gemini-2.0-flash"
     decision_engine_runtime_builders: tuple[str, ...] = ()
+    attachments_storage_dir: str = "./storage/attachments"
 
 
 @lru_cache(maxsize=1)
@@ -77,6 +78,7 @@ def get_settings() -> Settings:
         openai_model_name=os.getenv("OPENAI_MODEL_NAME", "gpt-4.1-mini"),
         gemini_api_key=os.getenv("GEMINI_API_KEY"),
         gemini_model_name=os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash"),
+        attachments_storage_dir=os.getenv("ATTACHMENTS_STORAGE_DIR", "./storage/attachments"),
         decision_engine_runtime_builders=_parse_csv(
             os.getenv(
                 "DECISION_ENGINE_RUNTIME_BUILDERS",

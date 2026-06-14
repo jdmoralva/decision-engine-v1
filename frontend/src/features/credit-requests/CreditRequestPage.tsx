@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
+import { AttachmentsPanel } from "../attachments/AttachmentsPanel";
+import { AuditTimeline } from "../attachments/AuditTimeline";
 import type { SessionMe } from "../../session-storage";
+import { AttachmentsApiClient } from "../../services/attachments-api";
+import { AuditApiClient } from "../../services/audit-api";
 import {
   CreditRequestsApiClient,
   type CreditRequestDetail,
@@ -9,13 +13,22 @@ import type { ConsultationResponse, EvaluationResponse } from "../../services/ru
 
 type CreditRequestPageProps = {
   client: CreditRequestsApiClient;
+  attachmentsClient: AttachmentsApiClient | null;
+  auditClient: AuditApiClient | null;
   me: SessionMe;
   consultation: ConsultationResponse | null;
   evaluation: EvaluationResponse | null;
 };
 
 
-export function CreditRequestPage({ client, me, consultation, evaluation }: CreditRequestPageProps) {
+export function CreditRequestPage({
+  client,
+  attachmentsClient,
+  auditClient,
+  me,
+  consultation,
+  evaluation,
+}: CreditRequestPageProps) {
   const [evaluationId, setEvaluationId] = useState(evaluation?.evaluation_id ?? "");
   const [requestedAmount, setRequestedAmount] = useState("9800");
   const [comment, setComment] = useState("Solicitud inicial");
@@ -55,6 +68,11 @@ export function CreditRequestPage({ client, me, consultation, evaluation }: Cred
       setIsSubmitting(false);
     }
   }
+
+  const canManageAttachments = me.roles.some((role) => ["analista", "evaluador", "admin"].includes(role));
+  const canReadAudit = me.roles.some((role) =>
+    ["evaluador", "auditor", "admin", "admin_negocio", "admin_riesgos", "plataforma"].includes(role),
+  );
 
   return (
     <section className="admin-shell">
@@ -101,6 +119,23 @@ export function CreditRequestPage({ client, me, consultation, evaluation }: Cred
               {item.status} | {item.changed_by.username}
             </p>
           ))}
+
+          {attachmentsClient ? (
+            <AttachmentsPanel
+              client={attachmentsClient}
+              requestId={detail.request_id}
+              canUpload={canManageAttachments}
+            />
+          ) : null}
+
+          {auditClient && canReadAudit ? (
+            <AuditTimeline
+              client={auditClient}
+              productCode={detail.product_code}
+              evaluationId={detail.evaluation_id ?? null}
+              requestId={detail.request_id}
+            />
+          ) : null}
         </div>
       ) : null}
     </section>

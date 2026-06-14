@@ -13,6 +13,8 @@ import { CreditRequestPage } from "./features/credit-requests/CreditRequestPage"
 import { QueuePage } from "./features/credit-requests/QueuePage";
 import { EvaluationPage } from "./features/evaluations/EvaluationPage";
 import { ConsultationPage } from "./features/loan-consultations/ConsultationPage";
+import { AttachmentsApiClient } from "./services/attachments-api";
+import { AuditApiClient } from "./services/audit-api";
 import { CreditRequestsApiClient } from "./services/credit-requests-api";
 import {
   emptyEngineAdminWorkspaceState,
@@ -149,6 +151,8 @@ function App() {
   }
 
   const adminClient = token ? new EngineAdminApiClient(token) : null;
+  const attachmentsClient = token ? new AttachmentsApiClient(token) : null;
+  const auditClient = token ? new AuditApiClient(token) : null;
   const runtimeClient = token ? new RuntimeApiClient(token) : null;
   const creditRequestsClient = token ? new CreditRequestsApiClient(token) : null;
   const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
@@ -203,12 +207,14 @@ function App() {
     if (route === "solicitudes" && creditRequestsClient !== null) {
       return (
         <>
-          <CreditRequestPage
-            client={creditRequestsClient}
-            me={me}
-            consultation={lastConsultation}
-            evaluation={lastEvaluation}
-          />
+            <CreditRequestPage
+              client={creditRequestsClient}
+              attachmentsClient={attachmentsClient}
+              auditClient={auditClient}
+              me={me}
+              consultation={lastConsultation}
+              evaluation={lastEvaluation}
+            />
           <QueuePage client={creditRequestsClient} me={me} />
         </>
       );

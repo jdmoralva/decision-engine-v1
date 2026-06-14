@@ -158,6 +158,7 @@ class CreditRequestAttachmentSummary(BaseModel):
     original_filename: str
     mime_type: str
     uploaded_at: str
+    entry_count: int | None = None
 
 
 class CreditRequestDetailResponse(CreditRequestResponse):
@@ -194,3 +195,43 @@ class CreditRequestStatusTransitionRequest(BaseModel):
     target_status: str = Field(min_length=1)
     comment: str | None = None
     changed_by: ActorRef
+
+
+class AttachmentMetadataResponse(BaseModel):
+    attachment_id: str
+    request_id: str
+    original_filename: str
+    mime_type: str
+    uploaded_at: str
+    uploaded_by: ActorRef
+    entry_count: int
+
+
+class AttachmentManifestEntry(BaseModel):
+    path: str
+    size: int
+    compressed_size: int
+
+
+class AttachmentManifestResponse(BaseModel):
+    attachment_id: str
+    request_id: str
+    original_filename: str
+    entries: list[AttachmentManifestEntry] = Field(default_factory=list)
+
+
+class AuditEventResponse(BaseModel):
+    event_id: str
+    aggregate_id: str
+    aggregate_type: str
+    event_type: str
+    event_payload: dict[str, Any] = Field(default_factory=dict)
+    created_by: ActorRef
+    created_at: str
+
+
+class AuditEventPageResponse(BaseModel):
+    page: int
+    page_size: int
+    total: int
+    items: list[AuditEventResponse] = Field(default_factory=list)

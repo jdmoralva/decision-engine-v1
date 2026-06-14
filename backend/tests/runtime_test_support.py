@@ -14,6 +14,7 @@ class RuntimeApiTestCaseMixin:
         os.environ["APP_ENV"] = "test"
         os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{self.db_path.as_posix()}"
         os.environ["AUTH_SECRET_KEY"] = "test-secret-key"
+        os.environ["ATTACHMENTS_STORAGE_DIR"] = str(Path(self.temp_dir.name) / "attachments")
         os.environ.pop("AI_ENABLED", None)
         os.environ.pop("OPENAI_API_KEY", None)
         os.environ.pop("GEMINI_API_KEY", None)

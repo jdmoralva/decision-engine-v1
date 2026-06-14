@@ -57,14 +57,34 @@
 
 <!-- SPECKIT START -->
 
-For files located inside the `.specify` directory, `glob` may return “No files found”. Attempt to read it directly from the corresponding path under: `<PROJECT_ROOT>/.specify/`.
-Examples:
-- `constitution.md` → `<PROJECT_ROOT>/.specify/memory/constitution.md`
-- `extensions.yml` → `<PROJECT_ROOT>/.specify/extensions.yml`
-
 For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
 
 Specification and code may be in English, but frontend and UI must be in Spanish.
+
+## File Fallback rule
+
+When locating files, do not rely exclusively on file discovery tools (`glob`, `find`, directory listing, search indexes, etc.)
+
+If file discovery returns “No files found” or no matching results:
+
+- Do not immediately report that the file is missing.
+- Attempt to read the expected path under `<PROJECT_ROOT>/.specify/`.
+- Only report the file as missing after both discovery and direct-path access have failed.
+
+**Example:**
+
+If asked to read `extensions.yml`:
+1. Search normally (`glob`, `find`, directory listing, etc.).
+2. If not found, read: `<PROJECT_ROOT>/.specify/extensions.yml`
+
+**Common File Locations:**
+
+- `constitution.md` → `<PROJECT_ROOT>/.specify/memory/constitution.md`
+- `extensions.yml` → `<PROJECT_ROOT>/.specify/extensions.yml`
+
+**Important:**
+
+Files inside `.specify` may not appear in search or `glob` results even when they exist. Always attempt a direct-path read before concluding that a `.specify` file is absent.
 
 <!-- SPECKIT END -->
 
