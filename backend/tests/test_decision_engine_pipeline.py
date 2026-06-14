@@ -9,6 +9,53 @@ if str(ROOT) not in sys.path:
 
 
 class DecisionEnginePipelineTests(unittest.TestCase):
+    def test_pld_runtime_is_deterministic_for_the_same_request(self):
+        from backend.app.products.pld.runtime import compile_pld_runtime
+
+        runtime = compile_pld_runtime()
+        request_payload = {
+            "product_code": "PLD",
+            "workflow_code": "standard",
+            "document": {"document_type": "DNI", "document_number": "12345678"},
+            "requested_by": {"username": "analista"},
+            "product_context": {
+                "campaign_code": "PLD_48M",
+                "customer_type": "CLIENTE",
+                "profile_code": "PERFIL 1",
+                "sunedu_flag": "CON SUNEDU",
+                "employment_status": "DEP",
+                "validated_income": 2500,
+                "reported_debt": 400,
+                "initial_offered_amount": 12000,
+                "existing_consumption_balance": 300,
+                "campaign_rate": 18.5,
+                "campaign_term_months": 48,
+            },
+        }
+
+        first_result = asyncio.run(
+            __import__("backend.app.domain.decision_engine", fromlist=["DecisionEngineOrchestrator", "EngineEvaluationRequest"]).DecisionEngineOrchestrator(runtime.nodes).evaluate(
+                runtime.normalizer(
+                    __import__("backend.app.domain.decision_engine", fromlist=["EngineEvaluationRequest"]).EngineEvaluationRequest(**request_payload)
+                ),
+                runtime.strategy,
+            )
+        )
+        second_result = asyncio.run(
+            __import__("backend.app.domain.decision_engine", fromlist=["DecisionEngineOrchestrator", "EngineEvaluationRequest"]).DecisionEngineOrchestrator(runtime.nodes).evaluate(
+                runtime.normalizer(
+                    __import__("backend.app.domain.decision_engine", fromlist=["EngineEvaluationRequest"]).EngineEvaluationRequest(**request_payload)
+                ),
+                runtime.strategy,
+            )
+        )
+
+        self.assertEqual(first_result.eligible, second_result.eligible)
+        self.assertEqual(first_result.alerts, second_result.alerts)
+        self.assertEqual(first_result.blocks, second_result.blocks)
+        self.assertEqual(first_result.product_result, second_result.product_result)
+        self.assertEqual(first_result.applied_versions.model_dump(), second_result.applied_versions.model_dump())
+
     def test_orchestrator_executes_async_pipeline_and_records_branching(self):
         from backend.app.domain.decision_engine import (
             AppliedVersions,

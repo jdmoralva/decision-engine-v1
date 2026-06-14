@@ -86,25 +86,25 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T028 [P] [US1] Add contract tests for login/session bootstrap and runtime consultation/evaluation endpoints, including minimum role-matrix access rules, in `backend/tests/contract/test_runtime_auth_and_evaluations.py`
-- [ ] T029 [P] [US1] Add integration tests for consultation, evaluation execution, trace retrieval, variable-origin enforcement, effective-version persistence, and AI fallback in `backend/tests/integration/test_pld_runtime_flow.py`
-- [ ] T030 [P] [US1] Add mapper and determinism regression tests for product-specific HTTP contracts in `backend/tests/test_evaluation_contract_mappers.py` and `backend/tests/test_decision_engine_pipeline.py`
+- [X] T028 [P] [US1] Add contract tests for login/session bootstrap and runtime consultation/evaluation endpoints, including minimum role-matrix access rules, in `backend/tests/contract/test_runtime_auth_and_evaluations.py`
+- [X] T029 [P] [US1] Add integration tests for consultation, evaluation execution, trace retrieval, variable-origin enforcement, effective-version persistence, and AI fallback in `backend/tests/integration/test_pld_runtime_flow.py`
+- [X] T030 [P] [US1] Add mapper and determinism regression tests for product-specific HTTP contracts in `backend/tests/test_evaluation_contract_mappers.py` and `backend/tests/test_decision_engine_pipeline.py`
 
 ### Implementation for User Story 1
 
-- [ ] T031 [P] [US1] Implement frontend login/session bootstrap in `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/features/auth/auth-service.ts`, and `frontend/src/session-storage.ts`
-- [ ] T032 [P] [US1] Implement consultation application service orchestration in `backend/app/application/loan_consultations.py`
-- [ ] T033 [P] [US1] Implement evaluation application service with runtime loading, variable-origin validation, snapshot capture, effective-version persistence, and AI fallback handling in `backend/app/application/evaluations/service.py`
-- [ ] T034 [P] [US1] Refine product-specific to generic engine mapping in `backend/app/api/mappers/evaluations.py`
-- [ ] T035 [US1] Implement consultation route behavior in `backend/app/api/routes/loan_consultations.py`
-- [ ] T036 [US1] Implement evaluation and trace routes in `backend/app/api/routes/evaluations.py`
-- [ ] T037 [US1] Persist applied workflow, variable catalog, parameter set, published rule versions, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
-- [ ] T038 [US1] Implement AI explanation and summary orchestration with explicit fallback and `ai_interactions` persistence in `backend/app/application/ai/evaluation_explanations.py`
-- [ ] T039 [US1] Add frontend service client for consultations and evaluations in `frontend/src/services/runtime-api.ts`
-- [ ] T040 [P] [US1] Implement consultation UI flow in `frontend/src/features/loan-consultations/ConsultationPage.tsx` and `frontend/src/features/loan-consultations/consultation-form.tsx`
-- [ ] T041 [P] [US1] Implement evaluation UI flow and trace viewer in `frontend/src/features/evaluations/EvaluationPage.tsx`, `frontend/src/features/evaluations/evaluation-form.tsx`, and `frontend/src/features/evaluations/trace-panel.tsx`
-- [ ] T042 [US1] Wire auth, consultation, and evaluation routes in `frontend/src/App.tsx` and `frontend/src/main.tsx`
-- [ ] T043 [US1] Add frontend tests for login, consultation, and evaluation user journeys in `frontend/tests/auth-flow.test.tsx`, `frontend/tests/consultation-flow.test.tsx`, and `frontend/tests/evaluation-flow.test.tsx`
+- [X] T031 [P] [US1] Implement frontend login/session bootstrap in `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/features/auth/auth-service.ts`, and `frontend/src/session-storage.ts`
+- [X] T032 [P] [US1] Implement consultation application service orchestration in `backend/app/application/loan_consultations.py`
+- [X] T033 [P] [US1] Implement evaluation application service with runtime loading, variable-origin validation, snapshot capture, effective-version persistence, and AI fallback handling in `backend/app/application/evaluations/service.py`
+- [X] T034 [P] [US1] Refine product-specific to generic engine mapping in `backend/app/api/mappers/evaluations.py`
+- [X] T035 [US1] Implement consultation route behavior in `backend/app/api/routes/loan_consultations.py`
+- [X] T036 [US1] Implement evaluation and trace routes in `backend/app/api/routes/evaluations.py`
+- [X] T037 [US1] Persist applied workflow, variable catalog, parameter set, published rule versions, and pipeline versions in `backend/app/infrastructure/repositories/evaluations.py`
+- [X] T038 [US1] Implement AI explanation and summary orchestration with explicit fallback and `ai_interactions` persistence in `backend/app/application/ai/evaluation_explanations.py`
+- [X] T039 [US1] Add frontend service client for consultations and evaluations in `frontend/src/services/runtime-api.ts`
+- [X] T040 [P] [US1] Implement consultation UI flow in `frontend/src/features/loan-consultations/ConsultationPage.tsx` and `frontend/src/features/loan-consultations/consultation-form.tsx`
+- [X] T041 [P] [US1] Implement evaluation UI flow and trace viewer in `frontend/src/features/evaluations/EvaluationPage.tsx`, `frontend/src/features/evaluations/evaluation-form.tsx`, and `frontend/src/features/evaluations/trace-panel.tsx`
+- [X] T042 [US1] Wire auth, consultation, and evaluation routes in `frontend/src/App.tsx` and `frontend/src/main.tsx`
+- [X] T043 [US1] Add frontend tests for login, consultation, and evaluation user journeys in `frontend/tests/auth-flow.test.tsx`, `frontend/tests/consultation-flow.test.tsx`, and `frontend/tests/evaluation-flow.test.tsx`
 
 **Checkpoint**: User Story 1 fully functional and testable independently.
 

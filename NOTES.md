@@ -13,8 +13,13 @@ Si quieres volver a registrar PLD por configuración
 En .env podrías poner:
 DECISION_ENGINE_RUNTIME_BUILDERS=backend.app.products.pld.runtime:compile_pld_runtime
 
+## Last Session
+
+specs/001-project-specification/sessions/session-004.md
+
 ## Ongoing
 
-specs/001-project-specification/sessions/session-003.md
+
+
 
 

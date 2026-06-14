@@ -119,7 +119,7 @@ class RBACPermissionTests(unittest.TestCase):
                     "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
                     headers={"Authorization": f"Bearer {token}"},
                 )
-                self.assertEqual(response.status_code, 501)
+                self.assertEqual(response.status_code, 404)
 
         asyncio.run(run_test())
 
@@ -286,7 +286,7 @@ class RBACPermissionTests(unittest.TestCase):
                     "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
                     headers={"Authorization": f"Bearer {token}"},
                 )
-                self.assertEqual(response.status_code, 501)
+                self.assertEqual(response.status_code, 404)
 
         asyncio.run(run_test())
 

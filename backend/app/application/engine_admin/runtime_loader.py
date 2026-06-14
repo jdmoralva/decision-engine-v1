@@ -6,6 +6,7 @@ from collections.abc import Callable
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.domain.decision_engine.contracts import AppliedVersions, EngineEvaluationRequest
+from backend.app.domain.decision_engine.normalization import normalize_evaluation_request
 from backend.app.domain.decision_engine.nodes import DecisionNode, NodeExecutionResult
 from backend.app.domain.decision_engine.pipeline import PipelineNodeDefinition, PipelineStrategy
 from backend.app.domain.decision_engine.registry import ProductEngineRuntime
@@ -14,6 +15,7 @@ from backend.app.infrastructure.repositories.engine_admin import (
     RuntimeBundle,
     SqlAlchemyEngineAdminRepository,
 )
+from backend.app.products.pld.runtime import build_pld_nodes
 
 
 def _identity_normalizer(request: EngineEvaluationRequest) -> EngineEvaluationRequest:
@@ -73,18 +75,23 @@ class RuntimeLoader:
                 for node in bundle.pipeline_nodes
             ],
         )
-        nodes = [
-            PersistedDecisionNode(
-                node_key=node.node_key,
-                node_type=node.node_type,
-                config_payload=node.config_payload,
-            )
-            for node in bundle.pipeline_nodes
-        ]
+        if bundle.product_code == "PLD" and bundle.workflow_code == "standard":
+            nodes = build_pld_nodes()
+            normalizer = normalize_evaluation_request
+        else:
+            nodes = [
+                PersistedDecisionNode(
+                    node_key=node.node_key,
+                    node_type=node.node_type,
+                    config_payload=node.config_payload,
+                )
+                for node in bundle.pipeline_nodes
+            ]
+            normalizer = _identity_normalizer
         return ProductEngineRuntime(
             product_code=bundle.product_code,
             workflow_code=bundle.workflow_code,
             strategy=strategy,
-            normalizer=_identity_normalizer,
+            normalizer=normalizer,
             nodes=nodes,
         )

@@ -1,5 +1,7 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
+import { AuthApiClient } from "./features/auth/auth-service";
+import { LoginPage } from "./features/auth/LoginPage";
 import { ParametersPage } from "./features/engine-admin/ParametersPage";
 import { PipelinePage } from "./features/engine-admin/PipelinePage";
 import { ProfilePermissionsPage } from "./features/engine-admin/ProfilePermissionsPage";
@@ -7,11 +9,14 @@ import { ProductsPage } from "./features/engine-admin/ProductsPage";
 import { RulesPage } from "./features/engine-admin/RulesPage";
 import { VariablesPage } from "./features/engine-admin/VariablesPage";
 import { WorkflowsPage } from "./features/engine-admin/WorkflowsPage";
+import { EvaluationPage } from "./features/evaluations/EvaluationPage";
+import { ConsultationPage } from "./features/loan-consultations/ConsultationPage";
 import {
   emptyEngineAdminWorkspaceState,
   EngineAdminApiClient,
   type EngineAdminWorkspaceState,
 } from "./services/engine-admin-api";
+import { RuntimeApiClient, type ConsultationResponse } from "./services/runtime-api";
 import {
   clearStoredSession,
   loadStoredSession,
@@ -19,38 +24,27 @@ import {
   type SessionMe,
 } from "./session-storage";
 
+type AppRoute = "consultas" | "evaluaciones" | "admin";
 
-type LoginResult = {
-  access_token: string;
-  token_type: string;
-};
-
-type MeResult = {
-  id: string;
-  username: string;
-  display_name: string | null;
-  roles: string[];
-};
-
-
-function toSessionMe(me: MeResult): SessionMe {
-  return {
-    id: me.id,
-    username: me.username,
-    displayName: me.display_name,
-    roles: me.roles,
-  };
+function readRoute(): AppRoute {
+  const hash = window.location.hash.replace(/^#\/?/, "");
+  if (hash === "evaluaciones") {
+    return "evaluaciones";
+  }
+  if (hash === "admin") {
+    return "admin";
+  }
+  return "consultas";
 }
 
-
 function App() {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<SessionMe | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRestoring, setIsRestoring] = useState(true);
+  const [route, setRoute] = useState<AppRoute>(readRoute());
+  const [lastConsultation, setLastConsultation] = useState<ConsultationResponse | null>(null);
   const [workspace, setWorkspace] = useState<EngineAdminWorkspaceState>(
     emptyEngineAdminWorkspaceState,
   );
@@ -72,19 +66,7 @@ function App() {
       }
 
       try {
-        const meResponse = await fetch("/api/v1/me", {
-          headers: {
-            Authorization: `Bearer ${storedSession.accessToken}`,
-          },
-        });
-
-        if (!meResponse.ok) {
-          throw new Error("La sesion guardada ya no es valida.");
-        }
-
-        const mePayload = (await meResponse.json()) as MeResult;
-        const normalizedMe = toSessionMe(mePayload);
-
+        const normalizedMe = await new AuthApiClient().restore(storedSession.accessToken);
         if (isMounted) {
           setToken(storedSession.accessToken);
           setMe(normalizedMe);
@@ -110,40 +92,26 @@ function App() {
     };
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    function handleHashChange() {
+      setRoute(readRoute());
+    }
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  async function handleLogin(username: string, password: string) {
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const loginResponse = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!loginResponse.ok) {
-        throw new Error("Credenciales invalidas. Verifica usuario y password.");
-      }
-
-      const loginPayload = (await loginResponse.json()) as LoginResult;
-      const meResponse = await fetch("/api/v1/me", {
-        headers: {
-          Authorization: `Bearer ${loginPayload.access_token}`,
-        },
-      });
-
-      if (!meResponse.ok) {
-        throw new Error("Login correcto, pero no se pudo recuperar la sesion.");
-      }
-
-      const mePayload = (await meResponse.json()) as MeResult;
-      const normalizedMe = toSessionMe(mePayload);
-      setToken(loginPayload.access_token);
-      setMe(normalizedMe);
-      saveStoredSession({ accessToken: loginPayload.access_token, me: normalizedMe });
+      const session = await new AuthApiClient().login(username, password);
+      setToken(session.accessToken);
+      setMe(session.me);
+      saveStoredSession(session);
+      window.location.hash = "#/consultas";
+      setRoute("consultas");
     } catch (caughtError) {
       setToken(null);
       setMe(null);
@@ -161,12 +129,15 @@ function App() {
     clearStoredSession();
     setToken(null);
     setMe(null);
+    setLastConsultation(null);
     setError(null);
     setNotice(null);
-    setPassword("admin123");
+    window.location.hash = "";
+    setRoute("consultas");
   }
 
   const adminClient = token ? new EngineAdminApiClient(token) : null;
+  const runtimeClient = token ? new RuntimeApiClient(token) : null;
   const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
 
   function renderAdminTab() {
@@ -200,6 +171,47 @@ function App() {
     }
   }
 
+  function renderRouteContent() {
+    if (runtimeClient === null || me === null) {
+      return null;
+    }
+
+    if (route === "evaluaciones") {
+      return <EvaluationPage client={runtimeClient} me={me} consultation={lastConsultation} />;
+    }
+
+    if (route === "admin" && canManageEngine) {
+      return (
+        <section className="admin-shell">
+          <div className="admin-shell-header">
+            <div>
+              <p className="eyebrow">Motor administrable</p>
+              <h2>Phase 3</h2>
+            </div>
+            <p className="workspace-hint">
+              Producto: {workspace.productCode || "sin definir"} | Workflow: {workspace.workflowCode || "sin definir"}
+            </p>
+          </div>
+
+          <div className="tab-strip">
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("products")}>Productos</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("variables")}>Variables</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("parameters")}>Parametros</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("pipeline")}>Pipeline</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("rules")}>Reglas</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("workflows")}>Versionado</button>
+            <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("profiles")}>Perfiles</button>
+          </div>
+
+          {notice ? <p className="success-banner">{notice}</p> : null}
+          {renderAdminTab()}
+        </section>
+      );
+    }
+
+    return <ConsultationPage client={runtimeClient} onConsultationChange={setLastConsultation} />;
+  }
+
   return (
     <main className="shell">
       <section className="card auth-card">
@@ -211,77 +223,54 @@ function App() {
           </p>
         </div>
 
-        <div className="auth-layout">
-          <form className="login-form" onSubmit={handleSubmit}>
-            <label className="field">
-              <span>Usuario</span>
-              <input
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="admin"
-              />
-            </label>
+        {me === null ? (
+          <LoginPage isSubmitting={isSubmitting} error={error} onLogin={handleLogin} />
+        ) : null}
 
-            <label className="field">
-              <span>Password</span>
-              <input
-                autoComplete="current-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="admin123"
-              />
-            </label>
+        <aside className="session-panel">
+          <h2>Estado de sesion</h2>
+          {isRestoring ? <p className="session-empty">Restaurando sesion...</p> : null}
 
-            <button className="primary-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Ingresando..." : "Ingresar"}
-            </button>
+          {!isRestoring && me ? (
+            <>
+              <p className="success-banner">Acceso correcto.</p>
+              <dl className="session-grid">
+                <div>
+                  <dt>Usuario</dt>
+                  <dd>{me.username}</dd>
+                </div>
+                <div>
+                  <dt>Nombre</dt>
+                  <dd>{me.displayName ?? "Sin nombre"}</dd>
+                </div>
+                <div>
+                  <dt>Roles</dt>
+                  <dd>{me.roles.join(", ")}</dd>
+                </div>
+                <div>
+                  <dt>Token</dt>
+                  <dd className="token-preview">{token}</dd>
+                </div>
+              </dl>
+              <div className="tab-strip">
+                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/consultas"; setRoute("consultas"); }}>Consultas</button>
+                <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/evaluaciones"; setRoute("evaluaciones"); }}>Evaluaciones</button>
+                {canManageEngine ? (
+                  <button className="secondary-button" type="button" onClick={() => { window.location.hash = "#/admin"; setRoute("admin"); }}>Motor</button>
+                ) : null}
+              </div>
+              <button className="secondary-button" type="button" onClick={handleResetSession}>
+                Limpiar sesion
+              </button>
+            </>
+          ) : null}
 
-            <p className="hint">Credenciales iniciales: admin / admin123</p>
-
-            {error ? <p className="error-banner">{error}</p> : null}
-          </form>
-
-          <aside className="session-panel">
-            <h2>Estado de sesion</h2>
-
-            {isRestoring ? <p className="session-empty">Restaurando sesion...</p> : null}
-
-            {!isRestoring && me ? (
-              <>
-                <p className="success-banner">Acceso correcto.</p>
-                <dl className="session-grid">
-                  <div>
-                    <dt>Usuario</dt>
-                    <dd>{me.username}</dd>
-                  </div>
-                  <div>
-                    <dt>Nombre</dt>
-                    <dd>{me.displayName ?? "Sin nombre"}</dd>
-                  </div>
-                  <div>
-                    <dt>Roles</dt>
-                    <dd>{me.roles.join(", ")}</dd>
-                  </div>
-                  <div>
-                    <dt>Token</dt>
-                    <dd className="token-preview">{token}</dd>
-                  </div>
-                </dl>
-                <button className="secondary-button" type="button" onClick={handleResetSession}>
-                  Limpiar sesion
-                </button>
-              </>
-            ) : null}
-
-            {!isRestoring && !me ? (
-              <p className="session-empty">
-                Aun no hay una sesion activa. Usa el formulario para autenticarte.
-              </p>
-            ) : null}
-          </aside>
-        </div>
+          {!isRestoring && !me ? (
+            <p className="session-empty">
+              Aun no hay una sesion activa. Usa el formulario para autenticarte.
+            </p>
+          ) : null}
+        </aside>
 
         <ul className="feature-list">
           <li>Consulta y evaluacion PLD</li>
@@ -290,32 +279,7 @@ function App() {
           <li>Paneles AI asistivos</li>
         </ul>
 
-        {canManageEngine ? (
-          <section className="admin-shell">
-            <div className="admin-shell-header">
-              <div>
-                <p className="eyebrow">Motor administrable</p>
-                <h2>Phase 3</h2>
-              </div>
-              <p className="workspace-hint">
-                Producto: {workspace.productCode || "sin definir"} | Workflow: {workspace.workflowCode || "sin definir"}
-              </p>
-            </div>
-
-            <div className="tab-strip">
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("products")}>Productos</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("variables")}>Variables</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("parameters")}>Parametros</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("pipeline")}>Pipeline</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("rules")}>Reglas</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("workflows")}>Versionado</button>
-              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("profiles")}>Perfiles</button>
-            </div>
-
-            {notice ? <p className="success-banner">{notice}</p> : null}
-            {renderAdminTab()}
-          </section>
-        ) : null}
+        {me ? renderRouteContent() : null}
       </section>
     </main>
   );

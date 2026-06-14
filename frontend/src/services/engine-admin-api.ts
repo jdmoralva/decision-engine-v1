@@ -1,5 +1,10 @@
 type Fetcher = typeof fetch;
 
+
+function resolveFetcher(fetcher?: Fetcher): Fetcher {
+  return fetcher ?? globalThis.fetch.bind(globalThis);
+}
+
 export type ProductResponse = {
   id: string;
   productCode: string;
@@ -133,10 +138,14 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 export class EngineAdminApiClient {
+  private readonly fetcher: Fetcher;
+
   constructor(
     private readonly accessToken: string,
-    private readonly fetcher: Fetcher = fetch,
-  ) {}
+    fetcher?: Fetcher,
+  ) {
+    this.fetcher = resolveFetcher(fetcher);
+  }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetcher(path, {

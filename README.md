@@ -1,74 +1,225 @@
 # Decision Engine
 
-## Resumen Ejecutivo
+## Resumen
 
-Este repositorio contiene la planificacion y la base documental para construir una nueva version de `Decision Engine`, una plataforma "AI-Powered" de gestion y decision para productos de prestamo.
+`Decision Engine` es la nueva implementacion del MVP para productos de prestamo. Reemplaza progresivamente al sistema legacy en `old-version/`, pero sin heredar su arquitectura.
 
-El objetivo es reemplazar la solucion legacy de `old-version/`, un monolito en `R + Plumber + HTML/jQuery`, por una arquitectura moderna con:
+Stack actual:
 
-- backend en Python (FastAPI + Pydantic v2)
-- persistencia inicial en SQLite con opcion de migracion a SQL Server
-- frontend web desacoplado (Vite + React + TypeScript, servido como assets estaticos)
-- autenticacion y autorizacion modernas (RBAC)
-- motor de decisiones deterministico aislado de la UI y del framework web
-- pipeline de etapas intercambiables (Preprocessing, Eligibility, Scoring, Decision Strategy, Post-processing)
-- event sourcing inmutable para trazabilidad total de decisiones
-- BRMS (Business Rules Management System) con versionado, simulacion y UI administrativa
-- capa AI asistiva para explicacion de evaluaciones, resumen de casos y sugerencias de accion
+- backend `FastAPI` + `SQLAlchemy` + `Alembic`
+- frontend `Vite` + `React` + `TypeScript`
+- persistencia inicial en `SQLite`
+- motor de decisiones deterministico y aislado del borde HTTP
+- autenticacion moderna con usuarios, roles y permisos
 
-`PLD` significa `Prestamo de Libre Disponibilidad` y constituye el primer producto del MVP.
-La arquitectura objetivo esta disenada para soportar otros tipos de prestamo en el futuro sin rehacer la plataforma base. El modulo de `Cobranzas` presente en `old-version/` queda fuera de alcance salvo instruccion explicita.
+`PLD` (`Prestamo de Libre Disponibilidad`) es el primer producto implementado. `Cobranzas` queda fuera de alcance salvo pedido explicito.
 
-## Estado Actual
+## Estado Real Del Repo
 
-La raiz del repositorio ya contiene la base tecnica nueva del MVP.
-El estado real es:
+Este repositorio ya no es solo documentacion. Tiene una base ejecutable en desarrollo activo.
 
-- `old-version/` conserva la referencia funcional y tecnica del sistema legacy
-- `backend/` ya contiene el bootstrap FastAPI, configuracion, autenticacion base, RBAC inicial, ORM, migraciones, contratos API iniciales y el modulo aislado base del motor de decisiones
-- `frontend/` ya contiene el bootstrap `Vite + React + TypeScript` con arranque local y sesion basica
+Hoy existe:
 
-## Estado de Implementacion
+- backend operativo en `backend/`
+- frontend operativo en `frontend/`
+- migraciones y modelos de base de datos
+- autenticacion con login y resolucion de sesion
+- administracion del motor con productos, workflows, variables, parametros, pipeline, reglas y permisos por perfil
+- consulta de cliente/campanas para `PLD`
 
-- Backend FastAPI base operativo con `GET /api/v1/health`, autenticacion temporal y RBAC base del MVP
-- Modelo de datos inicial definido en SQLAlchemy y validado con migraciones Alembic
-- Contratos REST iniciales publicados en OpenAPI para `evaluations`, `credit-requests` y `decision-trace`
-- Modulo `backend/app/domain/decision_engine/` implementado como core aislado del motor con contratos internos, normalizacion, pipeline por nodos, branching controlado, validacion de ciclos y registry multiproducto
-- Adaptadores finos entre la API REST y el contrato interno del motor implementados en `backend/app/api/mappers/evaluations.py`
-- Servicio base de conexion a LLM implementado con proveedor activo configurable entre `OpenAI` y `Gemini`, carga de claves desde entorno o `.env`, timeout y reintentos
-- Frontend bootstrap operativo con login local y restauracion basica de sesion
+Hoy todavia estan como contrato sin implementacion runtime completa:
 
-## Referencias Clave
+- evaluaciones
+- solicitudes de credito
+- trazas de decision recuperables via API
+- flujos AI fuera del camino critico
 
-- Especificacion: `specs/001-project-specification/spec.md`
-- Planificación: `specs/001-project-specification/plan.md`
-- Tasks: `specs/001-project-specification/tasks.md`
-- Guia operativa para agentes: `AGENTS.md`
-- Sistema legacy de referencia: `old-version/`
+## Arquitectura Base
 
-## Arranque Rapido Local
+- `backend/app/main.py`: entrypoint `FastAPI`
+- `backend/app/domain/decision_engine/`: motor deterministico aislado
+- `backend/app/application/engine_admin/`: administracion gobernada del runtime
+- `backend/app/infrastructure/db/`: modelos, sesion y seed local
+- `frontend/src/App.tsx`: login, restauracion de sesion y panel admin inicial
+- `old-version/`: referencia funcional y de reglas del sistema anterior
 
-Backend desde la raiz:
+Principios que gobiernan la implementacion:
+
+- plataforma multiproducto primero
+- motor deterministico separado de HTTP, UI y AI
+- configuracion y evidencia versionadas
+- seguridad moderna con trazabilidad completa
+- AI asistiva, nunca autonoma
+
+Referencia: `.specify/memory/constitution.md`
+
+## API Disponible Hoy
+
+Rutas activas o expuestas en `backend/app/main.py`:
+
+- `GET /api/v1/health`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/me`
+- `POST /api/v1/loans/{product_code}/consultas`
+- `GET /api/v1/admin/health`
+- `POST /api/v1/admin/engine/products`
+- `POST /api/v1/admin/engine/products/{productCode}/activation`
+- `POST /api/v1/admin/engine/products/{productCode}/retirement`
+- `DELETE /api/v1/admin/engine/products/{productCode}`
+- `POST /api/v1/admin/engine/products/{productCode}/workflows`
+- `POST /api/v1/admin/engine/products/{productCode}/variables`
+- `POST /api/v1/admin/engine/products/{productCode}/variable-catalogs`
+- `POST /api/v1/admin/engine/products/{productCode}/parameter-sets`
+- `POST /api/v1/admin/engine/products/{productCode}/pipeline-strategies`
+- `POST /api/v1/admin/engine/workflows/{workflowId}/rules`
+- `POST /api/v1/admin/engine/workflows/{workflowId}/versions`
+- `GET /api/v1/admin/engine/profiles/{roleCode}/permissions`
+- `PUT /api/v1/admin/engine/profiles/{roleCode}/permissions`
+
+Tambien existen contratos publicados pero hoy responden `501 Not Implemented`:
+
+- `POST /api/v1/loans/{product_code}/evaluaciones`
+- `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}`
+- `GET /api/v1/loans/{product_code}/evaluaciones/{evaluation_id}/trace`
+- `POST /api/v1/credit-requests`
+- `GET /api/v1/credit-requests/{request_id}`
+- `POST /api/v1/credit-requests/{request_id}/status-transitions`
+
+## Consulta Demo Disponible
+
+La unica implementacion de negocio completa hoy es la consulta de prestamos en `PLD` usando un provider local en memoria.
+
+Happy path local incorporado:
+
+- producto: `PLD`
+- documento: `DNI`
+- numero: `12345678`
+
+La consulta devuelve un cliente demo y al menos una campana (`PLD_48M`).
+
+## Estructura Del Repo
+
+```text
+backend/
+  app/
+    api/
+    application/
+    config/
+    domain/
+    infrastructure/
+    security/
+    main.py
+  alembic/
+  tests/
+
+frontend/
+  src/
+  package.json
+  vite.config.ts
+
+old-version/
+specs/
+AGENTS.md
+README.md
+pyproject.toml
+```
+
+## Requisitos
+
+- Python `3.12+`
+- Node.js compatible con `Vite 5`
+- entorno virtual `.venv` en la raiz
+
+Dependencias declaradas:
+
+- backend: `fastapi`, `uvicorn`, `sqlalchemy`, `alembic`, `httpx`
+- frontend: `react`, `react-dom`, `vite`, `typescript`, `vitest`
+
+## Arranque Local
+
+### 1. Backend
+
+Instala dependencias del backend dentro de tu `.venv` segun tu flujo habitual y luego ejecuta:
 
 ```bash
+.venv\Scripts\python -m alembic -c backend/alembic.ini upgrade head
+.venv\Scripts\python -m backend.app.infrastructure.db.seed
 .venv\Scripts\python -m uvicorn backend.app.main:app --reload
 ```
 
-Frontend desde la raiz:
+### 2. Frontend
 
-```bash
-.venv\Scripts\python scripts/frontend_init.py
-```
-
-Frontend desde `frontend/`:
+Desde `frontend/`:
 
 ```bash
 npm install
 npm run dev
 ```
 
-URLs locales:
+Desde la raiz:
 
-- Frontend: `http://127.0.0.1:5173/`
-- Swagger backend: `http://127.0.0.1:8000/docs`
+```bash
+.venv\Scripts\python scripts/frontend_init.py
+```
 
+## URLs Locales
+
+- frontend: `http://127.0.0.1:5173/`
+- backend API: `http://127.0.0.1:8000/`
+- OpenAPI/Swagger: `http://127.0.0.1:8000/docs`
+
+El frontend usa proxy Vite para `/api/*` hacia `http://127.0.0.1:8000`.
+
+## Usuarios Locales Semilla
+
+El seed local crea roles y usuarios iniciales.
+
+- `admin / admin123`
+- `analista / analista123`
+- `evaluador / evaluador123`
+- `auditor / auditor123`
+- `negocio / negocio123`
+- `riesgos / riesgos123`
+- `plataforma / plataforma123`
+
+La pantalla principal del frontend hoy arranca orientada a login y panel administrativo basico.
+
+## Tests Y Verificacion
+
+Backend:
+
+```bash
+.venv\Scripts\python -m unittest backend.tests.test_issue_013_consultations_api
+```
+
+Frontend desde `frontend/`:
+
+```bash
+npm run test
+npm run build
+```
+
+## Configuracion Y Entorno
+
+- `backend/app/config/settings.py` auto-carga el archivo `.env` en la raiz del repo
+- puedes cambiar el archivo de entorno con `DECISION_ENGINE_ENV_FILE`
+- no imprimas ni subas `.env`; puede contener secretos reales
+- `get_settings()`, `get_engine()` y `get_session_factory()` usan cache
+- los tests que cambian entorno o base deben limpiar caches con `clear_settings_cache()` y `clear_database_caches()`
+
+Base por defecto:
+
+- `DATABASE_URL=sqlite+pysqlite:///./decision_engine.db`
+
+## Documentacion Relacionada
+
+- especificacion: `specs/001-project-specification/spec.md`
+- plan: `specs/001-project-specification/plan.md`
+- tasks: `specs/001-project-specification/tasks.md`
+- guia operativa para agentes: `AGENTS.md`
+- constitucion del proyecto: `.specify/memory/constitution.md`
+
+## Notas Importantes
+
+- Usa `old-version/api-build.R` como referencia principal cuando necesites comportamiento legacy.
+- No reintroducir autenticacion por IP, HTML renderizado por backend ni dependencia runtime de Excel o estructura DOM.

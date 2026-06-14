@@ -125,6 +125,7 @@ class AuthenticationTests(unittest.TestCase):
                         "username": "admin",
                         "display_name": "Admin User",
                         "roles": ["admin"],
+                        "authorization_mode": "request_time",
                     },
                 )
 

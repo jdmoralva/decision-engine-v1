@@ -8,6 +8,38 @@ if str(ROOT) not in sys.path:
 
 
 class EvaluationContractMapperTests(unittest.TestCase):
+    def test_engine_request_round_trip_preserves_generic_external_inputs(self):
+        from backend.app.api.mappers.evaluations import (
+            map_api_request_to_engine_request,
+            map_engine_request_to_api_request,
+        )
+        from backend.app.api.schemas.contracts import EvaluationRequest
+
+        api_request = EvaluationRequest(
+            product_code="PLD",
+            workflow_code="standard",
+            document={"document_type": "DNI", "document_number": "12345678"},
+            requested_by={"username": "analista"},
+            product_context={"campaign_code": "PLD_48M", "validated_income": 2500},
+            external_inputs=[
+                {
+                    "source_type": "user_input",
+                    "source_key": "form:pld",
+                    "field_name": "reported_debt",
+                    "field_value": "400",
+                    "used_by_engine": True,
+                }
+            ],
+        )
+
+        engine_request = map_api_request_to_engine_request(api_request)
+        round_trip = map_engine_request_to_api_request(engine_request)
+
+        self.assertEqual(round_trip.product_code, "PLD")
+        self.assertEqual(round_trip.product_context["campaign_code"], "PLD_48M")
+        self.assertEqual(round_trip.external_inputs[0].field_name, "reported_debt")
+        self.assertTrue(round_trip.external_inputs[0].used_by_engine)
+
     def test_api_request_maps_to_engine_request_without_http_types(self):
         from backend.app.api.mappers.evaluations import map_api_request_to_engine_request
         from backend.app.api.schemas.contracts import EvaluationRequest

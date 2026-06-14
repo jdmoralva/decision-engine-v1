@@ -1,12 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 
 from backend.app.api.schemas.contracts import (
+    ContractError,
     DecisionTraceResponse,
     EvaluationRequest,
     EvaluationResponse,
     StructuredErrorResponse,
 )
+from backend.app.application.evaluations.service import (
+    EvaluationNotFoundError,
+    EvaluationRuntimeUnavailableError,
+    EvaluationService,
+    EvaluationValidationError,
+)
 from backend.app.security.dependencies import require_permission
+
 error_responses = {
     400: {"model": StructuredErrorResponse, "description": "Business validation error."},
     401: {"model": StructuredErrorResponse, "description": "Authentication required."},
@@ -21,16 +30,30 @@ error_responses = {
 router = APIRouter(prefix="/loans/{product_code}/evaluaciones", tags=["evaluations"])
 
 
+def _structured_error(status_code: int, code: str, message: str) -> JSONResponse:
+    payload = StructuredErrorResponse(error=ContractError(code=code, message=message))
+    return JSONResponse(status_code=status_code, content=payload.model_dump())
+
+
 @router.post("", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
-def create_evaluation(
+async def create_evaluation(
     product_code: str,
-    _payload: EvaluationRequest,
-    _context: tuple = Depends(require_permission("evaluar_oferta")),
-) -> EvaluationResponse:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail=f"Evaluation execution for product '{product_code}' is not implemented yet.",
-    )
+    payload: EvaluationRequest,
+    context: tuple = Depends(require_permission("evaluar_oferta")),
+) -> EvaluationResponse | JSONResponse:
+    user, _roles = context
+    service = EvaluationService()
+    try:
+        return await service.create_evaluation(
+            product_code=product_code,
+            payload=payload,
+            actor_user_id=user.id,
+            actor_username=user.username,
+        )
+    except EvaluationValidationError as exc:
+        return _structured_error(status.HTTP_400_BAD_REQUEST, "EVALUATION_VALIDATION", str(exc))
+    except EvaluationRuntimeUnavailableError as exc:
+        return _structured_error(status.HTTP_404_NOT_FOUND, "RUNTIME_NOT_AVAILABLE", str(exc))
 
 
 @router.get("/{evaluation_id}", response_model=EvaluationResponse, responses=error_responses)
@@ -38,14 +61,12 @@ def get_evaluation(
     product_code: str,
     evaluation_id: str,
     _context: tuple = Depends(require_permission("consultar_evaluacion")),
-) -> EvaluationResponse:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail=(
-            f"Evaluation '{evaluation_id}' retrieval for product '{product_code}' "
-            "is not implemented yet."
-        ),
-    )
+) -> EvaluationResponse | JSONResponse:
+    service = EvaluationService()
+    try:
+        return service.get_evaluation(product_code=product_code, evaluation_id=evaluation_id)
+    except EvaluationNotFoundError as exc:
+        return _structured_error(status.HTTP_404_NOT_FOUND, "EVALUATION_NOT_FOUND", str(exc))
 
 
 @router.get("/{evaluation_id}/trace", response_model=DecisionTraceResponse, responses=error_responses)
@@ -53,11 +74,9 @@ def get_decision_trace(
     product_code: str,
     evaluation_id: str,
     _context: tuple = Depends(require_permission("consultar_trace")),
-) -> DecisionTraceResponse:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail=(
-            f"Decision trace for evaluation '{evaluation_id}' and product '{product_code}' "
-            "is not implemented yet."
-        ),
-    )
+) -> DecisionTraceResponse | JSONResponse:
+    service = EvaluationService()
+    try:
+        return service.get_trace(product_code=product_code, evaluation_id=evaluation_id)
+    except EvaluationNotFoundError as exc:
+        return _structured_error(status.HTTP_404_NOT_FOUND, "EVALUATION_NOT_FOUND", str(exc))

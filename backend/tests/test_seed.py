@@ -63,6 +63,35 @@ class SeedTests(unittest.TestCase):
             {"admin", "analista", "evaluador", "auditor", "negocio", "riesgos", "plataforma"},
         )
 
+    def test_seed_pld_runtime_bundle_is_idempotent_and_publishes_standard_runtime(self):
+        from backend.app.infrastructure.db.models import LoanProduct, ProductWorkflow, WorkflowVersion
+        from backend.app.infrastructure.db.seed import seed_identity_data, seed_pld_runtime_bundle
+
+        with self.session_factory() as session:
+            seed_identity_data(session)
+            first_run = seed_pld_runtime_bundle(session)
+            second_run = seed_pld_runtime_bundle(session)
+
+            product = session.get(LoanProduct, "PLD")
+            workflow = session.execute(
+                select(ProductWorkflow).where(
+                    ProductWorkflow.product_code == "PLD",
+                    ProductWorkflow.workflow_code == "standard",
+                )
+            ).scalar_one()
+            workflow_version = session.execute(
+                select(WorkflowVersion).where(
+                    WorkflowVersion.workflow_id == workflow.id,
+                    WorkflowVersion.status == "active",
+                )
+            ).scalar_one()
+
+        self.assertTrue(first_run["created"])
+        self.assertFalse(second_run["created"])
+        self.assertEqual(product.status, "active")
+        self.assertEqual(workflow.status, "active")
+        self.assertEqual(workflow_version.status, "active")
+
 
 if __name__ == "__main__":
     unittest.main()
