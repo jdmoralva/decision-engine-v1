@@ -44,26 +44,26 @@ class DecisionEngineContractTests(unittest.TestCase):
         from backend.app.domain.decision_engine import EngineEvaluationRequest
 
         payload = EngineEvaluationRequest(
-            product_code="pld",
+            product_code="auto",
             workflow_code="standard",
             document={"document_type": "dni", "document_number": "12345678"},
             requested_by={"username": "analista"},
-            product_context={"campaign_code": "PLD-01"},
+            product_context={"campaign_code": "AUTO-01"},
         )
 
-        self.assertEqual(payload.product_code, "pld")
+        self.assertEqual(payload.product_code, "auto")
         self.assertEqual(payload.workflow_code, "standard")
-        self.assertEqual(payload.product_context, {"campaign_code": "PLD-01"})
+        self.assertEqual(payload.product_context, {"campaign_code": "AUTO-01"})
 
     def test_engine_request_rejects_missing_workflow_code(self):
         from backend.app.domain.decision_engine import EngineEvaluationRequest
 
         with self.assertRaises(ValidationError):
             EngineEvaluationRequest(
-                product_code="pld",
+                product_code="auto",
                 document={"document_type": "dni", "document_number": "12345678"},
                 requested_by={"username": "analista"},
-                product_context={"campaign_code": "PLD-01"},
+                product_context={"campaign_code": "AUTO-01"},
             )
 
     def test_engine_request_rejects_missing_product_context(self):
@@ -71,7 +71,7 @@ class DecisionEngineContractTests(unittest.TestCase):
 
         with self.assertRaises(ValidationError):
             EngineEvaluationRequest(
-                product_code="pld",
+                product_code="auto",
                 workflow_code="standard",
                 document={"document_type": "dni", "document_number": "12345678"},
                 requested_by={"username": "analista"},

@@ -36,7 +36,7 @@ class EngineAdminApiTestCaseMixin:
         self._users_by_username: dict[str, str] = {}
 
         with session_factory() as session:
-            role_codes = ("admin", "admin_negocio", "admin_riesgos", "admin_plataforma", "auditor")
+            role_codes = ("admin", "admin_negocio", "admin_riesgos", "plataforma", "auditor")
             roles = {
                 code: Role(
                     id=str(uuid4()),
@@ -68,7 +68,7 @@ class EngineAdminApiTestCaseMixin:
                 "admin": "admin",
                 "negocio": "admin_negocio",
                 "riesgos": "admin_riesgos",
-                "plataforma": "admin_plataforma",
+                "plataforma": "plataforma",
                 "auditor": "auditor",
             }
 

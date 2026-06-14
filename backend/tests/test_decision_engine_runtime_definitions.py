@@ -30,12 +30,12 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                 raise AssertionError("runtime compilation test should not execute nodes")
 
         product = ProductDefinition(
-            product_code="PLD",
-            name="Prestamo Libre Disponibilidad",
+            product_code="AUTO",
+            name="Auto Loan",
             workflows=[
                 WorkflowDefinition(
                     workflow_code="standard",
-                    product_code="PLD",
+                    product_code="AUTO",
                     name="Workflow estándar",
                     pipeline_version="pipe-v1",
                     rule_pack_version="rules-v1",
@@ -56,7 +56,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                         RuleDefinition(
                             rule_code="derive-segment",
                             rule_type="derivation",
-                            product_code="PLD",
+                            product_code="AUTO",
                             workflow_code="standard",
                             consumes_variables=["campaign_code"],
                             produces_variable="segment_code",
@@ -68,7 +68,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
         )
         strategy = PipelineStrategy(
             strategy_key="standard",
-            product_code="PLD",
+            product_code="AUTO",
             start_node_key="start",
             applied_versions=AppliedVersions(pipeline_version="pipe-v1"),
             nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],
@@ -82,7 +82,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
             nodes=[StartNode()],
         )
 
-        self.assertEqual(runtime.product_code, "PLD")
+        self.assertEqual(runtime.product_code, "AUTO")
         self.assertEqual(runtime.workflow_code, "standard")
         self.assertEqual(runtime.workflow.name, "Workflow estándar")
         self.assertEqual(runtime.variable_catalog["campaign_code"].variable_kind, "input")
@@ -110,12 +110,12 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                 raise AssertionError("runtime compilation test should not execute nodes")
 
         product = ProductDefinition(
-            product_code="PLD",
-            name="Prestamo Libre Disponibilidad",
+            product_code="AUTO",
+            name="Auto Loan",
             workflows=[
                 WorkflowDefinition(
                     workflow_code="standard",
-                    product_code="PLD",
+                    product_code="AUTO",
                     name="Workflow estándar",
                     pipeline_version="pipe-v1",
                     rule_pack_version="rules-v1",
@@ -130,7 +130,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                         RuleDefinition(
                             rule_code="bad-rule",
                             rule_type="eligibility",
-                            product_code="PLD",
+                            product_code="AUTO",
                             workflow_code="standard",
                             consumes_variables=["missing_variable"],
                             produces_effect="block",
@@ -142,7 +142,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
         )
         strategy = PipelineStrategy(
             strategy_key="standard",
-            product_code="PLD",
+            product_code="AUTO",
             start_node_key="start",
             applied_versions=AppliedVersions(pipeline_version="pipe-v1"),
             nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],
@@ -179,12 +179,12 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                 raise AssertionError("runtime compilation test should not execute nodes")
 
         product = ProductDefinition(
-            product_code="PLD",
-            name="Prestamo Libre Disponibilidad",
+            product_code="AUTO",
+            name="Auto Loan",
             workflows=[
                 WorkflowDefinition(
                     workflow_code="standard",
-                    product_code="PLD",
+                    product_code="AUTO",
                     name="Workflow estándar",
                     pipeline_version="pipe-v1",
                     rule_pack_version="rules-v1",
@@ -199,7 +199,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
                         RuleDefinition(
                             rule_code="bad-rule",
                             rule_type="derivation",
-                            product_code="PLD",
+                            product_code="AUTO",
                             workflow_code="standard",
                             consumes_variables=["campaign_code"],
                             produces_variable="missing_output",
@@ -211,7 +211,7 @@ class DecisionEngineRuntimeDefinitionTests(unittest.TestCase):
         )
         strategy = PipelineStrategy(
             strategy_key="standard",
-            product_code="PLD",
+            product_code="AUTO",
             start_node_key="start",
             applied_versions=AppliedVersions(pipeline_version="pipe-v1"),
             nodes=[PipelineNodeDefinition(node_key="start", node_type="shared", next_node_map={})],

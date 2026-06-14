@@ -50,12 +50,18 @@ class SeedTests(unittest.TestCase):
             role_codes = set(session.execute(select(Role.code)).scalars().all())
             usernames = set(session.execute(select(User.username)).scalars().all())
 
-        self.assertEqual(first_run["roles_created"], 4)
-        self.assertEqual(first_run["users_created"], 4)
+        self.assertEqual(first_run["roles_created"], 7)
+        self.assertEqual(first_run["users_created"], 7)
         self.assertEqual(second_run["roles_created"], 0)
         self.assertEqual(second_run["users_created"], 0)
-        self.assertEqual(role_codes, {"admin", "analista", "evaluador", "supervisor"})
-        self.assertEqual(usernames, {"admin", "analista", "evaluador", "supervisor"})
+        self.assertEqual(
+            role_codes,
+            {"admin", "analista", "evaluador", "auditor", "admin_negocio", "admin_riesgos", "plataforma"},
+        )
+        self.assertEqual(
+            usernames,
+            {"admin", "analista", "evaluador", "auditor", "negocio", "riesgos", "plataforma"},
+        )
 
 
 if __name__ == "__main__":

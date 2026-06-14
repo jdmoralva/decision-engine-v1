@@ -17,11 +17,11 @@ from backend.app.domain.decision_engine import (  # noqa: E402
 class DecisionEngineNormalizationTests(unittest.TestCase):
     def test_normalize_request_trims_and_uppercases_shared_identifiers(self):
         request = EngineEvaluationRequest(
-            product_code="  pld  ",
+            product_code="  auto  ",
             workflow_code=" standard  ",
             document={"document_type": " dni ", "document_number": " 12345678 "},
             requested_by={"username": " analista "},
-            product_context={"campaign_code": "PLD-01"},
+            product_context={"campaign_code": "AUTO-01"},
             external_inputs=[
                 {
                     "source_type": " customer ",
@@ -34,7 +34,7 @@ class DecisionEngineNormalizationTests(unittest.TestCase):
 
         normalized = normalize_evaluation_request(request)
 
-        self.assertEqual(normalized.product_code, "PLD")
+        self.assertEqual(normalized.product_code, "AUTO")
         self.assertEqual(normalized.workflow_code, "standard")
         self.assertEqual(normalized.document.document_type, "DNI")
         self.assertEqual(normalized.document.document_number, "12345678")
@@ -58,7 +58,7 @@ class DecisionEngineNormalizationTests(unittest.TestCase):
 
     def test_normalize_request_rejects_blank_workflow_code(self):
         request = EngineEvaluationRequest(
-            product_code="PLD",
+            product_code="AUTO",
             workflow_code="   ",
             document={"document_type": "dni", "document_number": "12345678"},
             requested_by={"username": "analista"},

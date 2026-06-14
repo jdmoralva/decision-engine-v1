@@ -51,7 +51,7 @@ class DecisionEnginePipelineTests(unittest.TestCase):
 
         strategy = PipelineStrategy(
             strategy_key="default",
-            product_code="PLD",
+            product_code="AUTO",
             start_node_key="eligibility",
             applied_versions=AppliedVersions(
                 rule_set_version="rules-v1",
@@ -73,11 +73,11 @@ class DecisionEnginePipelineTests(unittest.TestCase):
         )
         orchestrator = DecisionEngineOrchestrator(nodes=[EligibilityNode(), OfferNode()])
         request = EngineEvaluationRequest(
-            product_code="PLD",
+            product_code="AUTO",
             workflow_code="standard",
             document={"document_type": "DNI", "document_number": "12345678"},
             requested_by={"username": "analista"},
-            product_context={"campaign_code": "PLD-01"},
+            product_context={"campaign_code": "AUTO-01"},
         )
 
         result = asyncio.run(orchestrator.evaluate(request, strategy))

@@ -1,5 +1,9 @@
 # Feature Specification: Project Specification Consolidation
 
+**Status**: Refined
+
+**Refined**: 2026-06-13 — Se explicitó que los cambios en perfiles y permisos entran en vigencia inmediata dentro del módulo de administración.
+
 ## Summary
 
 Esta especificacion consolida el alcance funcional y operativo del MVP de `Decision Engine` a partir de `specs/000-old-specification/docs/SPEC.md` y `specs/000-old-specification/docs/DDR.md`. El proyecto debe entregar una plataforma de evaluacion y gestion de solicitudes de credito que cubra el flujo `PLD` de punta a punta, mantenga trazabilidad completa, incorpore asistencia AI no decisoria y deje validada una base reutilizable para otros productos de prestamo.
@@ -23,6 +27,8 @@ Esta especificacion consolida el alcance funcional y operativo del MVP de `Decis
 
 - Q: Cuando deben definirse y ejecutarse obligatoriamente las pruebas unitarias de nuevas funcionalidades? → A: Deben definirse antes o durante la implementacion y ejecutarse obligatoriamente cuando la funcionalidad quede lista para revision o cuando se complete una unidad funcional verificable.
 - Q: Que estados operativos minimos debe tener una solicitud de credito en el MVP? → A: `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido.
+- Q: Como debe administrarse la matriz de perfiles y permisos? → A: Debe existir un modulo de administracion de perfiles que permita al administrador agregar o retirar permisos por perfil sin depender de valores hardcodeados como mecanismo operativo habitual.
+- Q: Cuando entran en vigencia los cambios del modulo de administracion de perfiles? → A: Los cambios de permisos y perfiles entran en vigencia de manera inmediata una vez aplicados y auditados.
 
 ## User Scenarios & Testing
 
@@ -42,7 +48,7 @@ Como analista, quiero consultar un cliente, revisar sus ofertas disponibles y ej
 
 ### User Story 2 - Registrar y gestionar una solicitud
 
-Como analista o supervisor, quiero registrar una solicitud de credito y gestionarla en una bandeja operativa para dar seguimiento a su ciclo de vida.
+Como analista o evaluador, quiero registrar una solicitud de credito y gestionarla en una bandeja operativa para dar seguimiento a su ciclo de vida.
 
 #### Acceptance Scenario
 
@@ -76,6 +82,8 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 5. Dado un producto existente, cuando un usuario autorizado agrega un nuevo workflow a ese producto, entonces el sistema permite administrarlo y activarlo sin alterar los workflows activos ya publicados para el mismo producto.
 6. Dado una configuracion incompleta o inconsistente, cuando un usuario intenta activarla, entonces el sistema bloquea la activacion, informa el motivo y mantiene sin cambios la configuracion `active` previamente valida.
 7. Dado una version activa publicada por error, cuando un usuario autorizado necesita reemplazarla, entonces el sistema crea una nueva version `draft`, conserva auditablemente la version anterior y permite retirar la version incorrecta solo despues de activar la version de reemplazo o de retirar el workflow afectado.
+8. Dado un administrador autorizado, cuando accede al modulo de administracion de perfiles, entonces puede agregar o retirar permisos de un perfil existente y el sistema conserva trazabilidad auditable de esos cambios.
+9. Dado un cambio en los permisos de un perfil, cuando el administrador confirma la modificacion, entonces los usuarios asociados a ese perfil quedan gobernados de manera inmediata por la nueva asignacion sin requerir cambios de codigo ni despliegues para la sola modificacion de permisos.
 
 ## Edge Cases
 
@@ -171,6 +179,10 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 ### Security and Operations
 
 - FR-038: El sistema debe aplicar autenticacion y autorizacion basadas en roles para proteger consultas, evaluaciones, solicitudes, adjuntos y funciones administrativas.
+- FR-038A: El sistema debe incluir un modulo de administracion de perfiles que permita a un administrador autorizado agregar y retirar permisos por perfil dentro de un modelo auditable y gobernado.
+- FR-038B: La asignacion operativa de permisos a perfiles no debe quedar hardcodeada como mecanismo normal de operacion; los cambios rutinarios sobre permisos deben resolverse desde la administracion de perfiles persistida.
+- FR-038C: Cada cambio sobre un perfil o sus permisos debe registrar actor, perfil afectado, permisos agregados o retirados, resultado y timestamp para trazabilidad administrativa.
+- FR-038D: Los cambios confirmados sobre perfiles y permisos deben entrar en vigencia de manera inmediata para las evaluaciones de autorizacion subsiguientes, sin requerir publicacion separada, despliegues ni reinicio operativo como mecanismo normal.
 - FR-039: El sistema debe ofrecer autenticacion operativa de frontend, restauracion de sesion y acceso por rol suficientes para ejecutar los flujos del MVP, sin impedir una futura integracion con un proveedor corporativo.
 - FR-040: El sistema debe desacoplar el control de acceso de restricciones basadas unicamente en IP o de acoplamientos con la interfaz.
 - FR-041: El sistema debe iniciar con base limpia, sin depender de migracion historica desde el sistema legado para operar el MVP.
@@ -179,11 +191,10 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 ### Minimum RBAC Matrix
 
 - Analista: puede autenticarse, restaurar sesion, consultar clientes, ejecutar evaluaciones, ver trazas del caso, registrar solicitudes, consultar bandeja y detalle de solicitudes, cargar adjuntos ZIP y mover solicitudes solo de `registrada` a `en_revision`.
-- Supervisor: hereda permisos de analista y ademas puede aprobar, rechazar, anular solicitudes, exportar bandeja y consultar auditoria operacional.
-- Administrador: puede gestionar productos, workflows, catalogos de variables, parametros, pipeline, reglas y sus activaciones; tambien puede consultar trazabilidad administrativa y operacional.
-- Administrador de negocio: puede crear y editar productos, workflows, variables y catalogos en estado `draft`, solicitar versionados y consultar bloqueos de activacion, pero no debe aprobar por si solo la activacion final de reglas o configuraciones que requieran control de riesgos.
-- Administrador de riesgos: puede crear y editar reglas, parametros, politicas de origen y criterios de activacion en estado `draft`, y puede aprobar o rechazar activaciones de configuraciones criticas segun la segregacion vigente.
-- Administracion privilegiada de plataforma: puede administrar permisos, usuarios y trazabilidad administrativa, pero no debe saltarse la segregacion de negocio/riesgos para publicar configuraciones del motor como operacion normal.
+- Evaluador: hereda permisos de analista y ademas puede aprobar, rechazar, anular solicitudes, exportar bandeja y consultar auditoria operacional.
+- Administrador de negocio: puede crear y editar productos, workflows y reglas de negocio en estado `draft`, solicitar versionados y consultar bloqueos de activacion, pero no debe aprobar por si solo la activacion final de reglas o configuraciones que requieran control de riesgos. Mientras el estado de la modificacion sea `draft`, tambien podra eliminar dicha configuracion.
+- Administrador de riesgos: puede crear y editar reglas, parametros, politicas de origen y criterios de activacion en estado, y puede aprobar o rechazar activaciones de configuraciones criticas segun la segregacion vigente. Tambien podra eliminar productos y workflows.
+- Administrador: puede gestionar productos, workflows, catalogos de variables, parametros, perfiles, permisos y usuarios; puede agregar o retirar permisos a un perfil desde el modulo de administracion correspondiente, pero no debe saltarse la segregacion de negocio/riesgos para publicar configuraciones del motor como operacion normal. Tambien puede consultar trazabilidad administrativa y operacional.
 - Auditor: acceso de solo lectura a trazas, auditoria, detalle de solicitudes, historial de estados y metadatos de adjuntos, sin permiso para evaluar, registrar, transicionar ni administrar configuraciones.
 
 ## Key Entities
@@ -208,12 +219,16 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - Estrategia de pipeline: definicion administrable y versionada de la secuencia de nodos y branching permitido para un workflow.
 - Nodo de pipeline: etapa versionada del flujo de evaluacion con referencias validadas dentro de una estrategia gobernada.
 - Interaccion AI: registro auditable de una asistencia AI emitida para una evaluacion o solicitud con referencias de modelo, template, payload permitido (subconjunto filtrado de datos no identificables) y fallback.
+- Perfil administrativo: agrupacion gobernada de permisos asignables a usuarios operativos o administrativos, editable desde un modulo de administracion con trazabilidad auditable y cambios de vigencia inmediata una vez confirmados.
+- Permiso administrable: capacidad operativa o administrativa asignable a un perfil desde configuracion persistida, no solo desde constantes hardcodeadas en codigo.
 
 ## Assumptions
 
 - El MVP funcional inicial cubre el flujo `PLD / solicitudes de credito` completo, mientras la base del sistema queda preparada para un segundo producto en una fase cercana.
 - Las nuevas funcionalidades se desarrollan bajo prioridad `TDD`; sus pruebas unitarias se definen antes o durante la implementacion y deben ejecutarse antes de revision cuando el cambio ya constituye una funcionalidad o unidad funcional verificable.
-- Los roles operativos principales incluyen al menos perfiles equivalentes a analista, supervisor, administrador y auditor con permisos diferenciados.
+- Los roles operativos principales incluyen al menos perfiles equivalentes a analista, evaluador, administrador y auditor con permisos diferenciados.
+- La plataforma debe permitir administrar perfiles y permisos desde un modulo persistido; los valores hardcodeados solo pueden servir como bootstrap tecnico transitorio y no como mecanismo operativo rutinario.
+- Los cambios sobre perfiles y permisos se aplican de manera inmediata una vez confirmados; no requieren una etapa separada de publicacion para entrar en vigencia operativa.
 - La autenticacion del MVP usa el mecanismo operativo disponible en la plataforma actual y cubre login, restauracion de sesion y autorizacion por rol para los flujos definidos, sin bloquear una futura migracion a un proveedor corporativo.
 - Los equipos de negocio y riesgos administran productos y workflows dentro de un esquema gobernado, sin depender de TI para el alta, activacion o retiro como operacion habitual.
 - Los equipos de negocio y riesgos operan bajo segregacion de funciones para configuraciones criticas: la creacion/edicion de borradores y la aprobacion/activacion final no deben depender de una misma accion no controlada como mecanismo normal.

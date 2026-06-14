@@ -295,7 +295,7 @@ function App() {
                 <h2>Phase 3</h2>
               </div>
               <p className="workspace-hint">
-                Producto: {workspace.productCode} | Workflow: {workspace.workflowCode}
+                Producto: {workspace.productCode || "sin definir"} | Workflow: {workspace.workflowCode || "sin definir"}
               </p>
             </div>
 

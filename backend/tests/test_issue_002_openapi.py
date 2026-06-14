@@ -50,8 +50,8 @@ class Issue002OpenAPITests(unittest.TestCase):
         schemas = payload["components"]["schemas"]
 
         for schema_name in (
-            "PLDEvaluationRequest",
-            "PLDEvaluationResponse",
+            "EvaluationRequest",
+            "EvaluationResponse",
             "DecisionTraceResponse",
             "CreditRequestCreateRequest",
             "CreditRequestResponse",
@@ -60,12 +60,13 @@ class Issue002OpenAPITests(unittest.TestCase):
             "DocumentRef",
             "ActorRef",
             "ExternalInputSnapshotItem",
-            "PLDEvaluationContext",
-            "PLDEvaluationResult",
         ):
             self.assertIn(schema_name, schemas)
 
-        evaluation_request = schemas["PLDEvaluationRequest"]
+        self.assertNotIn("PLDEvaluationRequest", schemas)
+        self.assertNotIn("PLDEvaluationResponse", schemas)
+
+        evaluation_request = schemas["EvaluationRequest"]
         self.assertEqual(
             evaluation_request["required"],
             [
@@ -80,12 +81,9 @@ class Issue002OpenAPITests(unittest.TestCase):
         self.assertIn("requested_rule_set_version", evaluation_request["properties"])
         self.assertIn("requested_pipeline_version", evaluation_request["properties"])
         self.assertIn("product_context", evaluation_request["properties"])
-        self.assertNotIn("rci", evaluation_request["properties"])
-        self.assertNotIn("marca_sunedu", evaluation_request["properties"])
 
-        evaluation_response = schemas["PLDEvaluationResponse"]
+        evaluation_response = schemas["EvaluationResponse"]
         self.assertIn("product_result", evaluation_response["properties"])
-        self.assertNotIn("rci", evaluation_response["properties"])
 
         error_schema = schemas["StructuredErrorResponse"]
         self.assertEqual(error_schema["required"], ["error"])

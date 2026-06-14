@@ -8,6 +8,15 @@ import {
 
 
 describe("engine admin lifecycle", () => {
+  it("starts with a neutral empty workspace", () => {
+    expect(emptyEngineAdminWorkspaceState).toMatchObject({
+      productCode: "",
+      productName: "",
+      workflowCode: "",
+      workflowId: null,
+    });
+  });
+
   it("orchestrates lifecycle, parameter publication, pipeline activation, and workflow versioning", async () => {
     const calls: string[] = [];
     const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -141,7 +150,12 @@ describe("engine admin lifecycle", () => {
     });
 
     const client = new EngineAdminApiClient("token-123", fetcher as typeof fetch);
-    const result = await runEngineAdminLifecycle(client, emptyEngineAdminWorkspaceState);
+    const result = await runEngineAdminLifecycle(client, {
+      ...emptyEngineAdminWorkspaceState,
+      productCode: "PLD",
+      productName: "Prestamo Libre Disponibilidad",
+      workflowCode: "standard",
+    });
 
     expect(result.workflowVersion.status).toBe("draft");
     expect(calls).toEqual([

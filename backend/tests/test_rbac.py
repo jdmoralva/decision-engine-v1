@@ -52,11 +52,10 @@ class RBACPermissionTests(unittest.TestCase):
                     "admin",
                     "analista",
                     "evaluador",
-                    "supervisor",
                     "auditor",
                     "admin_negocio",
                     "admin_riesgos",
-                    "admin_plataforma",
+                    "plataforma",
                 )
             }
             users = {
@@ -72,11 +71,10 @@ class RBACPermissionTests(unittest.TestCase):
                     "admin",
                     "analista",
                     "evaluador",
-                    "supervisor",
                     "auditor",
                     "admin_negocio",
                     "admin_riesgos",
-                    "admin_plataforma",
+                    "plataforma",
                 )
             }
 
@@ -109,7 +107,7 @@ class RBACPermissionTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         return response.json()["access_token"]
 
-    def test_analista_cannot_consult_decision_trace(self):
+    def test_analista_can_consult_decision_trace(self):
         from backend.app.main import app
 
         async def run_test():
@@ -120,32 +118,17 @@ class RBACPermissionTests(unittest.TestCase):
                     "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
                     headers={"Authorization": f"Bearer {token}"},
                 )
-                self.assertEqual(response.status_code, 403)
-
-        asyncio.run(run_test())
-
-    def test_evaluador_can_consult_decision_trace(self):
-        from backend.app.main import app
-
-        async def run_test():
-            transport = ASGITransport(app=app)
-            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-                token = await self._login(client, "evaluador")
-                response = await client.get(
-                    "/api/v1/loans/PLD/evaluaciones/example-evaluation/trace",
-                    headers={"Authorization": f"Bearer {token}"},
-                )
                 self.assertEqual(response.status_code, 501)
 
         asyncio.run(run_test())
 
-    def test_evaluador_cannot_register_credit_request(self):
+    def test_auditor_cannot_register_credit_request(self):
         from backend.app.main import app
 
         async def run_test():
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-                token = await self._login(client, "evaluador")
+                token = await self._login(client, "auditor")
                 response = await client.post(
                     "/api/v1/credit-requests",
                     headers={"Authorization": f"Bearer {token}"},
@@ -154,7 +137,7 @@ class RBACPermissionTests(unittest.TestCase):
                         "document": {"document_type": "DNI", "document_number": "12345678"},
                         "requested_amount": 1000,
                         "comment": "test",
-                        "created_by": {"username": "evaluador"},
+                        "created_by": {"username": "auditor"},
                     },
                 )
                 self.assertEqual(response.status_code, 403)
@@ -199,23 +182,23 @@ class RBACPermissionTests(unittest.TestCase):
 
         asyncio.run(run_test())
 
-    def test_supervisor_can_change_credit_request_status(self):
+    def test_evaluador_can_change_credit_request_status(self):
         from backend.app.main import app
 
         async def run_test():
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-                token = await self._login(client, "supervisor")
+                token = await self._login(client, "evaluador")
                 response = await client.post(
                     "/api/v1/credit-requests/example-request/status-transitions",
                     headers={"Authorization": f"Bearer {token}"},
-                    json={"target_status": "approved", "changed_by": {"username": "supervisor"}},
+                    json={"target_status": "approved", "changed_by": {"username": "evaluador"}},
                 )
                 self.assertEqual(response.status_code, 501)
 
         asyncio.run(run_test())
 
-    def test_analista_can_cancel_credit_request(self):
+    def test_analista_cannot_cancel_credit_request(self):
         from backend.app.main import app
 
         async def run_test():
@@ -227,7 +210,7 @@ class RBACPermissionTests(unittest.TestCase):
                     headers={"Authorization": f"Bearer {token}"},
                     json={"target_status": "cancelled", "changed_by": {"username": "analista"}},
                 )
-                self.assertEqual(response.status_code, 501)
+                self.assertEqual(response.status_code, 403)
 
         asyncio.run(run_test())
 
@@ -287,6 +270,21 @@ class RBACPermissionTests(unittest.TestCase):
                     headers={"Authorization": f"Bearer {token}"},
                 )
                 self.assertEqual(response.status_code, 501)
+
+        asyncio.run(run_test())
+
+    def test_plataforma_can_access_admin_health(self):
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "plataforma")
+                response = await client.get(
+                    "/api/v1/admin/health",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                self.assertEqual(response.status_code, 200)
 
         asyncio.run(run_test())
 

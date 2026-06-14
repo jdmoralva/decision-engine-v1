@@ -31,20 +31,6 @@ class StructuredErrorResponse(BaseModel):
     error: ContractError
 
 
-class PLDEvaluationContext(BaseModel):
-    campaign_code: str | None = None
-    customer_type: str | None = None
-    profile_code: str | None = None
-    sunedu_flag: str | None = None
-    employment_status: str | None = None
-    validated_income: float | None = None
-    reported_debt: float | None = None
-    initial_offered_amount: float | None = None
-    existing_consumption_balance: float | None = None
-    campaign_rate: float | None = None
-    campaign_term_months: int | None = None
-
-
 class AppliedVersions(BaseModel):
     rule_set_version: str | None = None
     parameter_version: str | None = None
@@ -91,18 +77,8 @@ class EvaluationRequestBase(BaseModel):
     requested_pipeline_version: str | None = None
 
 
-class PLDEvaluationRequest(EvaluationRequestBase):
-    product_context: PLDEvaluationContext
-
-
-class PLDEvaluationResult(BaseModel):
-    segment_code: str | None = None
-    reviewed_income: float | None = None
-    rci: float | None = None
-    offered_amount: float | None = None
-    installment_amount: float | None = None
-    rate: float | None = None
-    term_months: int | None = None
+class EvaluationRequest(EvaluationRequestBase):
+    product_context: dict[str, Any]
 
 
 class EvaluationResponseBase(BaseModel):
@@ -115,13 +91,8 @@ class EvaluationResponseBase(BaseModel):
     decision_trace_id: str
 
 
-class PLDEvaluationResponse(EvaluationResponseBase):
-    product_result: PLDEvaluationResult | None = None
-
-
-# Transitional aliases while routes and application code migrate
-EvaluationRequest = PLDEvaluationRequest
-EvaluationResponse = PLDEvaluationResponse
+class EvaluationResponse(EvaluationResponseBase):
+    product_result: dict[str, Any] | None = None
 
 
 class DecisionTraceNode(BaseModel):

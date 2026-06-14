@@ -92,9 +92,9 @@ export type EngineAdminWorkspaceState = {
 };
 
 export const emptyEngineAdminWorkspaceState: EngineAdminWorkspaceState = {
-  productCode: "PLD",
-  productName: "Prestamo Libre Disponibilidad",
-  workflowCode: "standard",
+  productCode: "",
+  productName: "",
+  workflowCode: "",
   workflowId: null,
   variableId: null,
   catalogId: null,

@@ -34,12 +34,6 @@ from backend.app.domain.decision_engine.pipeline import (
     PipelineNodeDefinition,
     PipelineStrategy,
 )
-from backend.app.domain.decision_engine.pld import (
-    build_pld_nodes,
-    build_pld_product_definition,
-    build_pld_strategy,
-    compile_pld_runtime,
-)
 from backend.app.domain.decision_engine.runtime_definitions import (
     ProductDefinition,
     ProductRuntime,
@@ -57,10 +51,6 @@ __all__ = [
     "AppliedVersions",
     "build_default_decision_engine_registry",
     "build_persistence_backed_decision_engine_registry",
-    "build_pld_nodes",
-    "build_pld_product_definition",
-    "build_pld_strategy",
-    "compile_pld_runtime",
     "DecisionEngineError",
     "DecisionEngineOrchestrator",
     "DecisionEngineRegistry",

@@ -9,7 +9,14 @@ spec-kit
 
 ## Ongoing
 
-Sprint 3
+las implementaciones PLD-céntricas que sí son aceptables y coherentes con una arquitectura multiproducto.
+
+producto-agnóstico
+
+Si quieres volver a registrar PLD por configuración
+En .env podrías poner:
+DECISION_ENGINE_RUNTIME_BUILDERS=backend.app.products.pld.runtime:compile_pld_runtime
+
 
 
 

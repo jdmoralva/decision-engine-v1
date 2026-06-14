@@ -10,15 +10,15 @@ if str(ROOT) not in sys.path:
 class EvaluationContractMapperTests(unittest.TestCase):
     def test_api_request_maps_to_engine_request_without_http_types(self):
         from backend.app.api.mappers.evaluations import map_api_request_to_engine_request
-        from backend.app.api.schemas.contracts import PLDEvaluationRequest
+        from backend.app.api.schemas.contracts import EvaluationRequest
 
-        api_request = PLDEvaluationRequest(
-            product_code="PLD",
+        api_request = EvaluationRequest(
+            product_code="AUTO",
             workflow_code="standard",
             document={"document_type": "DNI", "document_number": "12345678"},
             requested_by={"username": "analista", "user_id": "u-1"},
             product_context={
-                "campaign_code": "PLD-01",
+                "campaign_code": "AUTO-01",
                 "customer_type": "docente",
                 "validated_income": 1800,
             },
@@ -36,17 +36,17 @@ class EvaluationContractMapperTests(unittest.TestCase):
 
         engine_request = map_api_request_to_engine_request(api_request)
 
-        self.assertEqual(engine_request.product_code, "PLD")
+        self.assertEqual(engine_request.product_code, "AUTO")
         self.assertEqual(engine_request.workflow_code, "standard")
         self.assertEqual(engine_request.requested_rule_set_version, "rules-v2")
         self.assertEqual(engine_request.requested_pipeline_version, "pipe-v3")
         self.assertEqual(engine_request.document.document_number, "12345678")
         self.assertEqual(engine_request.requested_by.user_id, "u-1")
-        self.assertEqual(engine_request.product_context["campaign_code"], "PLD-01")
+        self.assertEqual(engine_request.product_context["campaign_code"], "AUTO-01")
         self.assertEqual(engine_request.product_context["validated_income"], 1800.0)
         self.assertNotIn("reported_debt", engine_request.product_context)
 
-    def test_engine_result_maps_to_rest_response_with_pld_projection(self):
+    def test_engine_result_maps_to_rest_response_with_generic_projection(self):
         from backend.app.api.mappers.evaluations import map_engine_result_to_api_response
         from backend.app.domain.decision_engine import (
             AppliedVersions,
@@ -55,7 +55,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
         )
 
         engine_result = EngineEvaluationResult(
-            product_code="PLD",
+            product_code="AUTO",
             eligible=True,
             alerts=["manual_review"],
             blocks=[],
@@ -74,7 +74,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
                 "term_months": 24,
                 "internal_score": 900,
             },
-            decision_trace=EngineDecisionTrace(product_code="PLD", workflow_code="standard"),
+            decision_trace=EngineDecisionTrace(product_code="AUTO", workflow_code="standard"),
         )
 
         response = map_engine_result_to_api_response(
@@ -83,10 +83,11 @@ class EvaluationContractMapperTests(unittest.TestCase):
         )
 
         self.assertEqual(response.evaluation_id, "eval-1")
-        self.assertEqual(response.product_code, "PLD")
+        self.assertEqual(response.product_code, "AUTO")
         self.assertEqual(response.decision_trace_id, engine_result.decision_trace.trace_id)
-        self.assertEqual(response.product_result.segment_code, "A1")
-        self.assertEqual(response.product_result.term_months, 24)
+        self.assertEqual(response.product_result["segment_code"], "A1")
+        self.assertEqual(response.product_result["term_months"], 24)
+        self.assertEqual(response.product_result["internal_score"], 900)
 
     def test_engine_result_keeps_non_pld_response_generic(self):
         from backend.app.api.mappers.evaluations import map_engine_result_to_api_response
@@ -107,7 +108,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
         )
 
         self.assertEqual(response.product_code, "AUTO")
-        self.assertIsNone(response.product_result)
+        self.assertEqual(response.product_result, {"lvr": 0.7})
         self.assertEqual(response.blocks, ["rule_blocked"])
 
     def test_engine_trace_maps_to_rest_trace_response(self):
@@ -120,7 +121,7 @@ class EvaluationContractMapperTests(unittest.TestCase):
         )
 
         trace = EngineDecisionTrace(
-            product_code="PLD",
+            product_code="AUTO",
             workflow_code="standard",
             applied_versions=AppliedVersions(pipeline_version="pipe-v1"),
             alerts=["manual_review"],

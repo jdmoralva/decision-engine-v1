@@ -14,14 +14,20 @@ DEFAULT_ROLES = [
     ("admin", "Administrador"),
     ("analista", "Analista"),
     ("evaluador", "Evaluador"),
-    ("supervisor", "Supervisor"),
+    ("auditor", "Auditor"),
+    ("admin_negocio", "Administrador de negocio"),
+    ("admin_riesgos", "Administrador de riesgos"),
+    ("plataforma", "Administracion privilegiada de plataforma"),
 ]
 
 DEFAULT_USERS = [
     ("admin", "Administrador", "admin123", "admin"),
     ("analista", "Analista", "analista123", "analista"),
     ("evaluador", "Evaluador", "evaluador123", "evaluador"),
-    ("supervisor", "Supervisor", "supervisor123", "supervisor"),
+    ("auditor", "Auditor", "auditor123", "auditor"),
+    ("negocio", "Administrador Negocio", "negocio123", "admin_negocio"),
+    ("riesgos", "Administrador Riesgos", "riesgos123", "admin_riesgos"),
+    ("plataforma", "Administrador Plataforma", "plataforma123", "plataforma"),
 ]
 
 

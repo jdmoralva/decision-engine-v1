@@ -54,6 +54,12 @@ Backend desde la raiz:
 .venv\Scripts\python -m uvicorn backend.app.main:app --reload
 ```
 
+Frontend desde la raiz:
+
+```bash
+.venv\Scripts\python scripts/frontend_init.py
+```
+
 Frontend desde `frontend/`:
 
 ```bash

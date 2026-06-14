@@ -14,8 +14,8 @@ class DecisionEnginePLDRuntimeTests(unittest.TestCase):
         from backend.app.domain.decision_engine import (
             DecisionEngineOrchestrator,
             EngineEvaluationRequest,
-            compile_pld_runtime,
         )
+        from backend.app.products.pld.runtime import compile_pld_runtime
 
         runtime = compile_pld_runtime(workflow_code="standard")
         request = EngineEvaluationRequest(
@@ -58,8 +58,8 @@ class DecisionEnginePLDRuntimeTests(unittest.TestCase):
         from backend.app.domain.decision_engine import (
             DecisionEngineOrchestrator,
             EngineEvaluationRequest,
-            compile_pld_runtime,
         )
+        from backend.app.products.pld.runtime import compile_pld_runtime
 
         runtime = compile_pld_runtime(workflow_code="standard")
         request = EngineEvaluationRequest(

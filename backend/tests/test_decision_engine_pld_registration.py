@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -10,7 +11,7 @@ if str(ROOT) not in sys.path:
 
 class DecisionEnginePLDRegistrationTests(unittest.TestCase):
     def test_pld_definition_exposes_standard_workflow_and_core_variables(self):
-        from backend.app.domain.decision_engine import build_pld_product_definition
+        from backend.app.products.pld.runtime import build_pld_product_definition
 
         product = build_pld_product_definition()
 
@@ -37,7 +38,7 @@ class DecisionEnginePLDRegistrationTests(unittest.TestCase):
         )
 
     def test_pld_runtime_compiles_on_generic_infrastructure(self):
-        from backend.app.domain.decision_engine import compile_pld_runtime
+        from backend.app.products.pld.runtime import compile_pld_runtime
 
         runtime = compile_pld_runtime(workflow_code="standard")
 
@@ -53,16 +54,37 @@ class DecisionEnginePLDRegistrationTests(unittest.TestCase):
             "build_decision",
         ])
 
-    def test_default_registry_registers_pld_standard_runtime(self):
+    def test_default_registry_registers_runtimes_from_configuration(self):
         from backend.app.domain.decision_engine import build_default_decision_engine_registry
+        from backend.app.config.settings import clear_settings_cache
 
-        registry = build_default_decision_engine_registry()
+        with patch.dict(
+            "os.environ",
+            {"DECISION_ENGINE_RUNTIME_BUILDERS": "backend.tests.support.fake_runtime_builders:compile_fake_runtime"},
+            clear=False,
+        ):
+            clear_settings_cache()
+            registry = build_default_decision_engine_registry()
+            clear_settings_cache()
 
-        runtime = registry.resolve("PLD", "standard")
+        runtime = registry.resolve("TEST", "standard")
 
-        self.assertEqual(runtime.product_code, "PLD")
+        self.assertEqual(runtime.product_code, "TEST")
         self.assertEqual(runtime.workflow_code, "standard")
-        self.assertEqual(runtime.strategy.applied_versions.pipeline_version, "pld.standard.pipeline.v1")
+        self.assertEqual(runtime.strategy.applied_versions.pipeline_version, "test.pipeline.v1")
+
+    def test_default_registry_starts_empty_without_configured_builders(self):
+        from backend.app.config.settings import clear_settings_cache
+        from backend.app.domain.decision_engine import build_default_decision_engine_registry
+        from backend.app.domain.decision_engine.exceptions import UnknownProductError
+
+        with patch.dict("os.environ", {"DECISION_ENGINE_RUNTIME_BUILDERS": ""}, clear=False):
+            clear_settings_cache()
+            registry = build_default_decision_engine_registry()
+            clear_settings_cache()
+
+        with self.assertRaises(UnknownProductError):
+            registry.resolve("PLD", "standard")
 
 
 if __name__ == "__main__":

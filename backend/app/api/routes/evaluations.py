@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.app.api.schemas.contracts import (
     DecisionTraceResponse,
-    PLDEvaluationRequest,
-    PLDEvaluationResponse,
+    EvaluationRequest,
+    EvaluationResponse,
     StructuredErrorResponse,
 )
 from backend.app.security.dependencies import require_permission
@@ -21,24 +21,24 @@ error_responses = {
 router = APIRouter(prefix="/loans/{product_code}/evaluaciones", tags=["evaluations"])
 
 
-@router.post("", response_model=PLDEvaluationResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
+@router.post("", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
 def create_evaluation(
     product_code: str,
-    _payload: PLDEvaluationRequest,
+    _payload: EvaluationRequest,
     _context: tuple = Depends(require_permission("evaluar_oferta")),
-) -> PLDEvaluationResponse:
+) -> EvaluationResponse:
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail=f"Evaluation execution for product '{product_code}' is not implemented yet.",
     )
 
 
-@router.get("/{evaluation_id}", response_model=PLDEvaluationResponse, responses=error_responses)
+@router.get("/{evaluation_id}", response_model=EvaluationResponse, responses=error_responses)
 def get_evaluation(
     product_code: str,
     evaluation_id: str,
     _context: tuple = Depends(require_permission("consultar_evaluacion")),
-) -> PLDEvaluationResponse:
+) -> EvaluationResponse:
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail=(

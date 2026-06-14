@@ -34,7 +34,7 @@ Resultado esperado:
 
 Resultado esperado:
 
-- existen usuarios `admin`, `analista`, `evaluador`, `supervisor`
+- existen usuarios `admin`, `analista`, `evaluador`, `evaluador`
 
 ### 3. Levantar backend
 
