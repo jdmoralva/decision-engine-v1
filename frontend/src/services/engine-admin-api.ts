@@ -78,6 +78,17 @@ export type WorkflowVersionResponse = {
   changeNotes?: string | null;
 };
 
+export type PermissionResponse = {
+  code: string;
+  name: string;
+  description?: string | null;
+};
+
+export type ProfilePermissionResponse = {
+  roleCode: string;
+  permissions: PermissionResponse[];
+};
+
 export type EngineAdminWorkspaceState = {
   productCode: string;
   productName: string;
@@ -87,8 +98,11 @@ export type EngineAdminWorkspaceState = {
   catalogId: string | null;
   parameterSetId: string | null;
   pipelineStrategyId: string | null;
+  ruleId: string | null;
   ruleVersionId: string | null;
   workflowVersionId: string | null;
+  selectedRoleCode: string;
+  selectedPermissionCodes: string[];
 };
 
 export const emptyEngineAdminWorkspaceState: EngineAdminWorkspaceState = {
@@ -100,8 +114,11 @@ export const emptyEngineAdminWorkspaceState: EngineAdminWorkspaceState = {
   catalogId: null,
   parameterSetId: null,
   pipelineStrategyId: null,
+  ruleId: null,
   ruleVersionId: null,
   workflowVersionId: null,
+  selectedRoleCode: "admin_negocio",
+  selectedPermissionCodes: [],
 };
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -144,11 +161,23 @@ export class EngineAdminApiClient {
     return this.request(`/api/v1/admin/engine/products/${productCode}/activation`, { method: "POST" });
   }
 
+  retireProduct(productCode: string): Promise<ProductResponse> {
+    return this.request(`/api/v1/admin/engine/products/${productCode}/retirement`, { method: "POST" });
+  }
+
+  async deleteProduct(productCode: string): Promise<void> {
+    await this.request(`/api/v1/admin/engine/products/${productCode}`, { method: "DELETE" });
+  }
+
   createWorkflow(productCode: string, input: { workflowCode: string; name: string; description?: string }): Promise<WorkflowResponse> {
     return this.request(`/api/v1/admin/engine/products/${productCode}/workflows`, {
       method: "POST",
       body: JSON.stringify(input),
     });
+  }
+
+  async deleteWorkflow(workflowId: string): Promise<void> {
+    await this.request(`/api/v1/admin/engine/workflows/${workflowId}`, { method: "DELETE" });
   }
 
   createVariable(productCode: string, input: Record<string, unknown>): Promise<ProductVariableResponse> {
@@ -209,6 +238,10 @@ export class EngineAdminApiClient {
     return this.request(`/api/v1/admin/engine/rule-versions/${ruleVersionId}/activation`, { method: "POST" });
   }
 
+  async deleteRule(ruleId: string): Promise<void> {
+    await this.request(`/api/v1/admin/engine/rules/${ruleId}`, { method: "DELETE" });
+  }
+
   createWorkflowVersion(workflowId: string, input: Record<string, unknown>): Promise<WorkflowVersionResponse> {
     return this.request(`/api/v1/admin/engine/workflows/${workflowId}/versions`, {
       method: "POST",
@@ -218,6 +251,20 @@ export class EngineAdminApiClient {
 
   activateWorkflowVersion(versionId: string): Promise<WorkflowVersionResponse> {
     return this.request(`/api/v1/admin/engine/workflow-versions/${versionId}/activation`, { method: "POST" });
+  }
+
+  getProfilePermissions(roleCode: string): Promise<ProfilePermissionResponse> {
+    return this.request(`/api/v1/admin/engine/profiles/${roleCode}/permissions`);
+  }
+
+  replaceProfilePermissions(
+    roleCode: string,
+    permissionCodes: string[],
+  ): Promise<ProfilePermissionResponse> {
+    return this.request(`/api/v1/admin/engine/profiles/${roleCode}/permissions`, {
+      method: "PUT",
+      body: JSON.stringify({ permissionCodes }),
+    });
   }
 }
 

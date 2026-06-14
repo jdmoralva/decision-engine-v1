@@ -370,3 +370,139 @@ class DecisionEngineRegistryTests(unittest.TestCase):
             clear_settings_cache()
             clear_database_caches()
             temp_dir.cleanup()
+
+    def test_runtime_loader_lists_multiple_active_workflows_for_one_product(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        try:
+            db_path = Path(temp_dir.name) / "registry_workflows.db"
+            os.environ["APP_ENV"] = "test"
+            os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{db_path.as_posix()}"
+
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches, get_session_factory
+
+            clear_settings_cache()
+            clear_database_caches()
+
+            from backend.app.application.engine_admin.runtime_loader import RuntimeLoader
+            from backend.app.infrastructure.db.base import Base
+            from backend.app.infrastructure.db.models import LoanProduct, ProductWorkflow, User
+
+            session_factory = get_session_factory()
+            Base.metadata.create_all(bind=session_factory.kw["bind"])
+
+            with session_factory() as session:
+                user = User(
+                    id=str(uuid4()),
+                    username="system",
+                    display_name="System",
+                    password_hash="hash",
+                    is_active=True,
+                    created_at=datetime.now(UTC),
+                )
+                session.add(user)
+                session.flush()
+                session.add(
+                    LoanProduct(
+                        code="PLD",
+                        name="Prestamo Libre Disponibilidad",
+                        status="active",
+                        is_active=True,
+                        created_by=user.id,
+                        activated_by=user.id,
+                        activated_at=datetime.now(UTC),
+                        created_at=datetime.now(UTC),
+                    )
+                )
+                session.add_all(
+                    [
+                        ProductWorkflow(
+                            id=str(uuid4()),
+                            product_code="PLD",
+                            workflow_code="standard",
+                            name="Standard",
+                            status="active",
+                            created_by=user.id,
+                            activated_by=user.id,
+                            activated_at=datetime.now(UTC),
+                            created_at=datetime.now(UTC),
+                        ),
+                        ProductWorkflow(
+                            id=str(uuid4()),
+                            product_code="PLD",
+                            workflow_code="special",
+                            name="Special",
+                            status="active",
+                            created_by=user.id,
+                            activated_by=user.id,
+                            activated_at=datetime.now(UTC),
+                            created_at=datetime.now(UTC),
+                        ),
+                    ]
+                )
+                session.commit()
+
+            workflows = RuntimeLoader(session_factory).list_active_workflows()
+
+            self.assertEqual(workflows, [("PLD", "special"), ("PLD", "standard")])
+        finally:
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches
+
+            clear_settings_cache()
+            clear_database_caches()
+            temp_dir.cleanup()
+
+    def test_runtime_loader_allows_active_product_without_active_workflows(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        try:
+            db_path = Path(temp_dir.name) / "registry_empty_product.db"
+            os.environ["APP_ENV"] = "test"
+            os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{db_path.as_posix()}"
+
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches, get_session_factory
+
+            clear_settings_cache()
+            clear_database_caches()
+
+            from backend.app.application.engine_admin.runtime_loader import RuntimeLoader
+            from backend.app.infrastructure.db.base import Base
+            from backend.app.infrastructure.db.models import LoanProduct, User
+
+            session_factory = get_session_factory()
+            Base.metadata.create_all(bind=session_factory.kw["bind"])
+
+            with session_factory() as session:
+                user = User(
+                    id=str(uuid4()),
+                    username="system",
+                    display_name="System",
+                    password_hash="hash",
+                    is_active=True,
+                    created_at=datetime.now(UTC),
+                )
+                session.add(user)
+                session.flush()
+                session.add(
+                    LoanProduct(
+                        code="PLD",
+                        name="Prestamo Libre Disponibilidad",
+                        status="active",
+                        is_active=True,
+                        created_by=user.id,
+                        activated_by=user.id,
+                        activated_at=datetime.now(UTC),
+                        created_at=datetime.now(UTC),
+                    )
+                )
+                session.commit()
+
+            self.assertEqual(RuntimeLoader(session_factory).list_active_workflows(), [])
+        finally:
+            from backend.app.config.settings import clear_settings_cache
+            from backend.app.infrastructure.db.session import clear_database_caches
+
+            clear_settings_cache()
+            clear_database_caches()
+            temp_dir.cleanup()

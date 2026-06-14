@@ -14,6 +14,7 @@ describe("engine admin lifecycle", () => {
       productName: "",
       workflowCode: "",
       workflowId: null,
+      selectedRoleCode: "admin_negocio",
     });
   });
 
@@ -174,6 +175,46 @@ describe("engine admin lifecycle", () => {
       "POST /api/v1/admin/engine/rule-versions/rule-version-1/activation",
       "POST /api/v1/admin/engine/workflows/workflow-1/versions",
       "POST /api/v1/admin/engine/workflow-versions/workflow-version-1/activation",
+    ]);
+  });
+
+  it("supports profile-permission administration and governed delete operations", async () => {
+    const calls: string[] = [];
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input);
+      calls.push(`${init?.method ?? "GET"} ${path}`);
+
+      const payloadByPath: Record<string, unknown> = {
+        "/api/v1/admin/engine/profiles/admin_negocio/permissions": {
+          roleCode: "admin_negocio",
+          permissions: [{ code: "consultar_auditoria", name: "Consultar Auditoria" }],
+        },
+      };
+
+      return new Response(JSON.stringify(payloadByPath[path] ?? null), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
+    const client = new EngineAdminApiClient("token-123", fetcher as typeof fetch);
+
+    const currentPermissions = await client.getProfilePermissions("admin_negocio");
+    const updatedPermissions = await client.replaceProfilePermissions("admin_negocio", [
+      "consultar_auditoria",
+    ]);
+    await client.deleteProduct("PLD");
+    await client.deleteWorkflow("workflow-1");
+    await client.deleteRule("rule-1");
+
+    expect(currentPermissions.roleCode).toBe("admin_negocio");
+    expect(updatedPermissions.permissions[0]?.code).toBe("consultar_auditoria");
+    expect(calls).toEqual([
+      "GET /api/v1/admin/engine/profiles/admin_negocio/permissions",
+      "PUT /api/v1/admin/engine/profiles/admin_negocio/permissions",
+      "DELETE /api/v1/admin/engine/products/PLD",
+      "DELETE /api/v1/admin/engine/workflows/workflow-1",
+      "DELETE /api/v1/admin/engine/rules/rule-1",
     ]);
   });
 });

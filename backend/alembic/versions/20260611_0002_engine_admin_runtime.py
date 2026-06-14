@@ -78,6 +78,8 @@ def upgrade() -> None:
     _add_column_if_missing("rule_versions", sa.Column("rule_name", sa.String(length=120), nullable=True))
 
     for table_name in (
+        "permissions",
+        "role_permissions",
         "product_workflows",
         "workflow_versions",
         "product_variables",

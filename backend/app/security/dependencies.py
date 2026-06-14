@@ -4,12 +4,16 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from backend.app.application.auth import get_user_by_username, get_user_roles, user_has_any_role
+from backend.app.application.auth import (
+    get_permissions_for_roles,
+    get_user_by_username,
+    get_user_roles,
+    user_has_any_role,
+)
 from backend.app.config.settings import get_settings
 from backend.app.infrastructure.db.models import User
 from backend.app.infrastructure.db.session import get_db
 from backend.app.security.exceptions import AuthenticationRequiredError, InvalidTokenError, PermissionDeniedError
-from backend.app.security.permissions import roles_grant_permission
 from backend.app.security.tokens import decode_access_token
 
 
@@ -49,9 +53,13 @@ def require_roles(*required_roles: str) -> Callable:
 
 
 def require_permission(permission: str) -> Callable:
-    def dependency(context: tuple[User, list[str]] = Depends(get_current_user_context)) -> tuple[User, list[str]]:
+    def dependency(
+        context: tuple[User, list[str]] = Depends(get_current_user_context),
+        db: Session = Depends(get_db),
+    ) -> tuple[User, list[str]]:
         user, roles = context
-        if not roles_grant_permission(roles, permission):
+        permissions = get_permissions_for_roles(db, roles)
+        if permission not in permissions:
             raise PermissionDeniedError()
         return user, roles
 

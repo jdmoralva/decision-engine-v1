@@ -19,6 +19,8 @@ class ModelMetadataTests(unittest.TestCase):
             "users",
             "roles",
             "user_roles",
+            "permissions",
+            "role_permissions",
             "loan_products",
             "product_workflows",
             "workflow_versions",
@@ -60,8 +62,13 @@ class ModelMetadataTests(unittest.TestCase):
         credit_request_columns = {col["name"] for col in inspector.get_columns("credit_requests")}
         evaluation_columns = {col["name"] for col in inspector.get_columns("loan_evaluations")}
         trace_columns = {col["name"] for col in inspector.get_columns("decision_traces")}
+        permission_columns = {col["name"] for col in inspector.get_columns("permissions")}
+        role_permission_columns = {col["name"] for col in inspector.get_columns("role_permissions")}
 
         self.assertIn("status", product_columns)
+        self.assertIn("code", permission_columns)
+        self.assertIn("role_id", role_permission_columns)
+        self.assertIn("permission_id", role_permission_columns)
         self.assertIn("workflow_code", workflow_columns)
         self.assertIn("version_number", workflow_version_columns)
         self.assertIn("allowed_sources", variable_columns)

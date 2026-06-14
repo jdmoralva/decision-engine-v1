@@ -2,7 +2,9 @@ import asyncio
 import json
 import sys
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 from httpx import AsyncClient
 
@@ -249,5 +251,149 @@ class EngineAdminFlowIntegrationTests(EngineAdminApiTestCaseMixin, unittest.Test
                 )
                 self.assertEqual(blocked_retirement_response.status_code, 409)
                 self.assertEqual(blocked_retirement_response.json()["error"]["code"], "ENGINE_ADMIN_VALIDATION")
+
+        asyncio.run(run_test())
+
+    def test_negocio_can_delete_draft_product_but_not_active_product(self):
+        async def run_test():
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                negocio_headers = await self.auth_headers(client, "negocio")
+                riesgos_headers = await self.auth_headers(client, "riesgos")
+
+                draft_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "BORRADOR", "name": "Borrador"},
+                )
+                self.assertEqual(draft_response.status_code, 201, draft_response.text)
+
+                delete_draft_response = await client.delete(
+                    "/api/v1/admin/engine/products/BORRADOR",
+                    headers=negocio_headers,
+                )
+                self.assertEqual(delete_draft_response.status_code, 204, delete_draft_response.text)
+
+                active_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "ACTIVO", "name": "Activo"},
+                )
+                self.assertEqual(active_response.status_code, 201, active_response.text)
+                activate_response = await client.post(
+                    "/api/v1/admin/engine/products/ACTIVO/activation",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(activate_response.status_code, 200, activate_response.text)
+
+                blocked_response = await client.delete(
+                    "/api/v1/admin/engine/products/ACTIVO",
+                    headers=negocio_headers,
+                )
+                self.assertEqual(blocked_response.status_code, 409, blocked_response.text)
+
+        asyncio.run(run_test())
+
+    def test_riesgos_can_delete_draft_workflow_and_rule(self):
+        async def run_test():
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                negocio_headers = await self.auth_headers(client, "negocio")
+                riesgos_headers = await self.auth_headers(client, "riesgos")
+
+                product_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "DELTA", "name": "Delta"},
+                )
+                self.assertEqual(product_response.status_code, 201, product_response.text)
+
+                workflow_response = await client.post(
+                    "/api/v1/admin/engine/products/DELTA/workflows",
+                    headers=negocio_headers,
+                    json={"workflowCode": "standard", "name": "Standard"},
+                )
+                self.assertEqual(workflow_response.status_code, 201, workflow_response.text)
+                workflow_id = workflow_response.json()["id"]
+
+                rule_response = await client.post(
+                    f"/api/v1/admin/engine/workflows/{workflow_id}/rules",
+                    headers=riesgos_headers,
+                    json={
+                        "name": "Regla a borrar",
+                        "ruleType": "eligibility",
+                        "conditionExpression": "validated_income > 0",
+                        "actionExpression": "allow",
+                    },
+                )
+                self.assertEqual(rule_response.status_code, 201, rule_response.text)
+                rule_id = rule_response.json()["id"]
+
+                delete_rule_response = await client.delete(
+                    f"/api/v1/admin/engine/rules/{rule_id}",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(delete_rule_response.status_code, 204, delete_rule_response.text)
+
+                delete_workflow_response = await client.delete(
+                    f"/api/v1/admin/engine/workflows/{workflow_id}",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(delete_workflow_response.status_code, 204, delete_workflow_response.text)
+
+        asyncio.run(run_test())
+
+    def test_profile_permission_update_is_audited_and_applies_on_next_request(self):
+        from backend.app.infrastructure.db.models import AdministrativeAuditEvent, Permission, Role, RolePermission
+        from backend.app.infrastructure.db.session import get_session_factory
+
+        async def run_test():
+            with get_session_factory()() as session:
+                role = session.query(Role).filter_by(code="admin_negocio").one()
+                permission = Permission(
+                    id=str(uuid4()),
+                    code="consultar_auditoria",
+                    name="Consultar auditoria",
+                    description="Permite solo lectura de auditoria.",
+                    created_at=datetime.now(UTC),
+                )
+                session.add(permission)
+                session.flush()
+                session.add(
+                    RolePermission(
+                        id=str(uuid4()),
+                        role_id=role.id,
+                        permission_id=permission.id,
+                        created_at=datetime.now(UTC),
+                    )
+                )
+                session.commit()
+
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                plataforma_headers = await self.auth_headers(client, "plataforma")
+                negocio_headers = await self.auth_headers(client, "negocio")
+
+                response = await client.put(
+                    "/api/v1/admin/engine/profiles/admin_negocio/permissions",
+                    headers=plataforma_headers,
+                    json={"permissionCodes": ["consultar_auditoria"]},
+                )
+                self.assertEqual(response.status_code, 200, response.text)
+
+                denied_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "POSTCAMBIO", "name": "Post cambio"},
+                )
+                self.assertEqual(denied_response.status_code, 403, denied_response.text)
+
+            with get_session_factory()() as session:
+                audit_events = session.query(AdministrativeAuditEvent).all()
+
+            self.assertTrue(
+                any(
+                    event.aggregate_type == "role_permission_assignment"
+                    and event.event_type == "permissions_replaced"
+                    for event in audit_events
+                )
+            )
 
         asyncio.run(run_test())

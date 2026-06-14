@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -121,6 +122,22 @@ class RBACPermissionTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 501)
 
         asyncio.run(run_test())
+
+    def test_default_role_matrix_includes_governed_delete_permissions(self):
+        from backend.app.application.auth import get_permissions_for_roles
+        from backend.app.infrastructure.db.session import get_session_factory
+
+        with get_session_factory()() as session:
+            negocio_permissions = get_permissions_for_roles(session, ["admin_negocio"])
+            riesgos_permissions = get_permissions_for_roles(session, ["admin_riesgos"])
+
+        self.assertIn("eliminar_producto_draft", negocio_permissions)
+        self.assertIn("eliminar_workflow_draft", negocio_permissions)
+        self.assertIn("eliminar_regla_draft", negocio_permissions)
+        self.assertNotIn("eliminar_regla", negocio_permissions)
+        self.assertIn("eliminar_producto", riesgos_permissions)
+        self.assertIn("eliminar_workflow", riesgos_permissions)
+        self.assertIn("eliminar_regla", riesgos_permissions)
 
     def test_auditor_cannot_register_credit_request(self):
         from backend.app.main import app
@@ -315,6 +332,104 @@ class RBACPermissionTests(unittest.TestCase):
                     headers={"Authorization": f"Bearer {token}"},
                 )
                 self.assertEqual(response.status_code, 501)
+
+        asyncio.run(run_test())
+
+    def test_persisted_permission_assignment_applies_on_next_request_with_same_token(self):
+        from backend.app.infrastructure.db.models import Permission, Role, RolePermission
+        from backend.app.infrastructure.db.session import get_session_factory
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "plataforma")
+                headers = {"Authorization": f"Bearer {token}"}
+
+                forbidden_response = await client.get(
+                    "/api/v1/admin/rules",
+                    headers=headers,
+                )
+                self.assertEqual(forbidden_response.status_code, 403)
+
+                with get_session_factory()() as session:
+                    plataforma_role = session.execute(
+                        select(Role).where(Role.code == "plataforma")
+                    ).scalar_one()
+                    permission = Permission(
+                        id=str(uuid4()),
+                        code="administrar_reglas",
+                        name="Administrar reglas",
+                        description="Permite acceder a administracion de reglas.",
+                        created_at=datetime.now(UTC),
+                    )
+                    session.add(permission)
+                    session.flush()
+                    session.add(
+                        RolePermission(
+                            id=str(uuid4()),
+                            role_id=plataforma_role.id,
+                            permission_id=permission.id,
+                            created_at=datetime.now(UTC),
+                        )
+                    )
+                    session.commit()
+
+                allowed_response = await client.get(
+                    "/api/v1/admin/rules",
+                    headers=headers,
+                )
+                self.assertEqual(allowed_response.status_code, 501)
+
+        asyncio.run(run_test())
+
+    def test_persisted_permissions_override_hardcoded_role_defaults_on_next_request(self):
+        from backend.app.infrastructure.db.models import Permission, Role, RolePermission
+        from backend.app.infrastructure.db.session import get_session_factory
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "admin_negocio")
+                headers = {"Authorization": f"Bearer {token}"}
+
+                allowed_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=headers,
+                    json={"productCode": "MOTO", "name": "Motos"},
+                )
+                self.assertEqual(allowed_response.status_code, 201)
+
+                with get_session_factory()() as session:
+                    negocio_role = session.execute(
+                        select(Role).where(Role.code == "admin_negocio")
+                    ).scalar_one()
+                    permission = Permission(
+                        id=str(uuid4()),
+                        code="consultar_auditoria",
+                        name="Consultar auditoria",
+                        description="Permite revisar auditoria.",
+                        created_at=datetime.now(UTC),
+                    )
+                    session.add(permission)
+                    session.flush()
+                    session.add(
+                        RolePermission(
+                            id=str(uuid4()),
+                            role_id=negocio_role.id,
+                            permission_id=permission.id,
+                            created_at=datetime.now(UTC),
+                        )
+                    )
+                    session.commit()
+
+                denied_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=headers,
+                    json={"productCode": "HOGAR", "name": "Hogar"},
+                )
+                self.assertEqual(denied_response.status_code, 403)
 
         asyncio.run(run_test())
 

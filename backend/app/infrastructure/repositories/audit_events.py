@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -37,3 +38,22 @@ class AuditEventWriter:
             session.commit()
             session.refresh(row)
         return row
+
+    def write_profile_permission_change(
+        self,
+        *,
+        role_code: str,
+        permission_codes: list[str],
+        created_by: str,
+    ) -> AdministrativeAuditEvent:
+        return self.write(
+            AuditEventWrite(
+                aggregate_id=role_code,
+                aggregate_type="role_permission_assignment",
+                event_type="permissions_replaced",
+                event_payload=json.dumps(
+                    {"role_code": role_code, "permission_codes": permission_codes}
+                ),
+                created_by=created_by,
+            )
+        )

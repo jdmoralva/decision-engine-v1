@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Protocol
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.infrastructure.db.models import (
     ParameterSet,
+    Permission,
     PipelineNode,
     PipelineStrategy,
     ProductVariable,
     ProductWorkflow,
+    Role,
+    RolePermission,
     RuleVersion,
     VariableCatalogItem,
     VariableCatalogVersion,
@@ -34,10 +39,20 @@ class RuntimeBundle:
     rule_versions: list[RuleVersion]
 
 
+@dataclass(frozen=True)
+class RolePermissionAssignment:
+    role_code: str
+    permission_code: str
+
+
 class EngineAdminRuntimeRepository(Protocol):
     def load_active_runtime_bundle(self, product_code: str, workflow_code: str) -> RuntimeBundle | None: ...
 
     def list_active_workflows(self) -> list[tuple[str, str]]: ...
+
+    def list_role_permissions(self, role_codes: list[str] | None = None) -> list[RolePermissionAssignment]: ...
+
+    def replace_role_permissions(self, role_code: str, permission_codes: list[str]) -> list[RolePermissionAssignment]: ...
 
 
 class SqlAlchemyEngineAdminRepository:
@@ -49,7 +64,7 @@ class SqlAlchemyEngineAdminRepository:
             rows = session.execute(
                 select(ProductWorkflow.product_code, ProductWorkflow.workflow_code).where(
                     ProductWorkflow.status == "active"
-                )
+                ).order_by(ProductWorkflow.product_code, ProductWorkflow.workflow_code)
             ).all()
         return [(product_code, workflow_code) for product_code, workflow_code in rows]
 
@@ -128,3 +143,57 @@ class SqlAlchemyEngineAdminRepository:
                 pipeline_nodes=pipeline_nodes,
                 rule_versions=rule_versions,
             )
+
+    def list_role_permissions(self, role_codes: list[str] | None = None) -> list[RolePermissionAssignment]:
+        with self._session_factory() as session:
+            query = (
+                select(Role.code, Permission.code)
+                .join(RolePermission, RolePermission.role_id == Role.id)
+                .join(Permission, Permission.id == RolePermission.permission_id)
+                .order_by(Role.code, Permission.code)
+            )
+            if role_codes:
+                query = query.where(Role.code.in_(role_codes))
+
+            rows = session.execute(query).all()
+
+        return [
+            RolePermissionAssignment(role_code=role_code, permission_code=permission_code)
+            for role_code, permission_code in rows
+        ]
+
+    def replace_role_permissions(self, role_code: str, permission_codes: list[str]) -> list[RolePermissionAssignment]:
+        with self._session_factory() as session:
+            role = session.execute(select(Role).where(Role.code == role_code)).scalar_one_or_none()
+            if role is None:
+                return []
+
+            permission_rows = list(
+                session.execute(select(Permission).where(Permission.code.in_(permission_codes))).scalars()
+            )
+            permissions_by_code = {permission.code: permission for permission in permission_rows}
+
+            current_links = list(
+                session.execute(
+                    select(RolePermission).where(RolePermission.role_id == role.id)
+                ).scalars()
+            )
+            for link in current_links:
+                session.delete(link)
+
+            for permission_code in permission_codes:
+                permission = permissions_by_code.get(permission_code)
+                if permission is None:
+                    continue
+                session.add(
+                    RolePermission(
+                        id=str(uuid4()),
+                        role_id=role.id,
+                        permission_id=permission.id,
+                        created_at=datetime.now(UTC),
+                    )
+                )
+
+            session.commit()
+
+        return self.list_role_permissions([role_code])

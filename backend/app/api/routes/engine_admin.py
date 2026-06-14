@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from backend.app.api.mappers.engine_admin import (
     to_parameter_set_response,
     to_pipeline_strategy_response,
+    to_profile_permission_response,
     to_product_response,
     to_rule_response,
     to_variable_catalog_response,
@@ -17,6 +18,8 @@ from backend.app.api.schemas.engine_admin import (
     ParameterSetResponse,
     PipelineStrategyCreateRequest,
     PipelineStrategyResponse,
+    ProfilePermissionAssignmentRequest,
+    ProfilePermissionResponse,
     ProductCreateRequest,
     ProductResponse,
     ProductVariableCreateRequest,
@@ -85,6 +88,31 @@ def activate_product(
         return _validation_error_response(str(exc))
 
 
+@router.post("/products/{productCode}/retirement", response_model=ProductResponse, responses=error_responses)
+def retire_product(
+    productCode: str,
+    context: tuple = Depends(require_permission("aprobar_activacion_motor")),
+) -> ProductResponse | JSONResponse:
+    user, _roles = context
+    try:
+        return to_product_response(_service().retire_product(productCode, user.id))
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc))
+
+
+@router.delete("/products/{productCode}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
+def delete_product(
+    productCode: str,
+    context: tuple = Depends(get_current_user_context),
+) -> JSONResponse:
+    user, roles = context
+    try:
+        _service().delete_product(productCode, user.id, roles)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc))
+    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
+
+
 @router.post("/products/{productCode}/workflows", response_model=WorkflowResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
 def create_workflow(
     productCode: str,
@@ -96,6 +124,19 @@ def create_workflow(
         return to_workflow_response(_service().create_workflow(productCode, payload, user.id))
     except EngineAdminValidationError as exc:
         return _validation_error_response(str(exc))
+
+
+@router.delete("/workflows/{workflowId}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
+def delete_workflow(
+    workflowId: str,
+    context: tuple = Depends(get_current_user_context),
+) -> JSONResponse:
+    user, roles = context
+    try:
+        _service().delete_workflow(workflowId, user.id, roles)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc))
+    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
 
 
 @router.post("/products/{productCode}/variables", response_model=ProductVariableResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
@@ -214,6 +255,44 @@ def create_rule(
         return to_rule_response(rule_set, workflowId, rule_version)
     except EngineAdminValidationError as exc:
         return _validation_error_response(str(exc))
+
+
+@router.delete("/rules/{ruleId}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
+def delete_rule(
+    ruleId: str,
+    context: tuple = Depends(get_current_user_context),
+) -> JSONResponse:
+    user, roles = context
+    try:
+        _service().delete_rule(ruleId, user.id, roles)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc))
+    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
+
+
+@router.get("/profiles/{roleCode}/permissions", response_model=ProfilePermissionResponse, responses=error_responses)
+def get_profile_permissions(
+    roleCode: str,
+    _context: tuple = Depends(require_permission("administrar_perfiles_permisos")),
+) -> ProfilePermissionResponse | JSONResponse:
+    try:
+        return to_profile_permission_response(roleCode, _service().get_profile_permissions(roleCode))
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_404_NOT_FOUND)
+
+
+@router.put("/profiles/{roleCode}/permissions", response_model=ProfilePermissionResponse, responses=error_responses)
+def replace_profile_permissions(
+    roleCode: str,
+    payload: ProfilePermissionAssignmentRequest,
+    context: tuple = Depends(require_permission("administrar_perfiles_permisos")),
+) -> ProfilePermissionResponse | JSONResponse:
+    user, _roles = context
+    try:
+        permissions = _service().replace_profile_permissions(roleCode, payload, user.id)
+        return to_profile_permission_response(roleCode, permissions)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_404_NOT_FOUND)
 
 
 @router.post("/rule-versions/{ruleVersionId}/activation", response_model=RuleResponse, responses=error_responses)

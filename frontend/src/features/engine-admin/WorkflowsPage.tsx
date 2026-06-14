@@ -59,6 +59,23 @@ export function WorkflowsPage({ client, workspace, onWorkspaceChange, onNotice }
     }
   }
 
+  async function handleDeleteWorkflow() {
+    if (workspace.workflowId === null) {
+      onNotice("Primero crea un workflow.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await client.deleteWorkflow(workspace.workflowId);
+      onNotice("Workflow eliminado.");
+    } catch (error) {
+      onNotice(error instanceof Error ? error.message : "No se pudo eliminar el workflow.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="workspace-card">
       <h2>Versionado de workflow</h2>
@@ -68,6 +85,9 @@ export function WorkflowsPage({ client, workspace, onWorkspaceChange, onNotice }
         </button>
         <button className="secondary-button" type="button" onClick={handleActivateWorkflowVersion} disabled={isSubmitting}>
           Activar version de workflow
+        </button>
+        <button className="secondary-button" type="button" onClick={handleDeleteWorkflow} disabled={isSubmitting}>
+          Eliminar workflow
         </button>
       </div>
       <p className="workspace-hint">Workflow version: {workspace.workflowVersionId ?? "pendiente"}</p>

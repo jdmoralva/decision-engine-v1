@@ -2,8 +2,10 @@ import json
 
 from backend.app.api.schemas.engine_admin import (
     ParameterSetResponse,
+    PermissionResponse,
     PipelineNodeResponse,
     PipelineStrategyResponse,
+    ProfilePermissionResponse,
     ProductResponse,
     ProductVariableResponse,
     RuleResponse,
@@ -165,4 +167,23 @@ def to_workflow_version_response(
         pipelineStrategyId=workflow_version.pipeline_strategy_id,
         ruleVersionIds=rule_version_ids,
         changeNotes=workflow_version.change_notes,
+    )
+
+
+def to_profile_permission_response(
+    role_code: str,
+    permissions: list[dict[str, str | None]],
+) -> ProfilePermissionResponse:
+    return ProfilePermissionResponse(
+        roleCode=role_code,
+        permissions=[
+            PermissionResponse(
+                code=str(permission["code"]),
+                name=str(permission["name"]),
+                description=(
+                    None if permission.get("description") is None else str(permission["description"])
+                ),
+            )
+            for permission in permissions
+        ],
     )

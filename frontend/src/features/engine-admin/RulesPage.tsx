@@ -26,7 +26,7 @@ export function RulesPage({ client, workspace, onWorkspaceChange, onNotice }: Pr
         conditionExpression: "validated_income > 0",
         actionExpression: "allow",
       });
-      onWorkspaceChange({ ruleVersionId: rule.activeVersion.id });
+      onWorkspaceChange({ ruleId: rule.id, ruleVersionId: rule.activeVersion.id });
       onNotice(`Regla ${rule.name} creada.`);
     } catch (error) {
       onNotice(error instanceof Error ? error.message : "No se pudo crear la regla.");
@@ -41,12 +41,33 @@ export function RulesPage({ client, workspace, onWorkspaceChange, onNotice }: Pr
       return;
     }
 
+    const ruleVersionId = workspace.ruleVersionId;
+
     setIsSubmitting(true);
     try {
-      await client.activateRuleVersion(workspace.ruleVersionId);
+      await client.activateRuleVersion(ruleVersionId);
       onNotice("Regla activada.");
     } catch (error) {
       onNotice(error instanceof Error ? error.message : "No se pudo activar la regla.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteRule() {
+    if (workspace.ruleId === null) {
+      onNotice("Primero crea una regla.");
+      return;
+    }
+
+    const ruleId = workspace.ruleId;
+
+    setIsSubmitting(true);
+    try {
+      await client.deleteRule(ruleId);
+      onNotice("Regla eliminada.");
+    } catch (error) {
+      onNotice(error instanceof Error ? error.message : "No se pudo eliminar la regla.");
     } finally {
       setIsSubmitting(false);
     }
@@ -61,6 +82,9 @@ export function RulesPage({ client, workspace, onWorkspaceChange, onNotice }: Pr
         </button>
         <button className="secondary-button" type="button" onClick={handleActivateRule} disabled={isSubmitting}>
           Activar regla
+        </button>
+        <button className="secondary-button" type="button" onClick={handleDeleteRule} disabled={isSubmitting}>
+          Eliminar regla
         </button>
       </div>
       <p className="workspace-hint">Rule version: {workspace.ruleVersionId ?? "pendiente"}</p>

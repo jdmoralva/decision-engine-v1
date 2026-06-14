@@ -41,6 +41,18 @@ export function ProductsPage({ client, workspace, onWorkspaceChange, onNotice }:
     }
   }
 
+  async function handleDeleteProduct() {
+    setIsSubmitting(true);
+    try {
+      await client.deleteProduct(workspace.productCode);
+      onNotice(`Producto ${workspace.productCode} eliminado.`);
+    } catch (error) {
+      onNotice(error instanceof Error ? error.message : "No se pudo eliminar el producto.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleCreateWorkflow(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
@@ -85,6 +97,9 @@ export function ProductsPage({ client, workspace, onWorkspaceChange, onNotice }:
       <div className="action-row">
         <button className="secondary-button" type="button" onClick={handleActivateProduct} disabled={isSubmitting}>
           Activar producto
+        </button>
+        <button className="secondary-button" type="button" onClick={handleDeleteProduct} disabled={isSubmitting}>
+          Eliminar producto
         </button>
       </div>
 

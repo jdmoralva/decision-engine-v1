@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import { ParametersPage } from "./features/engine-admin/ParametersPage";
 import { PipelinePage } from "./features/engine-admin/PipelinePage";
+import { ProfilePermissionsPage } from "./features/engine-admin/ProfilePermissionsPage";
 import { ProductsPage } from "./features/engine-admin/ProductsPage";
 import { RulesPage } from "./features/engine-admin/RulesPage";
 import { VariablesPage } from "./features/engine-admin/VariablesPage";
@@ -55,7 +56,7 @@ function App() {
   );
   const [notice, setNotice] = useState<string | null>(null);
   const [activeAdminTab, setActiveAdminTab] = useState<
-    "products" | "variables" | "parameters" | "pipeline" | "rules" | "workflows"
+    "products" | "variables" | "parameters" | "pipeline" | "rules" | "workflows" | "profiles"
   >("products");
 
   useEffect(() => {
@@ -194,6 +195,8 @@ function App() {
         return <RulesPage {...sharedProps} />;
       case "workflows":
         return <WorkflowsPage {...sharedProps} />;
+      case "profiles":
+        return <ProfilePermissionsPage {...sharedProps} />;
     }
   }
 
@@ -306,6 +309,7 @@ function App() {
               <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("pipeline")}>Pipeline</button>
               <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("rules")}>Reglas</button>
               <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("workflows")}>Versionado</button>
+              <button className="secondary-button" type="button" onClick={() => setActiveAdminTab("profiles")}>Perfiles</button>
             </div>
 
             {notice ? <p className="success-banner">{notice}</p> : null}

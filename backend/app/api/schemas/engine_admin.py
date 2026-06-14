@@ -18,6 +18,21 @@ class QueueExportFilters(BaseModel):
     workflow_code: str | None = None
 
 
+class PermissionResponse(BaseModel):
+    code: str
+    name: str
+    description: str | None = None
+
+
+class ProfilePermissionAssignmentRequest(BaseModel):
+    permissionCodes: list[str] = Field(default_factory=list)
+
+
+class ProfilePermissionResponse(BaseModel):
+    roleCode: str
+    permissions: list[PermissionResponse] = Field(default_factory=list)
+
+
 class ProductCreateRequest(BaseModel):
     productCode: str = Field(min_length=1)
     name: str = Field(min_length=1)

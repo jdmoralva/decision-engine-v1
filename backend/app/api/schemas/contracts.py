@@ -10,7 +10,10 @@ class DocumentRef(BaseModel):
 
 class ActorRef(BaseModel):
     user_id: str | None = None
-    username: str = Field(min_length=1)
+    username: str = Field(
+        min_length=1,
+        description="Actor identity. Authorization is reevaluated on each protected request.",
+    )
 
 
 class ExternalInputSnapshotItem(BaseModel):

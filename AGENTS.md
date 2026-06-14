@@ -56,7 +56,8 @@
 - Frontend/UI copy should stay in Spanish.
 
 <!-- SPECKIT START -->
-For constitution file, `glob` may return “No files found”, read file from `C:/Users/User/Documents/1. Projects/23. Decision Engine 1/.specify/memory/constitution.md`.
+For constitution.md file, `glob` may return “No files found”, read file from `C:/Users/User/Documents/1. Projects/23. Decision Engine 1/.specify/memory/constitution.md`.
+For extensions.yml file, `glob` may return “No files found”, read file from `C:/Users/User/Documents/1. Projects/23. Decision Engine 1/.specify/extensions.yml`.
 For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
 Specification and code may be in English, but frontend and UI must be in Spanish.
 <!-- SPECKIT END -->

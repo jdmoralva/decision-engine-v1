@@ -1,4 +1,14 @@
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.infrastructure.db.base import Base
@@ -24,6 +34,26 @@ class Role(Base):
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
+class Permission(Base):
+    __tablename__ = "permissions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    code: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
+class RolePermission(Base):
+    __tablename__ = "role_permissions"
+    __table_args__ = (UniqueConstraint("role_id", "permission_id", name="uq_role_permission"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    role_id: Mapped[str] = mapped_column(ForeignKey("roles.id"), nullable=False)
+    permission_id: Mapped[str] = mapped_column(ForeignKey("permissions.id"), nullable=False)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
+
+
 class UserRole(Base):
     __tablename__ = "user_roles"
 
@@ -35,6 +65,16 @@ class UserRole(Base):
 
 class LoanProduct(Base):
     __tablename__ = "loan_products"
+    __table_args__ = (
+        CheckConstraint(
+            "(status = 'active' AND activated_at IS NOT NULL) OR (status != 'active')",
+            name="ck_loan_product_active_state",
+        ),
+        CheckConstraint(
+            "(status = 'retired' AND retired_at IS NOT NULL) OR (status != 'retired' AND retired_at IS NULL)",
+            name="ck_loan_product_retired_state",
+        ),
+    )
 
     code: Mapped[str] = mapped_column(String(50), primary_key=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
@@ -51,7 +91,17 @@ class LoanProduct(Base):
 
 class ProductWorkflow(Base):
     __tablename__ = "product_workflows"
-    __table_args__ = (UniqueConstraint("product_code", "workflow_code", name="uq_product_workflow_code"),)
+    __table_args__ = (
+        UniqueConstraint("product_code", "workflow_code", name="uq_product_workflow_code"),
+        CheckConstraint(
+            "(status = 'active' AND activated_at IS NOT NULL) OR (status != 'active')",
+            name="ck_product_workflow_active_state",
+        ),
+        CheckConstraint(
+            "(status = 'retired' AND retired_at IS NOT NULL) OR (status != 'retired' AND retired_at IS NULL)",
+            name="ck_product_workflow_retired_state",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
@@ -91,7 +141,17 @@ class ProductVariable(Base):
 
 class VariableCatalogVersion(Base):
     __tablename__ = "variable_catalog_versions"
-    __table_args__ = (UniqueConstraint("product_code", "version_number", name="uq_catalog_product_version"),)
+    __table_args__ = (
+        UniqueConstraint("product_code", "version_number", name="uq_catalog_product_version"),
+        CheckConstraint(
+            "(status = 'active' AND activated_at IS NOT NULL) OR (status != 'active')",
+            name="ck_variable_catalog_active_state",
+        ),
+        CheckConstraint(
+            "(status = 'retired' AND retired_at IS NOT NULL) OR (status != 'retired' AND retired_at IS NULL)",
+            name="ck_variable_catalog_retired_state",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     product_code: Mapped[str] = mapped_column(ForeignKey("loan_products.code"), nullable=False)
@@ -125,6 +185,14 @@ class ParameterSet(Base):
     __tablename__ = "parameter_sets"
     __table_args__ = (
         UniqueConstraint("product_code", "workflow_code", "version_number", name="uq_parameter_set_version"),
+        CheckConstraint(
+            "(status = 'active' AND activated_at IS NOT NULL) OR (status != 'active')",
+            name="ck_parameter_set_active_state",
+        ),
+        CheckConstraint(
+            "(status = 'retired' AND retired_at IS NOT NULL) OR (status != 'retired' AND retired_at IS NULL)",
+            name="ck_parameter_set_retired_state",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -184,6 +252,10 @@ class PipelineStrategy(Base):
     __tablename__ = "pipeline_strategies"
     __table_args__ = (
         UniqueConstraint("loan_product_code", "version_number", name="uq_pipeline_strategy_version"),
+        CheckConstraint(
+            "(status IN ('draft', 'active', 'retired'))",
+            name="ck_pipeline_strategy_status",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -216,6 +288,14 @@ class WorkflowVersion(Base):
     __tablename__ = "workflow_versions"
     __table_args__ = (
         UniqueConstraint("workflow_id", "version_number", name="uq_workflow_version_number"),
+        CheckConstraint(
+            "(status = 'active' AND activated_at IS NOT NULL) OR (status != 'active')",
+            name="ck_workflow_version_active_state",
+        ),
+        CheckConstraint(
+            "(status = 'retired' AND retired_at IS NOT NULL) OR (status != 'retired' AND retired_at IS NULL)",
+            name="ck_workflow_version_retired_state",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)

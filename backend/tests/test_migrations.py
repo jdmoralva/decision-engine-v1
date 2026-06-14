@@ -33,6 +33,8 @@ class MigrationTests(unittest.TestCase):
                 inspector = inspect(engine)
 
                 self.assertIn("credit_requests", inspector.get_table_names())
+                self.assertIn("permissions", inspector.get_table_names())
+                self.assertIn("role_permissions", inspector.get_table_names())
                 self.assertIn("product_workflows", inspector.get_table_names())
                 self.assertIn("workflow_versions", inspector.get_table_names())
                 self.assertIn("product_variables", inspector.get_table_names())
