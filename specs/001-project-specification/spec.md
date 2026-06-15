@@ -2,6 +2,10 @@
 
 **Status**: Refined
 
+**Refined**: 2026-06-14 — Se definieron explicitamente las diferencias entre `delete` y `retire`, y como deben representarse los metadatos de aprobacion en artefactos `draft`.
+
+**Refined**: 2026-06-14 — Se agregó el módulo de administración para consulta de productos y workflows activos/draft, con detalle auditable y ocultamiento de configuraciones retiradas o eliminadas del runtime/UI.
+
 **Refined**: 2026-06-13 — Se explicitó que los cambios en perfiles y permisos entran en vigencia inmediata dentro del módulo de administración.
 
 ## Summary
@@ -29,6 +33,14 @@ Esta especificacion consolida el alcance funcional y operativo del MVP de `Decis
 - Q: Que estados operativos minimos debe tener una solicitud de credito en el MVP? → A: `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido.
 - Q: Como debe administrarse la matriz de perfiles y permisos? → A: Debe existir un modulo de administracion de perfiles que permita al administrador agregar o retirar permisos por perfil sin depender de valores hardcodeados como mecanismo operativo habitual.
 - Q: Cuando entran en vigencia los cambios del modulo de administracion de perfiles? → A: Los cambios de permisos y perfiles entran en vigencia de manera inmediata una vez aplicados y auditados.
+
+### Session 2026-06-14
+
+- Q: Que roles pueden acceder al modulo de administracion de productos? → A: Solo `Administrador`, `Administrador de negocio` y `Administrador de riesgos`.
+- Q: Que estados debe poder visualizar el modulo de administracion de productos? → A: Por defecto muestra productos, workflows y configuraciones `active`, y debe permitir cambiar la vista para consultar tambien elementos `draft`.
+- Q: Como deben tratarse los productos, workflows y configuraciones eliminadas o retiradas? → A: No deben ser visibles en la UI administrativa operativa, pero deben persistir en base de datos para auditoria y reconstruccion historica.
+- Q: Cual es la diferencia entre `delete` y `retire` en configuraciones administrables? → A: `retire` es una transicion gobernada del ciclo de vida que conserva el artefacto como historico retirado; `delete` es una baja administrativa logica permitida solo bajo la politica RBAC/estado, tambien persistida para auditoria, y no reemplaza las obligaciones de retiro o versionado sobre artefactos que ya estuvieron `active`.
+- Q: Como deben verse los metadatos de aprobacion en productos o workflows `draft`? → A: Mientras el artefacto permanezca en `draft`, los campos de aprobacion deben mostrarse sin valor efectivo (`null`, vacio o estado `pendiente`) y solo completarse cuando exista una aprobacion/activacion real auditada.
 
 ## User Scenarios & Testing
 
@@ -69,7 +81,7 @@ Como usuario operativo o auditor, quiero acceder a los adjuntos y a la trazabili
 
 ### User Story 4 - Administrar productos, workflows, variables, parametros, pipeline y reglas del motor
 
-Como usuario de negocio, riesgos o administracion autorizado, quiero registrar y gobernar productos, workflows, variables, parametros, pipeline y reglas del motor para habilitar cambios operativos sin depender de cambios de codigo como practica habitual.
+Como usuario de negocio, riesgos o administracion autorizado, quiero consultar, registrar y gobernar productos, workflows, variables, parametros, pipeline y reglas del motor para habilitar cambios operativos sin depender de cambios de codigo como practica habitual.
 
 Alcance operativo de esta historia: las altas, ediciones sobre borradores, versionados, activaciones, retiros y reemplazos de configuracion forman parte de la operacion administrable normal del MVP. Los cambios de codigo quedan reservados para nuevas capacidades compartidas de plataforma, cambios estructurales del motor o integraciones fuera del modelo administrable previsto.
 
@@ -84,6 +96,11 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 7. Dado una version activa publicada por error, cuando un usuario autorizado necesita reemplazarla, entonces el sistema crea una nueva version `draft`, conserva auditablemente la version anterior y permite retirar la version incorrecta solo despues de activar la version de reemplazo o de retirar el workflow afectado.
 8. Dado un administrador autorizado, cuando accede al modulo de administracion de perfiles, entonces puede agregar o retirar permisos de un perfil existente y el sistema conserva trazabilidad auditable de esos cambios.
 9. Dado un cambio en los permisos de un perfil, cuando el administrador confirma la modificacion, entonces los usuarios asociados a ese perfil quedan gobernados de manera inmediata por la nueva asignacion sin requerir cambios de codigo ni despliegues para la sola modificacion de permisos.
+10. Dado un usuario con rol `Administrador`, `Administrador de negocio` o `Administrador de riesgos`, cuando accede al modulo de administracion de productos, entonces el sistema muestra por defecto solo productos `active` y permite ingresar al detalle de cada producto con fecha de creacion, ultima modificacion, usuario creador, usuario aprobador y workflows activos asociados.
+11. Dado un producto visible en el modulo administrativo, cuando el usuario autorizado ingresa al detalle de uno de sus workflows, entonces el sistema muestra sus datos de creacion, aprobacion, pipeline, variables, parametros y reglas vigentes para esa configuracion.
+12. Dado un usuario autorizado dentro del modulo de administracion de productos, cuando cambia la vista a borradores, entonces el sistema muestra productos, workflows y demas configuraciones en estado `draft` sin mezclar en la vista operativa por defecto las configuraciones retiradas o eliminadas.
+13. Dado un producto, workflow o configuracion retirada o eliminada, cuando un usuario consulta las vistas operativas del modulo administrativo, entonces el sistema no la muestra, pero mantiene sus registros persistidos y auditables en base de datos.
+14. Dado un producto o workflow en estado `draft`, cuando un usuario autorizado consulta su detalle administrativo, entonces el sistema muestra sus metadatos de aprobacion como pendientes o sin valor efectivo hasta que exista una aprobacion real registrada.
 
 ## Edge Cases
 
@@ -101,6 +118,10 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - El sistema debe impedir variables duplicadas dentro del mismo producto cuando compartan la misma identidad de negocio o `variable_key`.
 - El sistema debe impedir que una regla o workflow nuevo quede `active` si referencia variables retiradas, ausentes o con una politica de origen incompatible.
 - El retiro de un producto no debe dejar workflows o reglas `active` utilizables bajo ese producto; la gobernanza debe forzar retiro o reemplazo coherente de sus artefactos activos antes del cierre final.
+- El sistema debe impedir que la vista administrativa por defecto mezcle configuraciones `draft` con configuraciones `active` o exponga artefactos `retired` o eliminados como si siguieran operativos.
+- El sistema debe manejar productos `active` sin metadata administrativa completa bloqueando su publicacion o marcandolos como inconsistentes hasta completar creador, aprobador y timestamps requeridos.
+- El sistema debe impedir usar `delete` como atajo para borrar logicamente un artefacto `active` sin cumplir antes las reglas de reemplazo, retiro y trazabilidad exigidas por la gobernanza.
+- El detalle administrativo de artefactos `draft` no debe mostrar usuarios o timestamps de aprobacion ficticios, heredados o inferidos si la aprobacion aun no ocurrio.
 
 ## Functional Requirements
 
@@ -145,12 +166,19 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - FR-022A: La definicion minima de un producto administrable debe incluir `product_code` unico, nombre, descripcion operativa, estado gobernado, responsables de creacion/activacion/retiro y trazabilidad temporal de esos cambios.
 - FR-023: El sistema debe permitir crear multiples workflows por producto para soportar distintos modos de evaluacion o politicas.
 - FR-023A: La definicion minima de un workflow debe incluir `workflow_code` unico dentro del producto, nombre, descripcion operativa, estado gobernado, version publicada vigente y trazabilidad de quien lo crea, activa, retira o reemplaza.
+- FR-023B: El modulo de administracion de productos debe estar disponible solo para los roles `Administrador`, `Administrador de negocio` y `Administrador de riesgos`.
 - FR-024: Cada producto y workflow administrable debe seguir un ciclo de vida `draft -> active -> retired`.
 - FR-024A: La transicion `draft -> active` requiere validacion satisfactoria de referencias, permisos autorizados y evidencia auditable; la transicion `active -> retired` impide nuevas evaluaciones con ese artefacto pero conserva referencias historicas; `draft -> retired` se permite como descarte administrativo antes de publicacion; `active -> draft` no esta permitido.
+- FR-024B: `Retire` y `delete` no son equivalentes. `Retire` es una transicion gobernada del ciclo de vida que conserva el artefacto como retirado historico; `delete` es una baja administrativa logica permitida solo para los estados y roles autorizados por la politica vigente, debe persistir con actor, motivo y timestamp, y no puede utilizarse para eludir obligaciones de versionado, reemplazo o retiro sobre artefactos que ya estuvieron `active`.
 - FR-025: El sistema debe impedir que productos o workflows en estado distinto de `active` sean usados para evaluaciones operativas.
 - FR-025A: Un producto solo puede quedar disponible para runtime si tiene al menos un workflow `active`; si no tiene ninguno, debe considerarse no operativo aunque el producto exista.
 - FR-025B: Un mismo producto puede tener multiples workflows `active` en paralelo siempre que cada uno tenga `workflow_code` distinto y una politica operativa diferenciada; el runtime debe resolverlos explicitamente por `workflow_code`.
 - FR-026: El sistema debe conservar trazabilidad de quien creo, activo, retiro o modifico productos y workflows.
+- FR-026A: El modulo de administracion debe mostrar por defecto solo productos `active`, con opcion explicita para cambiar a una vista de productos, workflows y demas configuraciones `draft`.
+- FR-026B: El detalle administrativo de un producto debe mostrar como minimo fecha de creacion, fecha de ultima modificacion, usuario creador, usuario aprobador y workflows `active` asociados.
+- FR-026C: El detalle administrativo de un workflow debe mostrar como minimo sus datos de creacion, aprobacion, pipeline, variables, parametros y reglas asociadas a la version consultada.
+- FR-026D: Los productos, workflows y demas configuraciones `retired` o eliminadas no deben ser visibles en las vistas operativas del modulo administrativo, pero deben persistir en base de datos con suficiente trazabilidad para auditoria y reconstruccion historica.
+- FR-026E: Cuando un producto, workflow o configuracion permanezca en estado `draft`, sus metadatos de aprobacion deben mantenerse sin valor efectivo (`null`, vacio o equivalente a `pendiente`) y solo completarse cuando exista una aprobacion o activacion real auditada.
 - FR-027: El sistema debe permitir definir variables a nivel de producto para que puedan ser reutilizadas por multiples workflows del mismo producto.
 - FR-027A: Cada variable administrable debe incluir como minimo `variable_key` unico dentro del producto, nombre, significado de negocio, tipo de dato, obligatoriedad, estado gobernado y responsables de creacion/activacion/retiro.
 - FR-027B: Las variables administrables deben seguir un ciclo de vida `draft -> active -> retired` coherente con el resto de configuraciones gobernadas.
@@ -192,9 +220,9 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 
 - Analista: puede autenticarse, restaurar sesion, consultar clientes, ejecutar evaluaciones, ver trazas del caso, registrar solicitudes, consultar bandeja y detalle de solicitudes, cargar adjuntos ZIP y mover solicitudes solo de `registrada` a `en_revision`.
 - Evaluador: hereda permisos de analista y ademas puede aprobar, rechazar, anular solicitudes, exportar bandeja y consultar auditoria operacional.
-- Administrador de negocio: puede crear y editar productos, workflows y reglas de negocio en estado `draft`, solicitar versionados y consultar bloqueos de activacion, pero no debe aprobar por si solo la activacion final de reglas o configuraciones que requieran control de riesgos. Mientras el estado de la modificacion sea `draft`, tambien podra eliminar dicha configuracion.
-- Administrador de riesgos: puede crear y editar reglas, parametros, politicas de origen y criterios de activacion en estado, y puede aprobar o rechazar activaciones de configuraciones criticas segun la segregacion vigente. Tambien podra eliminar productos y workflows.
-- Administrador: puede gestionar productos, workflows, catalogos de variables, parametros, perfiles, permisos y usuarios; puede agregar o retirar permisos a un perfil desde el modulo de administracion correspondiente, pero no debe saltarse la segregacion de negocio/riesgos para publicar configuraciones del motor como operacion normal. Tambien puede consultar trazabilidad administrativa y operacional.
+- Administrador de negocio: puede acceder al modulo de administracion de productos para consultar productos `active`, cambiar a vista `draft`, revisar detalle de productos y workflows, crear y editar productos, workflows y reglas de negocio en estado `draft`, solicitar versionados y consultar bloqueos de activacion, pero no debe aprobar por si solo la activacion final de reglas o configuraciones que requieran control de riesgos. Mientras el estado de la modificacion sea `draft`, tambien podra eliminar dicha configuracion.
+- Administrador de riesgos: puede acceder al modulo de administracion de productos para consultar productos `active`, cambiar a vista `draft`, revisar detalle de productos y workflows, crear y editar reglas, parametros, politicas de origen y criterios de activacion en estado, y puede aprobar o rechazar activaciones de configuraciones criticas segun la segregacion vigente. Tambien podra eliminar productos y workflows.
+- Administrador: puede acceder al modulo de administracion de productos para consultar productos `active`, cambiar a vista `draft`, revisar detalle de productos y workflows, y gestionar productos, workflows, catalogos de variables, parametros, perfiles, permisos y usuarios; puede agregar o retirar permisos a un perfil desde el modulo de administracion correspondiente, pero no debe saltarse la segregacion de negocio/riesgos para publicar configuraciones del motor como operacion normal. Tambien puede consultar trazabilidad administrativa y operacional.
 - Auditor: acceso de solo lectura a trazas, auditoria, detalle de solicitudes, historial de estados y metadatos de adjuntos, sin permiso para evaluar, registrar, transicionar ni administrar configuraciones.
 
 ## Key Entities
@@ -210,6 +238,8 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - Regla o parametro versionado: definicion gobernada que influye en la evaluacion o en el comportamiento del flujo y cuya version debe poder auditarse.
 - Producto de prestamo: configuracion de negocio que agrupa reglas, variaciones de flujo y datos propios de un tipo de prestamo; su definicion minima incluye `product_code` unico, nombre, descripcion operativa, estado gobernado y trazabilidad de creacion, activacion y retiro.
 - Workflow de producto: modalidad de evaluacion asociada a un producto que define reglas activas y comportamiento operativo dentro de un ciclo de vida administrable; su definicion minima incluye `workflow_code` unico dentro del producto, nombre, descripcion y estado.
+- Aprobacion administrativa: evidencia de quien aprobo una publicacion o activacion de producto, workflow o configuracion gobernada, con usuario, timestamp y resultado auditable.
+- Eliminacion administrativa: baja logica gobernada de un producto, workflow o configuracion permitida solo para roles/estados autorizados, persistida con actor, motivo y timestamp, y distinta del estado `retired` del ciclo de vida.
 - Version de workflow: revision gobernada de un workflow que permite introducir cambios sin alterar una configuracion ya activa; una nueva version es una revision `draft` con identidad versionada propia y referencias publicables a catalogo, reglas, parametros y pipeline, y puede derivarse de una version previa sin editarla en sitio.
 - Variable de producto: dimension administrable definida para un producto y reutilizable por uno o varios workflows para construir reglas y evaluaciones; su definicion minima incluye `variable_key` unico, nombre, significado de negocio, tipo de dato, obligatoriedad, origen permitido y estado.
 - Catalogo de variables: version publicable del conjunto de variables activas de un producto consumible por una version de workflow.
@@ -231,7 +261,9 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - Los cambios sobre perfiles y permisos se aplican de manera inmediata una vez confirmados; no requieren una etapa separada de publicacion para entrar en vigencia operativa.
 - La autenticacion del MVP usa el mecanismo operativo disponible en la plataforma actual y cubre login, restauracion de sesion y autorizacion por rol para los flujos definidos, sin bloquear una futura migracion a un proveedor corporativo.
 - Los equipos de negocio y riesgos administran productos y workflows dentro de un esquema gobernado, sin depender de TI para el alta, activacion o retiro como operacion habitual.
+- El modulo de administracion de productos expone por defecto solo configuraciones `active` y requiere una accion explicita para cambiar a la vista `draft`.
 - Los equipos de negocio y riesgos operan bajo segregacion de funciones para configuraciones criticas: la creacion/edicion de borradores y la aprobacion/activacion final no deben depender de una misma accion no controlada como mecanismo normal.
+- `Delete` se interpreta como baja logica persistida para auditoria y distinta de `retire`; no elimina fisicamente la evidencia ni reemplaza las transiciones de ciclo de vida exigidas para artefactos ya publicados.
 - Las variables del motor se administran en el nivel de producto y cada workflow reutiliza solo las variables que requiere.
 - Cada variable declara de forma explicita si sus datos pueden provenir de base de campana, de captura por interfaz o de ambas fuentes.
 - Las reglas del motor se administran dentro de cada workflow y solo las reglas activas participan en evaluaciones operativas.
@@ -242,6 +274,8 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - La bandeja operativa se consulta por periodos y expone como minimo `request_id`, documento y nombre del solicitante, producto/workflow, estado actual, fecha de creacion, fecha de ultima actualizacion, `evaluation_id` vinculado y las acciones permitidas para el rol y estado vigentes.
 - El ciclo de vida operativo minimo de una solicitud en el MVP es `registrada -> en_revision -> aprobada/rechazada`, con `anulada` como estado terminal alternativo permitido bajo autorizacion.
 - Los adjuntos admitidos para el MVP se limitan a archivos ZIP asociados a una solicitud.
+- Los productos, workflows y configuraciones eliminadas o retiradas persisten en base de datos para auditoria, pero quedan ocultos de las vistas operativas del modulo administrativo.
+- Los metadatos de aprobacion de artefactos `draft` permanecen sin valor efectivo hasta que ocurra una aprobacion real; la UI administrativa puede representarlos como vacios o `pendiente`, pero no como aprobados.
 - La asistencia AI consume solo informacion permitida del caso y se utiliza como apoyo explicativo, no como autoridad de decision.
 - El legado sirve como referencia funcional, pero no impone dependencias de interfaz, autenticacion por IP ni estructura interna del nuevo sistema.
 - La suite operativa base para validar `SC-012` ejecuta AI deshabilitada, datos semilla locales, base SQLite local, 5 iteraciones de calentamiento por endpoint y luego 30 consultas validas + 30 evaluaciones validas por producto/workflow activo con concurrencia 1 y payloads deterministas.
@@ -267,3 +301,5 @@ Alcance operativo de esta historia: las altas, ediciones sobre borradores, versi
 - SC-016: El 100% de las evaluaciones operativas rechaza antes de ejecutar el motor cualquier variable cuyo origen de datos no coincida con la politica publicada para esa variable.
 - SC-017: El 100% de los cambios de version de workflow conserva la version previa auditable e inmutable y permite agregar un nuevo workflow a un producto existente sin alterar workflows activos no relacionados.
 - SC-018: El 100% de los productos retirados y de los productos sin workflows `active` queda fuera del runtime operativo sin perder la reproducibilidad historica de evaluaciones previas.
+- SC-019: En la suite administrativa del MVP, el 100% de las consultas al modulo de administracion de productos realizadas por `Administrador`, `Administrador de negocio` y `Administrador de riesgos` muestra por defecto solo configuraciones `active`, permite cambiar a vista `draft` y expone el detalle auditable requerido de productos y workflows.
+- SC-020: El 100% de los productos, workflows y configuraciones retiradas o eliminadas permanece persistido para auditoria y no aparece en las vistas operativas del modulo administrativo.

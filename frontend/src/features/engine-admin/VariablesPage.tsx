@@ -94,6 +94,9 @@ export function VariablesPage({ client, workspace, onWorkspaceChange, onNotice }
   return (
     <section className="workspace-card">
       <h2>Variables y catalogos</h2>
+      <p className="workspace-hint">
+        Las variables y catalogos se administran sobre el producto actual. Los retirados o eliminados quedan fuera de esta vista operativa.
+      </p>
       <form className="admin-form" onSubmit={handleCreateVariable}>
         <button className="primary-button" type="submit" disabled={isSubmitting}>
           Crear variable draft
@@ -112,6 +115,7 @@ export function VariablesPage({ client, workspace, onWorkspaceChange, onNotice }
       </div>
       <p className="workspace-hint">Variable: {workspace.variableId ?? "pendiente"}</p>
       <p className="workspace-hint">Catalogo: {workspace.catalogId ?? "pendiente"}</p>
+      <p className="workspace-hint">Workflow alineado: {workspace.workflowCode || "sin definir"}</p>
     </section>
   );
 }

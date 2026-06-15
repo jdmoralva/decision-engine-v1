@@ -1,17 +1,23 @@
 import json
 
 from backend.app.api.schemas.engine_admin import (
+    ApprovalMetadataResponse,
+    LifecycleEventMetadataResponse,
     ParameterSetResponse,
     PermissionResponse,
     PipelineNodeResponse,
     PipelineStrategyResponse,
     ProfilePermissionResponse,
+    ProductDetailResponse,
+    ProductListResponse,
     ProductResponse,
     ProductVariableResponse,
     RuleResponse,
     RuleVersionResponse,
     VariableCatalogItemResponse,
     VariableCatalogResponse,
+    WorkflowDetailResponse,
+    WorkflowListResponse,
     WorkflowResponse,
     WorkflowVersionResponse,
 )
@@ -35,6 +41,25 @@ def _loads(payload: str | None) -> dict:
     return json.loads(payload)
 
 
+def _approval(status: str, approved_by: str | None, approved_at) -> ApprovalMetadataResponse:
+    if status == "draft":
+        return ApprovalMetadataResponse(status="pending", approvedBy=None, approvedAt=None)
+    return ApprovalMetadataResponse(status="approved", approvedBy=approved_by, approvedAt=approved_at)
+
+
+def _last_modified(*timestamps):
+    values = [value for value in timestamps if value is not None]
+    return max(values)
+
+
+def _lifecycle_event(performed_by: str | None, performed_at, reason: str | None = None) -> LifecycleEventMetadataResponse:
+    return LifecycleEventMetadataResponse(
+        performedBy=performed_by,
+        performedAt=performed_at,
+        reason=reason,
+    )
+
+
 def to_product_response(product) -> ProductResponse:
     return ProductResponse(
         id=product.code,
@@ -42,6 +67,32 @@ def to_product_response(product) -> ProductResponse:
         name=product.name,
         description=product.description,
         status=product.status,
+    )
+
+
+def to_product_list_response(products: list) -> ProductListResponse:
+    return ProductListResponse(items=[to_product_response(product) for product in products])
+
+
+def to_product_detail_response(product, active_workflows: list[ProductWorkflow]) -> ProductDetailResponse:
+    return ProductDetailResponse(
+        id=product.code,
+        productCode=product.code,
+        name=product.name,
+        description=product.description,
+        status=product.status,
+        createdBy=product.created_by,
+        createdAt=product.created_at,
+        lastModifiedAt=_last_modified(
+            product.created_at,
+            product.activated_at,
+            product.retired_at,
+            product.deleted_at,
+        ),
+        approval=_approval(product.status, product.activated_by, product.activated_at),
+        retirement=_lifecycle_event(product.retired_by, product.retired_at),
+        deletion=_lifecycle_event(product.deleted_by, product.deleted_at, product.delete_reason),
+        activeWorkflows=[to_workflow_response(workflow) for workflow in active_workflows],
     )
 
 
@@ -53,6 +104,40 @@ def to_workflow_response(workflow: ProductWorkflow) -> WorkflowResponse:
         name=workflow.name,
         description=workflow.description,
         status=workflow.status,
+    )
+
+
+def to_workflow_list_response(workflows: list[ProductWorkflow]) -> WorkflowListResponse:
+    return WorkflowListResponse(items=[to_workflow_response(workflow) for workflow in workflows])
+
+
+def to_workflow_detail_response(
+    workflow: ProductWorkflow,
+    workflow_versions: list[WorkflowVersion],
+    rule_version_ids: list[str],
+) -> WorkflowDetailResponse:
+    return WorkflowDetailResponse(
+        id=workflow.id,
+        productCode=workflow.product_code,
+        workflowCode=workflow.workflow_code,
+        name=workflow.name,
+        description=workflow.description,
+        status=workflow.status,
+        createdBy=workflow.created_by,
+        createdAt=workflow.created_at,
+        lastModifiedAt=_last_modified(
+            workflow.created_at,
+            workflow.activated_at,
+            workflow.retired_at,
+            workflow.deleted_at,
+        ),
+        approval=_approval(workflow.status, workflow.activated_by, workflow.activated_at),
+        retirement=_lifecycle_event(workflow.retired_by, workflow.retired_at),
+        deletion=_lifecycle_event(workflow.deleted_by, workflow.deleted_at, workflow.delete_reason),
+        variableCatalogVersionIds=[version.variable_catalog_version_id for version in workflow_versions],
+        parameterSetIds=[version.parameter_set_id for version in workflow_versions],
+        pipelineStrategyIds=[version.pipeline_strategy_id for version in workflow_versions],
+        ruleVersionIds=rule_version_ids,
     )
 
 

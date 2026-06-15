@@ -5,10 +5,14 @@ from backend.app.api.mappers.engine_admin import (
     to_parameter_set_response,
     to_pipeline_strategy_response,
     to_profile_permission_response,
+    to_product_detail_response,
+    to_product_list_response,
     to_product_response,
     to_rule_response,
     to_variable_catalog_response,
     to_variable_response,
+    to_workflow_detail_response,
+    to_workflow_list_response,
     to_workflow_response,
     to_workflow_version_response,
 )
@@ -21,6 +25,8 @@ from backend.app.api.schemas.engine_admin import (
     ProfilePermissionAssignmentRequest,
     ProfilePermissionResponse,
     ProductCreateRequest,
+    ProductDetailResponse,
+    ProductListResponse,
     ProductResponse,
     ProductVariableCreateRequest,
     ProductVariableResponse,
@@ -29,6 +35,8 @@ from backend.app.api.schemas.engine_admin import (
     VariableCatalogCreateRequest,
     VariableCatalogResponse,
     WorkflowCreateRequest,
+    WorkflowDetailResponse,
+    WorkflowListResponse,
     WorkflowResponse,
     WorkflowVersionCreateRequest,
     WorkflowVersionResponse,
@@ -37,7 +45,7 @@ from backend.app.application.engine_admin.activation_rules import EngineAdminVal
 from backend.app.application.engine_admin.service import EngineAdminService
 from backend.app.infrastructure.repositories.audit_events import AuditEventWriter
 from backend.app.infrastructure.db.session import get_session_factory
-from backend.app.security.dependencies import get_current_user_context, require_permission
+from backend.app.security.dependencies import get_current_user_context, require_permission, require_roles
 
 
 router = APIRouter(prefix="/admin/engine", tags=["engine-admin"])
@@ -64,9 +72,30 @@ def _validation_error_response(message: str, status_code: int = status.HTTP_409_
     return JSONResponse(status_code=status_code, content=payload.model_dump())
 
 
+def _state_or_error(state: str) -> str:
+    if state not in {"active", "draft"}:
+        raise EngineAdminValidationError("State filter must be 'active' or 'draft'.")
+    return state
+
+
+admin_module_access = require_roles("admin", "admin_negocio", "admin_riesgos")
+
+
+@router.get("/products", response_model=ProductListResponse, responses=error_responses)
+def list_products(
+    state: str = "active",
+    _context: tuple = Depends(admin_module_access),
+) -> ProductListResponse | JSONResponse:
+    try:
+        return to_product_list_response(_service().list_products(_state_or_error(state)))
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
 @router.post("/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED, responses=error_responses)
 def create_product(
     payload: ProductCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_productos")),
 ) -> ProductResponse | JSONResponse:
     user, _roles = context
@@ -76,9 +105,22 @@ def create_product(
         return _validation_error_response(str(exc))
 
 
+@router.get("/products/{productCode}", response_model=ProductDetailResponse, responses=error_responses)
+def get_product_detail(
+    productCode: str,
+    _context: tuple = Depends(admin_module_access),
+) -> ProductDetailResponse | JSONResponse:
+    try:
+        product, active_workflows = _service().get_product_detail(productCode)
+        return to_product_detail_response(product, active_workflows)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_404_NOT_FOUND)
+
+
 @router.post("/products/{productCode}/activation", response_model=ProductResponse, responses=error_responses)
 def activate_product(
     productCode: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> ProductResponse | JSONResponse:
     user, _roles = context
@@ -91,6 +133,7 @@ def activate_product(
 @router.post("/products/{productCode}/retirement", response_model=ProductResponse, responses=error_responses)
 def retire_product(
     productCode: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> ProductResponse | JSONResponse:
     user, _roles = context
@@ -103,6 +146,7 @@ def retire_product(
 @router.delete("/products/{productCode}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
 def delete_product(
     productCode: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(get_current_user_context),
 ) -> JSONResponse:
     user, roles = context
@@ -117,6 +161,7 @@ def delete_product(
 def create_workflow(
     productCode: str,
     payload: WorkflowCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_workflows")),
 ) -> WorkflowResponse | JSONResponse:
     user, _roles = context
@@ -126,9 +171,47 @@ def create_workflow(
         return _validation_error_response(str(exc))
 
 
+@router.get("/products/{productCode}/workflows", response_model=WorkflowListResponse, responses=error_responses)
+def list_workflows(
+    productCode: str,
+    state: str = "active",
+    _context: tuple = Depends(admin_module_access),
+) -> WorkflowListResponse | JSONResponse:
+    try:
+        return to_workflow_list_response(_service().list_workflows(productCode, _state_or_error(state)))
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_404_NOT_FOUND)
+
+
+@router.get("/workflows/{workflowId}", response_model=WorkflowDetailResponse, responses=error_responses)
+def get_workflow_detail(
+    workflowId: str,
+    _context: tuple = Depends(admin_module_access),
+) -> WorkflowDetailResponse | JSONResponse:
+    try:
+        workflow, workflow_versions, rule_version_ids = _service().get_workflow_detail(workflowId)
+        return to_workflow_detail_response(workflow, workflow_versions, rule_version_ids)
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc), status.HTTP_404_NOT_FOUND)
+
+
+@router.post("/workflows/{workflowId}/retirement", response_model=WorkflowResponse, responses=error_responses)
+def retire_workflow(
+    workflowId: str,
+    _module_access: tuple = Depends(admin_module_access),
+    context: tuple = Depends(require_permission("aprobar_activacion_motor")),
+) -> WorkflowResponse | JSONResponse:
+    user, _roles = context
+    try:
+        return to_workflow_response(_service().retire_workflow(workflowId, user.id))
+    except EngineAdminValidationError as exc:
+        return _validation_error_response(str(exc))
+
+
 @router.delete("/workflows/{workflowId}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
 def delete_workflow(
     workflowId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(get_current_user_context),
 ) -> JSONResponse:
     user, roles = context
@@ -143,6 +226,7 @@ def delete_workflow(
 def create_variable(
     productCode: str,
     payload: ProductVariableCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_variables")),
 ) -> ProductVariableResponse | JSONResponse:
     user, _roles = context
@@ -155,6 +239,7 @@ def create_variable(
 @router.post("/variables/{variableId}/activation", response_model=ProductVariableResponse, responses=error_responses)
 def activate_variable(
     variableId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> ProductVariableResponse | JSONResponse:
     user, _roles = context
@@ -168,6 +253,7 @@ def activate_variable(
 def create_variable_catalog(
     productCode: str,
     payload: VariableCatalogCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_catalogos_variables")),
 ) -> VariableCatalogResponse | JSONResponse:
     user, _roles = context
@@ -181,6 +267,7 @@ def create_variable_catalog(
 @router.post("/variable-catalogs/{catalogVersionId}/activation", response_model=VariableCatalogResponse, responses=error_responses)
 def activate_variable_catalog(
     catalogVersionId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> VariableCatalogResponse | JSONResponse:
     user, _roles = context
@@ -195,6 +282,7 @@ def activate_variable_catalog(
 def create_parameter_set(
     productCode: str,
     payload: ParameterSetCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_parametros")),
 ) -> ParameterSetResponse | JSONResponse:
     user, _roles = context
@@ -207,6 +295,7 @@ def create_parameter_set(
 @router.post("/parameter-sets/{parameterSetId}/activation", response_model=ParameterSetResponse, responses=error_responses)
 def activate_parameter_set(
     parameterSetId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> ParameterSetResponse | JSONResponse:
     user, _roles = context
@@ -220,6 +309,7 @@ def activate_parameter_set(
 def create_pipeline_strategy(
     productCode: str,
     payload: PipelineStrategyCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_pipeline")),
 ) -> PipelineStrategyResponse | JSONResponse:
     user, _roles = context
@@ -233,6 +323,7 @@ def create_pipeline_strategy(
 @router.post("/pipeline-strategies/{strategyId}/activation", response_model=PipelineStrategyResponse, responses=error_responses)
 def activate_pipeline_strategy(
     strategyId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> PipelineStrategyResponse | JSONResponse:
     user, _roles = context
@@ -247,6 +338,7 @@ def activate_pipeline_strategy(
 def create_rule(
     workflowId: str,
     payload: RuleCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("administrar_reglas")),
 ) -> RuleResponse | JSONResponse:
     user, _roles = context
@@ -260,6 +352,7 @@ def create_rule(
 @router.delete("/rules/{ruleId}", status_code=status.HTTP_204_NO_CONTENT, responses=error_responses)
 def delete_rule(
     ruleId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(get_current_user_context),
 ) -> JSONResponse:
     user, roles = context
@@ -298,12 +391,12 @@ def replace_profile_permissions(
 @router.post("/rule-versions/{ruleVersionId}/activation", response_model=RuleResponse, responses=error_responses)
 def activate_rule_version(
     ruleVersionId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> RuleResponse | JSONResponse:
     user, _roles = context
     try:
-        rule_set, rule_version = _service().activate_rule_version(ruleVersionId, user.id)
-        workflow_id = "unknown"
+        rule_set, rule_version, workflow_id = _service().activate_rule_version(ruleVersionId, user.id)
         return to_rule_response(rule_set, workflow_id, rule_version)
     except EngineAdminValidationError as exc:
         return _validation_error_response(str(exc))
@@ -313,6 +406,7 @@ def activate_rule_version(
 def create_workflow_version(
     workflowId: str,
     payload: WorkflowVersionCreateRequest,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("solicitar_versionado_motor")),
 ) -> WorkflowVersionResponse | JSONResponse:
     user, _roles = context
@@ -326,6 +420,7 @@ def create_workflow_version(
 @router.post("/workflow-versions/{versionId}/activation", response_model=WorkflowVersionResponse, responses=error_responses)
 def activate_workflow_version(
     versionId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> WorkflowVersionResponse | JSONResponse:
     user, _roles = context
@@ -339,6 +434,7 @@ def activate_workflow_version(
 @router.post("/workflow-versions/{versionId}/retirement", response_model=WorkflowVersionResponse, responses=error_responses)
 def retire_workflow_version(
     versionId: str,
+    _module_access: tuple = Depends(admin_module_access),
     context: tuple = Depends(require_permission("aprobar_activacion_motor")),
 ) -> WorkflowVersionResponse | JSONResponse:
     user, _roles = context

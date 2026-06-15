@@ -76,6 +76,9 @@ export function RulesPage({ client, workspace, onWorkspaceChange, onNotice }: Pr
   return (
     <section className="workspace-card">
       <h2>Reglas</h2>
+      <p className="workspace-hint">
+        `Eliminar` aplica solo a draft autorizados. Las reglas activas requieren reemplazo o retiro gobernado desde el workflow publicado.
+      </p>
       <div className="action-row">
         <button className="primary-button" type="button" onClick={handleCreateRule} disabled={isSubmitting}>
           Crear regla draft
@@ -88,6 +91,7 @@ export function RulesPage({ client, workspace, onWorkspaceChange, onNotice }: Pr
         </button>
       </div>
       <p className="workspace-hint">Rule version: {workspace.ruleVersionId ?? "pendiente"}</p>
+      <p className="workspace-hint">Workflow asociado: {workspace.workflowCode || "sin definir"}</p>
     </section>
   );
 }

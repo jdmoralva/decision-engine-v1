@@ -86,6 +86,9 @@ class LoanProduct(Base):
     activated_at: Mapped[str | None] = mapped_column(DateTime)
     retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     retired_at: Mapped[str | None] = mapped_column(DateTime)
+    deleted_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    deleted_at: Mapped[str | None] = mapped_column(DateTime)
+    delete_reason: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
@@ -114,6 +117,9 @@ class ProductWorkflow(Base):
     activated_at: Mapped[str | None] = mapped_column(DateTime)
     retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     retired_at: Mapped[str | None] = mapped_column(DateTime)
+    deleted_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    deleted_at: Mapped[str | None] = mapped_column(DateTime)
+    delete_reason: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
@@ -136,6 +142,9 @@ class ProductVariable(Base):
     activated_at: Mapped[str | None] = mapped_column(DateTime)
     retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     retired_at: Mapped[str | None] = mapped_column(DateTime)
+    deleted_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    deleted_at: Mapped[str | None] = mapped_column(DateTime)
+    delete_reason: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 
@@ -225,6 +234,9 @@ class RuleSet(Base):
     activated_at: Mapped[str | None] = mapped_column(DateTime)
     retired_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     retired_at: Mapped[str | None] = mapped_column(DateTime)
+    deleted_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    deleted_at: Mapped[str | None] = mapped_column(DateTime)
+    delete_reason: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False)
 
 

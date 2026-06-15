@@ -1,4 +1,5 @@
-from typing import Any
+from datetime import datetime
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -47,6 +48,32 @@ class ProductResponse(BaseModel):
     status: str
 
 
+class ApprovalMetadataResponse(BaseModel):
+    status: Literal["pending", "approved"]
+    approvedBy: str | None = None
+    approvedAt: datetime | None = None
+
+
+class LifecycleEventMetadataResponse(BaseModel):
+    performedBy: str | None = None
+    performedAt: datetime | None = None
+    reason: str | None = None
+
+
+class ProductListResponse(BaseModel):
+    items: list[ProductResponse] = Field(default_factory=list)
+
+
+class ProductDetailResponse(ProductResponse):
+    createdBy: str | None = None
+    createdAt: datetime
+    lastModifiedAt: datetime
+    approval: ApprovalMetadataResponse
+    retirement: LifecycleEventMetadataResponse
+    deletion: LifecycleEventMetadataResponse
+    activeWorkflows: list["WorkflowResponse"] = Field(default_factory=list)
+
+
 class WorkflowCreateRequest(BaseModel):
     workflowCode: str = Field(min_length=1)
     name: str = Field(min_length=1)
@@ -60,6 +87,23 @@ class WorkflowResponse(BaseModel):
     name: str
     description: str | None = None
     status: str
+
+
+class WorkflowListResponse(BaseModel):
+    items: list[WorkflowResponse] = Field(default_factory=list)
+
+
+class WorkflowDetailResponse(WorkflowResponse):
+    createdBy: str | None = None
+    createdAt: datetime
+    lastModifiedAt: datetime
+    approval: ApprovalMetadataResponse
+    retirement: LifecycleEventMetadataResponse
+    deletion: LifecycleEventMetadataResponse
+    variableCatalogVersionIds: list[str] = Field(default_factory=list)
+    parameterSetIds: list[str] = Field(default_factory=list)
+    pipelineStrategyIds: list[str] = Field(default_factory=list)
+    ruleVersionIds: list[str] = Field(default_factory=list)
 
 
 class ProductVariableCreateRequest(BaseModel):
@@ -204,3 +248,6 @@ class WorkflowVersionResponse(BaseModel):
     pipelineStrategyId: str
     ruleVersionIds: list[str] = Field(default_factory=list)
     changeNotes: str | None = None
+
+
+ProductDetailResponse.model_rebuild()

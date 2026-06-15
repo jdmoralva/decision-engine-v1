@@ -51,6 +51,9 @@ def upgrade() -> None:
     _add_column_if_missing("loan_products", sa.Column("activated_at", sa.DateTime(), nullable=True))
     _add_column_if_missing("loan_products", sa.Column("retired_by", sa.String(length=36), nullable=True))
     _add_column_if_missing("loan_products", sa.Column("retired_at", sa.DateTime(), nullable=True))
+    _add_column_if_missing("loan_products", sa.Column("deleted_by", sa.String(length=36), nullable=True))
+    _add_column_if_missing("loan_products", sa.Column("deleted_at", sa.DateTime(), nullable=True))
+    _add_column_if_missing("loan_products", sa.Column("delete_reason", sa.Text(), nullable=True))
 
     _add_column_if_missing("credit_requests", sa.Column("evaluation_id", sa.String(length=36), nullable=True))
     _add_column_if_missing("credit_requests", sa.Column("workflow_code", sa.String(length=80), nullable=True))
@@ -73,6 +76,9 @@ def upgrade() -> None:
     _add_column_if_missing("rule_sets", sa.Column("activated_at", sa.DateTime(), nullable=True))
     _add_column_if_missing("rule_sets", sa.Column("retired_by", sa.String(length=36), nullable=True))
     _add_column_if_missing("rule_sets", sa.Column("retired_at", sa.DateTime(), nullable=True))
+    _add_column_if_missing("rule_sets", sa.Column("deleted_by", sa.String(length=36), nullable=True))
+    _add_column_if_missing("rule_sets", sa.Column("deleted_at", sa.DateTime(), nullable=True))
+    _add_column_if_missing("rule_sets", sa.Column("delete_reason", sa.Text(), nullable=True))
 
     _add_column_if_missing("rule_versions", sa.Column("rule_key", sa.String(length=100), nullable=True))
     _add_column_if_missing("rule_versions", sa.Column("rule_name", sa.String(length=120), nullable=True))
@@ -91,6 +97,10 @@ def upgrade() -> None:
         "administrative_audit_events",
     ):
         _create_table_if_missing(table_name)
+
+    _add_column_if_missing("product_workflows", sa.Column("deleted_by", sa.String(length=36), nullable=True))
+    _add_column_if_missing("product_workflows", sa.Column("deleted_at", sa.DateTime(), nullable=True))
+    _add_column_if_missing("product_workflows", sa.Column("delete_reason", sa.Text(), nullable=True))
 
 
 def downgrade() -> None:

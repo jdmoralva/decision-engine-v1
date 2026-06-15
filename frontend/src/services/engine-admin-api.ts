@@ -1,5 +1,7 @@
 type Fetcher = typeof fetch;
 
+export type AdminArtifactState = "active" | "draft";
+
 
 function resolveFetcher(fetcher?: Fetcher): Fetcher {
   return fetcher ?? globalThis.fetch.bind(globalThis);
@@ -13,6 +15,32 @@ export type ProductResponse = {
   status: string;
 };
 
+export type ApprovalMetadataResponse = {
+  status: "pending" | "approved";
+  approvedBy: string | null;
+  approvedAt: string | null;
+};
+
+export type LifecycleEventMetadataResponse = {
+  performedBy: string | null;
+  performedAt: string | null;
+  reason?: string | null;
+};
+
+export type ProductListResponse = {
+  items: ProductResponse[];
+};
+
+export type ProductDetailResponse = ProductResponse & {
+  createdBy: string | null;
+  createdAt: string;
+  lastModifiedAt: string;
+  approval: ApprovalMetadataResponse;
+  retirement: LifecycleEventMetadataResponse;
+  deletion: LifecycleEventMetadataResponse;
+  activeWorkflows: WorkflowResponse[];
+};
+
 export type WorkflowResponse = {
   id: string;
   productCode: string;
@@ -20,6 +48,23 @@ export type WorkflowResponse = {
   name: string;
   description?: string | null;
   status: string;
+};
+
+export type WorkflowListResponse = {
+  items: WorkflowResponse[];
+};
+
+export type WorkflowDetailResponse = WorkflowResponse & {
+  createdBy: string | null;
+  createdAt: string;
+  lastModifiedAt: string;
+  approval: ApprovalMetadataResponse;
+  retirement: LifecycleEventMetadataResponse;
+  deletion: LifecycleEventMetadataResponse;
+  variableCatalogVersionIds: string[];
+  parameterSetIds: string[];
+  pipelineStrategyIds: string[];
+  ruleVersionIds: string[];
 };
 
 export type ProductVariableResponse = {
@@ -159,6 +204,15 @@ export class EngineAdminApiClient {
     return readJson<T>(response);
   }
 
+  listProducts(state: AdminArtifactState = "active"): Promise<ProductListResponse> {
+    const query = state === "active" ? "" : `?state=${state}`;
+    return this.request(`/api/v1/admin/engine/products${query}`);
+  }
+
+  getProductDetail(productCode: string): Promise<ProductDetailResponse> {
+    return this.request(`/api/v1/admin/engine/products/${productCode}`);
+  }
+
   createProduct(input: { productCode: string; name: string; description?: string }): Promise<ProductResponse> {
     return this.request("/api/v1/admin/engine/products", {
       method: "POST",
@@ -183,6 +237,19 @@ export class EngineAdminApiClient {
       method: "POST",
       body: JSON.stringify(input),
     });
+  }
+
+  listWorkflows(productCode: string, state: AdminArtifactState = "active"): Promise<WorkflowListResponse> {
+    const query = state === "active" ? "" : `?state=${state}`;
+    return this.request(`/api/v1/admin/engine/products/${productCode}/workflows${query}`);
+  }
+
+  getWorkflowDetail(workflowId: string): Promise<WorkflowDetailResponse> {
+    return this.request(`/api/v1/admin/engine/workflows/${workflowId}`);
+  }
+
+  retireWorkflow(workflowId: string): Promise<WorkflowResponse> {
+    return this.request(`/api/v1/admin/engine/workflows/${workflowId}/retirement`, { method: "POST" });
   }
 
   async deleteWorkflow(workflowId: string): Promise<void> {

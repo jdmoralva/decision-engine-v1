@@ -43,6 +43,14 @@ class MigrationTests(unittest.TestCase):
                 self.assertIn("administrative_audit_events", inspector.get_table_names())
                 self.assertIn("loan_evaluations", inspector.get_table_names())
                 self.assertIn("decision_traces", inspector.get_table_names())
+
+                product_columns = {column["name"] for column in inspector.get_columns("loan_products")}
+                workflow_columns = {column["name"] for column in inspector.get_columns("product_workflows")}
+                rule_set_columns = {column["name"] for column in inspector.get_columns("rule_sets")}
+
+                self.assertTrue({"deleted_by", "deleted_at", "delete_reason"}.issubset(product_columns))
+                self.assertTrue({"deleted_by", "deleted_at", "delete_reason"}.issubset(workflow_columns))
+                self.assertTrue({"deleted_by", "deleted_at", "delete_reason"}.issubset(rule_set_columns))
             finally:
                 engine.dispose()
 

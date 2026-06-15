@@ -160,7 +160,8 @@ function App() {
   const auditClient = token ? new AuditApiClient(token) : null;
   const runtimeClient = token ? new RuntimeApiClient(token) : null;
   const creditRequestsClient = token ? new CreditRequestsApiClient(token) : null;
-  const canManageEngine = me !== null && me.roles.some((role) => role.startsWith("admin"));
+  const canManageEngine =
+    me !== null && me.roles.some((role) => role === "admin" || role === "admin_negocio" || role === "admin_riesgos");
 
   useEffect(() => {
     if (me === null) {

@@ -111,4 +111,40 @@ describe("navigation guards", () => {
     expect(container.textContent).toContain("Phase 3");
     expect(container.textContent).toContain("Motor");
   });
+
+  it("redirects plataforma users away from the admin hash route", async () => {
+    saveStoredSession({
+      accessToken: "token-plataforma",
+      me: {
+        id: "user-3",
+        username: "plataforma",
+        displayName: "Plataforma",
+        roles: ["plataforma"],
+      },
+    });
+    window.location.hash = "#/admin";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path === "/api/v1/me") {
+          return jsonResponse({
+            id: "user-3",
+            username: "plataforma",
+            display_name: "Plataforma",
+            roles: ["plataforma"],
+          });
+        }
+        throw new Error(`Unexpected fetch: ${path}`);
+      }),
+    );
+
+    await act(async () => {
+      root.render(<App />);
+    });
+
+    expect(window.location.hash).toBe("#/consultas");
+    expect(container.textContent).not.toContain("Phase 3");
+  });
 });

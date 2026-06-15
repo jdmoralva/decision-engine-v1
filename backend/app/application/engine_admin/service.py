@@ -82,11 +82,45 @@ class EngineAdminService:
         self._write_audit(product.code, "loan_product", "created", {"status": "draft"}, actor_id)
         return product
 
+    def list_products(self, state: str = "active") -> list[LoanProduct]:
+        with self._session_factory() as session:
+            return list(
+                session.execute(
+                    select(LoanProduct).where(
+                        LoanProduct.status == state,
+                        LoanProduct.deleted_at.is_(None),
+                    )
+                ).scalars()
+            )
+
+    def get_product_detail(self, product_code: str) -> tuple[LoanProduct, list[ProductWorkflow]]:
+        with self._session_factory() as session:
+            product = session.execute(
+                select(LoanProduct).where(
+                    LoanProduct.code == product_code,
+                    LoanProduct.deleted_at.is_(None),
+                )
+            ).scalar_one_or_none()
+            if product is None:
+                raise EngineAdminValidationError(f"Product '{product_code}' does not exist.")
+
+            active_workflows = list(
+                session.execute(
+                    select(ProductWorkflow).where(
+                        ProductWorkflow.product_code == product_code,
+                        ProductWorkflow.status == "active",
+                        ProductWorkflow.deleted_at.is_(None),
+                    )
+                ).scalars()
+            )
+            return product, active_workflows
+
     def activate_product(self, product_code: str, actor_id: str) -> LoanProduct:
         with self._session_factory() as session:
             product = session.get(LoanProduct, product_code)
             if product is None:
                 raise EngineAdminValidationError(f"Product '{product_code}' does not exist.")
+            self._ensure_not_deleted("Product", product.deleted_at)
 
             product.status = "active"
             product.is_active = True
@@ -103,15 +137,21 @@ class EngineAdminService:
             product = session.get(LoanProduct, product_code)
             if product is None:
                 raise EngineAdminValidationError(f"Product '{product_code}' does not exist.")
+            self._ensure_not_deleted("Product", product.deleted_at)
 
-            active_workflow_count = session.execute(
-                select(ProductWorkflow).where(
-                    ProductWorkflow.product_code == product_code,
-                    ProductWorkflow.status == "active",
+            if product.status == "active":
+                active_workflow_count = session.execute(
+                    select(ProductWorkflow).where(
+                        ProductWorkflow.product_code == product_code,
+                        ProductWorkflow.status == "active",
+                        ProductWorkflow.deleted_at.is_(None),
+                    )
+                ).scalars().all()
+                ensure_product_retirement_coherence(len(active_workflow_count))
+            elif product.status != "draft":
+                raise EngineAdminValidationError(
+                    f"Product must be 'draft' or 'active' but is '{product.status}'."
                 )
-            ).scalars().all()
-            ensure_product_retirement_coherence(len(active_workflow_count))
-            ensure_status("Product", product.status, "active")
             product.status = "retired"
             product.is_active = False
             product.retired_by = actor_id
@@ -123,16 +163,22 @@ class EngineAdminService:
         return product
 
     def delete_product(self, product_code: str, actor_id: str, actor_roles: list[str]) -> None:
+        deleted_status = ""
         with self._session_factory() as session:
             product = session.get(LoanProduct, product_code)
             if product is None:
                 raise EngineAdminValidationError(f"Product '{product_code}' does not exist.")
+            self._ensure_not_deleted("Product", product.deleted_at)
 
             ensure_delete_allowed("Product", product.status, actor_roles)
-            session.delete(product)
+            deleted_status = product.status
+            product.deleted_by = actor_id
+            product.deleted_at = datetime.now(UTC)
+            product.delete_reason = "administrative_delete"
+            product.is_active = False
             session.commit()
 
-        self._write_audit(product_code, "loan_product", "deleted", {"status": product.status}, actor_id)
+        self._write_audit(product_code, "loan_product", "deleted", {"status": deleted_status}, actor_id)
 
     def create_workflow(self, product_code: str, payload: WorkflowCreateRequest, actor_id: str) -> ProductWorkflow:
         with self._session_factory() as session:
@@ -165,20 +211,70 @@ class EngineAdminService:
         self._write_audit(workflow.id, "product_workflow", "created", {"status": "draft"}, actor_id)
         return workflow
 
+    def list_workflows(self, product_code: str, state: str = "active") -> list[ProductWorkflow]:
+        with self._session_factory() as session:
+            self._require_product(session, product_code)
+            return list(
+                session.execute(
+                    select(ProductWorkflow).where(
+                        ProductWorkflow.product_code == product_code,
+                        ProductWorkflow.status == state,
+                        ProductWorkflow.deleted_at.is_(None),
+                    )
+                ).scalars()
+            )
+
+    def get_workflow_detail(
+        self,
+        workflow_id: str,
+    ) -> tuple[ProductWorkflow, list[WorkflowVersion], list[str]]:
+        with self._session_factory() as session:
+            workflow = session.execute(
+                select(ProductWorkflow).where(
+                    ProductWorkflow.id == workflow_id,
+                    ProductWorkflow.deleted_at.is_(None),
+                )
+            ).scalar_one_or_none()
+            if workflow is None:
+                raise EngineAdminValidationError(f"Workflow '{workflow_id}' does not exist.")
+
+            workflow_versions = list(
+                session.execute(
+                    select(WorkflowVersion).where(WorkflowVersion.workflow_id == workflow_id)
+                ).scalars()
+            )
+            workflow_version_ids = [version.id for version in workflow_versions]
+            rule_version_ids: list[str] = []
+            if workflow_version_ids:
+                rule_version_ids = [
+                    assignment.rule_version_id
+                    for assignment in session.execute(
+                        select(WorkflowRuleAssignment).where(
+                            WorkflowRuleAssignment.workflow_version_id.in_(workflow_version_ids)
+                        )
+                    ).scalars()
+                ]
+            return workflow, workflow_versions, rule_version_ids
+
     def retire_workflow(self, workflow_id: str, actor_id: str) -> ProductWorkflow:
         with self._session_factory() as session:
             workflow = session.get(ProductWorkflow, workflow_id)
             if workflow is None:
                 raise EngineAdminValidationError(f"Workflow '{workflow_id}' does not exist.")
+            self._ensure_not_deleted("Workflow", workflow.deleted_at)
 
-            active_version_count = session.execute(
-                select(WorkflowVersion).where(
-                    WorkflowVersion.workflow_id == workflow_id,
-                    WorkflowVersion.status == "active",
+            if workflow.status == "active":
+                active_version_count = session.execute(
+                    select(WorkflowVersion).where(
+                        WorkflowVersion.workflow_id == workflow_id,
+                        WorkflowVersion.status == "active",
+                    )
+                ).scalars().all()
+                ensure_workflow_retirement_coherence(len(active_version_count))
+            elif workflow.status != "draft":
+                raise EngineAdminValidationError(
+                    f"Workflow must be 'draft' or 'active' but is '{workflow.status}'."
                 )
-            ).scalars().all()
-            ensure_workflow_retirement_coherence(len(active_version_count))
-            ensure_status("Workflow", workflow.status, "active")
             workflow.status = "retired"
             workflow.retired_by = actor_id
             workflow.retired_at = datetime.now(UTC)
@@ -189,36 +285,21 @@ class EngineAdminService:
         return workflow
 
     def delete_workflow(self, workflow_id: str, actor_id: str, actor_roles: list[str]) -> None:
+        deleted_status = ""
         with self._session_factory() as session:
             workflow = session.get(ProductWorkflow, workflow_id)
             if workflow is None:
                 raise EngineAdminValidationError(f"Workflow '{workflow_id}' does not exist.")
+            self._ensure_not_deleted("Workflow", workflow.deleted_at)
 
             ensure_delete_allowed("Workflow", workflow.status, actor_roles)
-
-            workflow_versions = list(
-                session.execute(
-                    select(WorkflowVersion).where(WorkflowVersion.workflow_id == workflow_id)
-                ).scalars()
-            )
-            workflow_version_ids = [version.id for version in workflow_versions]
-            if workflow_version_ids:
-                assignments = list(
-                    session.execute(
-                        select(WorkflowRuleAssignment).where(
-                            WorkflowRuleAssignment.workflow_version_id.in_(workflow_version_ids)
-                        )
-                    ).scalars()
-                )
-                for assignment in assignments:
-                    session.delete(assignment)
-                for version in workflow_versions:
-                    session.delete(version)
-
-            session.delete(workflow)
+            deleted_status = workflow.status
+            workflow.deleted_by = actor_id
+            workflow.deleted_at = datetime.now(UTC)
+            workflow.delete_reason = "administrative_delete"
             session.commit()
 
-        self._write_audit(workflow_id, "product_workflow", "deleted", {"status": workflow.status}, actor_id)
+        self._write_audit(workflow_id, "product_workflow", "deleted", {"status": deleted_status}, actor_id)
 
     def create_variable(self, product_code: str, payload: ProductVariableCreateRequest, actor_id: str) -> ProductVariable:
         with self._session_factory() as session:
@@ -496,7 +577,7 @@ class EngineAdminService:
         self._write_audit(rule_set.id, "rule_set", "created", {"status": "draft"}, actor_id)
         return rule_set, rule_version
 
-    def activate_rule_version(self, rule_version_id: str, actor_id: str) -> tuple[RuleSet, RuleVersion]:
+    def activate_rule_version(self, rule_version_id: str, actor_id: str) -> tuple[RuleSet, RuleVersion, str | None]:
         with self._session_factory() as session:
             rule_version = session.get(RuleVersion, rule_version_id)
             if rule_version is None:
@@ -512,43 +593,31 @@ class EngineAdminService:
             rule_set.is_active = True
             rule_set.activated_by = actor_id
             rule_set.activated_at = datetime.now(UTC)
+            workflow_id = self._resolve_workflow_id_for_rule_version(session, rule_set, rule_version)
             session.commit()
             session.refresh(rule_set)
             session.refresh(rule_version)
 
         self._write_audit(rule_version.id, "rule_version", "activated", {"status": "active"}, actor_id)
-        return rule_set, rule_version
+        return rule_set, rule_version, workflow_id
 
     def delete_rule(self, rule_id: str, actor_id: str, actor_roles: list[str]) -> None:
+        deleted_status = ""
         with self._session_factory() as session:
             rule_set = session.get(RuleSet, rule_id)
             if rule_set is None:
                 raise EngineAdminValidationError(f"Rule '{rule_id}' does not exist.")
+            self._ensure_not_deleted("Rule", rule_set.deleted_at)
 
             ensure_delete_allowed("Rule", rule_set.status, actor_roles)
-            rule_versions = list(
-                session.execute(
-                    select(RuleVersion).where(RuleVersion.rule_set_id == rule_id)
-                ).scalars()
-            )
-            rule_version_ids = [version.id for version in rule_versions]
-            if rule_version_ids:
-                assignments = list(
-                    session.execute(
-                        select(WorkflowRuleAssignment).where(
-                            WorkflowRuleAssignment.rule_version_id.in_(rule_version_ids)
-                        )
-                    ).scalars()
-                )
-                for assignment in assignments:
-                    session.delete(assignment)
-                for version in rule_versions:
-                    session.delete(version)
-
-            session.delete(rule_set)
+            deleted_status = rule_set.status
+            rule_set.deleted_by = actor_id
+            rule_set.deleted_at = datetime.now(UTC)
+            rule_set.delete_reason = "administrative_delete"
+            rule_set.is_active = False
             session.commit()
 
-        self._write_audit(rule_id, "rule_set", "deleted", {"status": rule_set.status}, actor_id)
+        self._write_audit(rule_id, "rule_set", "deleted", {"status": deleted_status}, actor_id)
 
     def create_workflow_version(
         self,
@@ -793,7 +862,28 @@ class EngineAdminService:
         product = session.get(LoanProduct, product_code)
         if product is None:
             raise EngineAdminValidationError(f"Product '{product_code}' does not exist.")
+        self._ensure_not_deleted("Product", product.deleted_at)
         return product
+
+    def _ensure_not_deleted(self, entity_name: str, deleted_at) -> None:
+        if deleted_at is not None:
+            raise EngineAdminValidationError(f"{entity_name} was deleted and cannot transition anymore.")
+
+    def _resolve_workflow_id_for_rule_version(
+        self,
+        session: Session,
+        rule_set: RuleSet,
+        rule_version: RuleVersion,
+    ) -> str | None:
+        workflow_code = rule_version.rule_key.rsplit("_", 1)[0]
+        workflow = session.execute(
+            select(ProductWorkflow).where(
+                ProductWorkflow.product_code == rule_set.loan_product_code,
+                ProductWorkflow.workflow_code == workflow_code,
+                ProductWorkflow.deleted_at.is_(None),
+            )
+        ).scalar_one_or_none()
+        return None if workflow is None else workflow.id
 
     def _next_catalog_version_number(self, session: Session, product_code: str) -> int:
         versions = list(

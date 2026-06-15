@@ -47,6 +47,9 @@ export function ParametersPage({ client, workspace, onWorkspaceChange, onNotice 
   return (
     <section className="workspace-card">
       <h2>Parametros</h2>
+      <p className="workspace-hint">
+        Los parametros versionados se publican para el workflow actual. En draft la aprobacion permanece pendiente hasta activacion real.
+      </p>
       <div className="action-row">
         <button className="primary-button" type="button" onClick={handleCreateParameterSet} disabled={isSubmitting}>
           Crear parametros draft
@@ -56,6 +59,7 @@ export function ParametersPage({ client, workspace, onWorkspaceChange, onNotice 
         </button>
       </div>
       <p className="workspace-hint">Parameter set: {workspace.parameterSetId ?? "pendiente"}</p>
+      <p className="workspace-hint">Workflow asociado: {workspace.workflowCode || "sin definir"}</p>
     </section>
   );
 }

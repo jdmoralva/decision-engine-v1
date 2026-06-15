@@ -397,3 +397,112 @@ class EngineAdminFlowIntegrationTests(EngineAdminApiTestCaseMixin, unittest.Test
             )
 
         asyncio.run(run_test())
+
+    def test_product_retirement_after_coherent_draft_workflow_retirement_hides_retired_artifacts(self):
+        from backend.app.infrastructure.db.models import LoanProduct, ProductWorkflow
+        from backend.app.infrastructure.db.session import get_session_factory
+
+        async def run_test():
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                negocio_headers = await self.auth_headers(client, "negocio")
+                riesgos_headers = await self.auth_headers(client, "riesgos")
+
+                product_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "RETCOH", "name": "Retiro coherente"},
+                )
+                self.assertEqual(product_response.status_code, 201, product_response.text)
+
+                activate_product = await client.post(
+                    "/api/v1/admin/engine/products/RETCOH/activation",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(activate_product.status_code, 200, activate_product.text)
+
+                workflow_response = await client.post(
+                    "/api/v1/admin/engine/products/RETCOH/workflows",
+                    headers=negocio_headers,
+                    json={"workflowCode": "draftflow", "name": "Draft flow"},
+                )
+                self.assertEqual(workflow_response.status_code, 201, workflow_response.text)
+                workflow_id = workflow_response.json()["id"]
+
+                workflow_retirement = await client.post(
+                    f"/api/v1/admin/engine/workflows/{workflow_id}/retirement",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(workflow_retirement.status_code, 200, workflow_retirement.text)
+
+                product_retirement = await client.post(
+                    "/api/v1/admin/engine/products/RETCOH/retirement",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(product_retirement.status_code, 200, product_retirement.text)
+
+                active_list = await client.get(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                )
+                self.assertEqual(active_list.status_code, 200, active_list.text)
+                self.assertEqual(active_list.json()["items"], [])
+
+            with get_session_factory()() as session:
+                product = session.get(LoanProduct, "RETCOH")
+                workflow = session.get(ProductWorkflow, workflow_id)
+
+            self.assertEqual(product.status, "retired")
+            self.assertIsNotNone(product.retired_at)
+            self.assertEqual(workflow.status, "retired")
+            self.assertIsNotNone(workflow.retired_at)
+
+        asyncio.run(run_test())
+
+    def test_draft_detail_metadata_and_delete_vs_retire_are_distinct(self):
+        from backend.app.infrastructure.db.models import LoanProduct
+        from backend.app.infrastructure.db.session import get_session_factory
+
+        async def run_test():
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                negocio_headers = await self.auth_headers(client, "negocio")
+                riesgos_headers = await self.auth_headers(client, "riesgos")
+
+                draft_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "DRAFTMETA", "name": "Draft metadata"},
+                )
+                self.assertEqual(draft_response.status_code, 201, draft_response.text)
+
+                detail_response = await client.get(
+                    "/api/v1/admin/engine/products/DRAFTMETA",
+                    headers=negocio_headers,
+                )
+                self.assertEqual(detail_response.status_code, 200, detail_response.text)
+                detail = detail_response.json()
+                self.assertEqual(detail["approval"]["status"], "pending")
+                self.assertIsNone(detail["approval"]["approvedBy"])
+                self.assertIsNone(detail["retirement"]["performedAt"])
+                self.assertIsNone(detail["deletion"]["performedAt"])
+
+                delete_response = await client.delete(
+                    "/api/v1/admin/engine/products/DRAFTMETA",
+                    headers=negocio_headers,
+                )
+                self.assertEqual(delete_response.status_code, 204, delete_response.text)
+
+                retire_response = await client.post(
+                    "/api/v1/admin/engine/products/DRAFTMETA/retirement",
+                    headers=riesgos_headers,
+                )
+                self.assertEqual(retire_response.status_code, 409, retire_response.text)
+
+            with get_session_factory()() as session:
+                product = session.get(LoanProduct, "DRAFTMETA")
+
+            self.assertIsNotNone(product)
+            self.assertIsNotNone(product.deleted_at)
+            self.assertIsNone(product.retired_at)
+            self.assertEqual(product.status, "draft")
+
+        asyncio.run(run_test())

@@ -49,6 +49,9 @@ export function ProfilePermissionsPage({ client, workspace, onWorkspaceChange, o
   return (
     <section className="workspace-card">
       <h2>Perfiles y permisos</h2>
+      <p className="workspace-hint">
+        Los cambios aplican en el siguiente request protegido. Esta vista refleja permisos persistidos, no una matriz hardcodeada.
+      </p>
       <div className="action-row">
         <button className="secondary-button" type="button" onClick={handleLoadPermissions} disabled={isLoading}>
           {isLoading ? "Cargando..." : "Cargar permisos actuales"}

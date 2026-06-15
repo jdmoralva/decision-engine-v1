@@ -1,130 +1,120 @@
-# Execution Report - Phase 7
+# Execution Report - Decision Engine MVP
 
-## Closure Status
+## Status
 
-- Plan de implementacion revisado contra `plan.md`: completo
-- Plan de tareas revisado contra `tasks.md`: completo
-- Checklists del feature: completos
-- Validacion automatizada backend: completa
-- Validacion automatizada frontend: completa
-- Cierre documental del feature: completo
-
-## Plan Coverage Summary
-
-| Plan Phase | Expected Outcome | Closure Evidence | Result |
-|------------|------------------|------------------|--------|
-| Phase 0 - Research and baseline decisions | Decisiones arquitectonicas, contrato doble, gobierno y trazabilidad definidos | `research.md`, `plan.md`, `data-model.md` | PASS |
-| Phase 1 - Domain and persistence design | Modelo, relaciones, contratos y quickstart definidos | `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md` | PASS |
-| Phase 2 - Backend implementation slices | Runtime administrable, evaluaciones, solicitudes, adjuntos y AI asistiva implementados y probados | suites backend contract + integration listadas en este reporte | PASS |
-| Phase 3 - Frontend MVP flows | Login, admin, consultas, evaluaciones, solicitudes, adjuntos y auditoria operativos | `frontend/tests/*.test.*`, `npm run build` | PASS |
-| Phase 4 - Validation and hardening | contratos, regresiones, observabilidad, AI fallback, p95 y evidencia TDD cerrados | `execution-report.md`, `backend/tests/test_observability.py`, `backend/tests/integration/test_*`, `backend/tests/contract/fixtures/` | PASS |
-
-## Scope
-
-Validacion y endurecimiento transversal del MVP sobre administracion del motor, runtime `PLD`, solicitudes, adjuntos, auditoria, sesion frontend y degradacion AI.
+- Feature prerequisites and checklists: PASS
+- Quickstart-aligned backend validation: PASS
+- Frontend regression validation: PASS
+- Frontend production build validation: PASS
+- Performance validation (`SC-012`): PASS
+- Administrative success-criteria validation (`SC-014` to `SC-020`): PASS
+- TDD evidence documentation (`SC-013`): PASS with explicit scope notes
 
 ## Commands Executed
 
-### Backend regression and quickstart suites
+### Backend quickstart-aligned validation
 
 ```bash
-.venv\Scripts\python -m unittest backend.tests.contract.test_engine_admin_api backend.tests.contract.test_runtime_auth_and_evaluations backend.tests.contract.test_credit_requests_api backend.tests.contract.test_attachments_and_audit_api backend.tests.integration.test_engine_admin_flow backend.tests.integration.test_engine_admin_second_product backend.tests.integration.test_pld_runtime_flow backend.tests.integration.test_credit_request_flow backend.tests.integration.test_attachments_and_audit_flow backend.tests.test_observability backend.tests.integration.test_engine_admin_versioning backend.tests.integration.test_runtime_reproducibility backend.tests.integration.test_performance_validation backend.tests.integration.test_zip_manifest_validation
+.venv\Scripts\python -m unittest backend.tests.contract.test_engine_admin_api backend.tests.contract.test_runtime_auth_and_evaluations backend.tests.contract.test_credit_requests_api backend.tests.contract.test_attachments_and_audit_api backend.tests.integration.test_engine_admin_flow backend.tests.integration.test_engine_admin_visibility backend.tests.integration.test_engine_admin_second_product backend.tests.integration.test_engine_admin_versioning backend.tests.integration.test_pld_runtime_flow backend.tests.integration.test_credit_request_flow backend.tests.integration.test_attachments_and_audit_flow backend.tests.integration.test_runtime_reproducibility backend.tests.integration.test_performance_validation backend.tests.integration.test_zip_manifest_validation
 ```
 
-Result: `29 tests, OK`
+Observed result: `34 tests, OK`
 
-### Frontend regression suite
+### Frontend validation suite
 
 ```bash
-cd frontend
 npm run test
 ```
 
-Result: `12 files, 19 tests, OK`
+Observed result: `12 files, 24 tests, OK`
 
 ### Frontend build validation
 
 ```bash
-cd frontend
 npm run build
 ```
 
-Result: `OK`
+Observed result: `vite build OK`
 
 ## Quickstart Scenario Evidence
 
-| Scenario | Evidence | Result |
-|----------|----------|--------|
-| A - Autenticacion base | `backend.tests.contract.test_runtime_auth_and_evaluations`, `frontend/tests/auth-flow.test.tsx`, `frontend/tests/session-storage.test.ts` | PASS |
-| B - Administracion del motor | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning`, `frontend/tests/engine-admin-flow.test.tsx` | PASS |
+| Scenario | Automated Evidence | Result |
+|----------|--------------------|--------|
+| A - Autenticacion base | `backend.tests.contract.test_runtime_auth_and_evaluations`, `frontend/tests/auth-flow.test.tsx`, `frontend/tests/session-storage.test.ts`, `frontend/tests/navigation-guards.test.tsx` | PASS |
+| B - Administracion del motor | `backend.tests.contract.test_engine_admin_api`, `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_visibility`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning`, `frontend/tests/engine-admin-flow.test.tsx` | PASS |
 | C - Consulta y evaluacion `PLD` | `backend.tests.integration.test_pld_runtime_flow`, `backend.tests.integration.test_runtime_reproducibility`, `frontend/tests/consultation-flow.test.tsx`, `frontend/tests/evaluation-flow.test.tsx` | PASS |
-| D - Registro y gestion de solicitud | `backend.tests.integration.test_credit_request_flow`, `frontend/tests/credit-request-flow.test.tsx`, `frontend/tests/queue-flow.test.tsx` | PASS |
-| E - Adjuntos ZIP y AI asistiva | `backend.tests.integration.test_attachments_and_audit_flow`, `backend.tests.integration.test_zip_manifest_validation`, `backend.tests.test_observability`, `frontend/tests/attachments-flow.test.tsx`, `frontend/tests/audit-timeline.test.tsx` | PASS |
+| D - Registro y gestion de solicitud | `backend.tests.contract.test_credit_requests_api`, `backend.tests.integration.test_credit_request_flow`, `frontend/tests/credit-request-flow.test.tsx`, `frontend/tests/queue-flow.test.tsx` | PASS |
+| E - Adjuntos ZIP y AI asistiva | `backend.tests.contract.test_attachments_and_audit_api`, `backend.tests.integration.test_attachments_and_audit_flow`, `backend.tests.integration.test_zip_manifest_validation`, `frontend/tests/attachments-flow.test.tsx`, `frontend/tests/audit-timeline.test.tsx` | PASS |
 
-## Performance Validation (`SC-012`)
+## Performance Validation
 
-Canonical local workload executed by `backend.tests.integration.test_performance_validation`:
+Canonical workload executed by `backend.tests.integration.test_performance_validation`:
 
-- SQLite local baseline
+- SQLite local
 - AI deshabilitada
 - 5 iteraciones de calentamiento por endpoint
 - 30 consultas validas + 30 evaluaciones validas
 - concurrencia `1`
 - payloads deterministas
 
-Measured results:
+Measured results from the executed suite:
 
-- `POST /api/v1/loans/PLD/consultas` p95: `0.0151s`
-- `POST /api/v1/loans/PLD/evaluaciones` p95: `0.0819s`
+- `POST /api/v1/loans/PLD/consultas` p95: `0.0159s`
+- `POST /api/v1/loans/PLD/evaluaciones` p95: `0.0732s`
 
 Result: PASS against required thresholds `<= 2s` and `<= 4s`.
 
-## Observability And AI Degradation
-
-- Request tracing middleware now echoes `X-Request-ID` and emits structured `http_request_completed` logs.
-- AI fallback/degradation now emits structured `ai_degraded` warning logs with request context and evaluation identifiers.
-- Verified by `backend.tests.test_observability` and by the full backend regression run output.
-
-## Success Criteria Traceability
+## Administrative Evidence (`SC-014` to `SC-020`)
 
 | Success Criterion | Evidence | Result |
 |------------------|----------|--------|
-| `SC-013` TDD readiness | Red-first Phase 7 runs captured for `backend.tests.test_observability`, `backend.tests.integration.test_engine_admin_versioning`, `backend.tests.integration.test_runtime_reproducibility`, `backend.tests.integration.test_performance_validation`, `backend.tests.integration.test_zip_manifest_validation`, `frontend/tests/session-storage.test.ts`, `frontend/tests/navigation-guards.test.tsx`, followed by green reruns after implementation | PASS |
-| `SC-014` Admin governance without code changes | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning` | PASS |
-| `SC-015` Blocking inconsistent activations | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_versioning` | PASS |
-| `SC-016` Variable source enforcement | `backend.tests.integration.test_pld_runtime_flow` | PASS |
-| `SC-017` Version immutability and second-product extensibility | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning`, `backend.tests.integration.test_runtime_reproducibility` | PASS |
+| `SC-014` Admin governance without shared-layer code changes | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning`, `frontend/tests/engine-admin-flow.test.tsx` | PASS |
+| `SC-015` Incomplete or inconsistent activations are blocked | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_versioning` | PASS |
+| `SC-016` Variable source policy enforced before engine execution | `backend.tests.integration.test_pld_runtime_flow` | PASS |
+| `SC-017` Workflow version immutability and extensibility | `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_second_product`, `backend.tests.integration.test_engine_admin_versioning`, `backend.tests.integration.test_runtime_reproducibility` | PASS |
+| `SC-018` Retired products and products without active workflows remain outside runtime | `backend.tests.integration.test_engine_admin_visibility`, `backend.tests.integration.test_runtime_reproducibility`, `backend.tests.test_decision_engine_registry` | PASS |
+| `SC-019` Product admin module defaults to `active`, supports `draft`, and shows detail metadata | `backend.tests.contract.test_engine_admin_api`, `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_visibility`, `frontend/tests/engine-admin-flow.test.tsx` | PASS |
+| `SC-020` Retired or deleted artifacts remain persisted but hidden from operational admin views | `backend.tests.contract.test_engine_admin_api`, `backend.tests.integration.test_engine_admin_flow`, `backend.tests.integration.test_engine_admin_visibility`, `frontend/tests/engine-admin-flow.test.tsx` | PASS |
 
-## TDD Evidence Summary
+## Additional Validation Notes
 
-Phase 7 direct failing-first evidence captured in this implementation session:
+- Request detail and queue/export evidence: `backend.tests.contract.test_credit_requests_api`, `backend.tests.integration.test_credit_request_flow`, `frontend/tests/credit-request-flow.test.tsx`, `frontend/tests/queue-flow.test.tsx`
+- Adjuntos ZIP upload/list/manifest/download evidence: `backend.tests.contract.test_attachments_and_audit_api`, `backend.tests.integration.test_attachments_and_audit_flow`, `backend.tests.integration.test_zip_manifest_validation`, `frontend/tests/attachments-flow.test.tsx`
+- Auditoria evidence: `backend.tests.contract.test_attachments_and_audit_api`, `backend.tests.integration.test_attachments_and_audit_flow`, `frontend/tests/audit-timeline.test.tsx`
+- AI fallback evidence: `backend.tests.integration.test_pld_runtime_flow`, `backend.tests.integration.test_runtime_reproducibility`; the executed backend validation run emitted `ai_degraded` warnings while preserving successful runtime flow completion
 
-1. Initial backend red run failed on missing request tracing, missing observability module, missing AI degradation logging expectations, and incomplete regression assumptions.
-2. Initial frontend red run failed on malformed session payload acceptance and non-admin access to the `#/admin` hash route.
-3. Production code was then implemented minimally to satisfy those tests.
-4. Narrow suites were rerun green before the broader quickstart-aligned suite.
+## TDD Evidence (`SC-013`)
 
-Historical functional slices remain backed by their required test tasks from `tasks.md`:
+### Directly observed in this implementation collaboration
 
-- US4: `T016` to `T018`, `T027`
-- US1: `T028` to `T030`, `T043`
-- US2: `T044` to `T045`, `T054`
-- US3: `T055` to `T056`, `T064`
+The following slices were implemented in this collaboration with explicit `Red -> Green` observation before completion:
 
-## Documentary Closure Notes
+- Foundational admin closure: `T005`, `T010`, `T012`, `T015`
+- Admin backend closure: `T016`, `T017`, `T019`, `T022`, `T023`
+- Admin frontend closure: `T024`, `T025`, `T026`, `T027`
+- Visibility/detail slice: `T071`, `T072`, `T073`
 
-- `tasks.md` queda cerrado con `T001` a `T070` marcados en `[X]`.
-- `plan.md` y `tasks.md` quedan consistentes con el `execution-report.md` y con los artefactos reales del repositorio.
-- Los contratos OpenAPI del feature incluyen ejemplos y fixtures minimos para revision contractual.
-- No quedan acciones documentales pendientes dentro del alcance de `specs/001-project-specification/`.
+For those slices, failing tests were introduced or expanded first, failing output was observed, minimal production changes were applied, and targeted suites were rerun green before broader regression.
 
-## Remaining Open Items
+### Repository-level evidence for earlier completed slices
 
-- Ninguno dentro del alcance del MVP especificado para este feature.
+For previously completed runtime/request/attachment slices, this report verifies:
 
-## Contract Fixture Inventory
+- the required test tasks listed in `tasks.md` exist in the repository
+- the current automated suites for those slices pass in green
+- quickstart-aligned end-to-end behavior is covered by the executed validation commands in this report
 
-- `backend/tests/contract/fixtures/runtime-evaluation-request.json`
-- `backend/tests/contract/fixtures/runtime-credit-request-detail-response.json`
-- `backend/tests/contract/fixtures/engine-admin-profile-permissions-response.json`
-- `backend/tests/contract/fixtures/minimum-role-matrix.json`
+This report does **not** claim newly re-observed red runs for historical slices that were completed before the current implementation collaboration. Their TDD evidence is therefore documented as test-task presence plus current green validation, while the direct red-first proof above applies only to the slices explicitly completed in this collaboration.
+
+## Build And Regression Summary
+
+- Backend validation command completed successfully
+- Frontend `npm run test` completed successfully
+- Frontend `npm run build` completed successfully
+- No extension hooks were executed because `.specify/extensions.yml` defines no `before_implement` or `after_implement` hooks
+
+## Closure Notes
+
+- `tasks.md` now marks `T069` and `T070` complete
+- This report supersedes the prior Phase 7 report that overstated closure counts and omitted later US4 evidence
+- Validation in this report is based on executable commands and current repository tests, not on assumed historical state

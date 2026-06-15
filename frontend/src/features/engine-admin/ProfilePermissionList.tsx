@@ -10,13 +10,16 @@ export function ProfilePermissionList({ permissions }: Props) {
   }
 
   return (
-    <ul className="feature-list">
+    <>
+      <p className="workspace-hint">Permisos efectivos cargados para el perfil seleccionado.</p>
+      <ul className="feature-list">
       {permissions.map((permission) => (
         <li key={permission.code}>
           <strong>{permission.code}</strong>
           {permission.description ? `: ${permission.description}` : ""}
         </li>
       ))}
-    </ul>
+      </ul>
+    </>
   );
 }

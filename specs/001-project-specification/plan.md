@@ -4,11 +4,15 @@
 
 **Input**: Feature specification from `/specs/001-project-specification/spec.md`
 
+**Propagated**: 2026-06-14 — Updated from spec.md refinement
+
+**Propagated**: 2026-06-14 — Updated from spec.md refinement for `delete` vs `retire` semantics and approval metadata in `draft`.
+
 **Propagated**: 2026-06-13 — Updated from spec.md refinement
 
 ## Summary
 
-Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-old-specification/docs/DDR.md` como linea base: monolito modular con backend `FastAPI`, frontend `React`, motor deterministico aislado del framework web y un modelo administrable para productos, workflows, variables, parametros, reglas, estrategias de pipeline y perfiles/permisos. El plan prioriza primero habilitar la administracion persistida y gobernada del motor, incluyendo trazabilidad de interacciones AI, y luego completar el flujo operacional `PLD` de punta a punta sin perder la base multiproducto ya iniciada en el repositorio. La decision arquitectonica principal es mantener la separacion entre contratos HTTP por producto y contrato canonico interno del motor, mientras la administracion del motor evoluciona hacia persistencia gobernada y versionada en lugar de registros hardcodeados, incluyendo la gestion operativa de perfiles y permisos.
+Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-old-specification/docs/DDR.md` como linea base: monolito modular con backend `FastAPI`, frontend `React`, motor deterministico aislado del framework web y un modelo administrable para productos, workflows, variables, parametros, reglas, estrategias de pipeline y perfiles/permisos. El plan prioriza primero habilitar la administracion persistida y gobernada del motor, incluyendo trazabilidad de interacciones AI, vistas administrativas filtradas por estado, detalle auditable de productos/workflows, diferencias explicitas entre `delete` y `retire`, representacion correcta de metadatos de aprobacion en artefactos `draft`, y ocultamiento operativo de configuraciones retiradas o eliminadas sin perder persistencia historica, y luego completar el flujo operacional `PLD` de punta a punta sin perder la base multiproducto ya iniciada en el repositorio. La decision arquitectonica principal es mantener la separacion entre contratos HTTP por producto y contrato canonico interno del motor, mientras la administracion del motor evoluciona hacia persistencia gobernada y versionada en lugar de registros hardcodeados, incluyendo la gestion operativa de perfiles y permisos.
 
 ## Technical Context
 
@@ -26,7 +30,7 @@ Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-
 
 **Performance Goals**: en la validacion de endurecimiento del MVP y con AI deshabilitada, `POST /consultas` debe cumplir `p95 <= 2s` y `POST /evaluaciones` debe cumplir `p95 <= 4s` sobre una suite operativa base reproducible: SQLite local, datos semilla, 5 iteraciones de calentamiento por endpoint y luego 30 consultas validas + 30 evaluaciones validas con concurrencia 1 y payloads deterministas; con AI habilitada, la degradacion aceptable del flujo principal debe seguir permitiendo fallback sin bloquear la operacion.
 
-**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible); matriz RBAC verificable para analista, evaluador, auditor, administrador, administrador de negocio, administrador de riesgos y administrador; eliminacion administrativa de productos, workflows y reglas restringida a riesgos salvo borradores `draft` eliminables por negocio; administracion de perfiles y permisos persistida, auditable y de vigencia inmediata como mecanismo operativo, con autorizacion resuelta contra permisos persistidos en cada request protegido y sin depender de matrices hardcodeadas para cambios rutinarios
+**Constraints**: motor 100% deterministico; sin edicion directa de workflows activos; productos/workflows/reglas/parametros/pipeline versionados y auditables; sin autenticacion por IP; sin HTML generado por backend; compatibilidad SQLite primero; AI opcional, desacoplada y trazable por modelo/template/payload permitido (subconjunto filtrado no sensible); matriz RBAC verificable para analista, evaluador, auditor, administrador, administrador de negocio, administrador de riesgos y administrador; el modulo de administracion de productos solo es accesible para `Administrador`, `Administrador de negocio` y `Administrador de riesgos`; la vista administrativa por defecto expone solo configuraciones `active`, debe permitir cambio explicito a vista `draft` y no debe mostrar artefactos `retired` o eliminados en la operacion normal; `retire` debe tratarse como transicion de ciclo de vida y `delete` como baja logica auditada sin reemplazar obligaciones de retiro/versionado sobre artefactos ya publicados; eliminacion administrativa de productos, workflows y reglas restringida a riesgos salvo borradores `draft` eliminables por negocio; las configuraciones retiradas o eliminadas deben persistir para auditoria; los metadatos de aprobacion de artefactos `draft` deben permanecer sin valor efectivo hasta una aprobacion real auditada; administracion de perfiles y permisos persistida, auditable y de vigencia inmediata como mecanismo operativo, con autorizacion resuelta contra permisos persistidos en cada request protegido y sin depender de matrices hardcodeadas para cambios rutinarios
 
 **Scale/Scope**: un MVP funcional `PLD` con soporte para un segundo producto cercano, multiples workflows por producto, decenas de variables por producto, cientos de reglas por workflow y trazabilidad completa de evaluaciones y solicitudes
 
@@ -37,7 +41,7 @@ Implementar el MVP de `Decision Engine` adoptando la arquitectura de `specs/000-
 - Multiproduct boundaries: PASS. El plan mantiene `product_code` y `workflow_code` como dimensiones de primer nivel y evita consolidar contratos estructurales `PLD` en capas compartidas.
 - Deterministic engine isolation: PASS. El motor permanece aislado del borde HTTP, de la UI y de la AI; la AI consume solo salidas estructuradas.
 - Versioning and governance: PASS. Productos, workflows, reglas, parametros y estrategias de pipeline usan `draft -> active -> retired`; workflows activos son inmutables y se reemplazan por nuevas versiones.
-- Security and audit impacts: PASS. El plan incorpora RBAC administrativo, auditoria append-only y trazabilidad de activaciones, retiros, evaluaciones, exportaciones e interacciones AI.
+- Security and audit impacts: PASS. El plan incorpora RBAC administrativo, auditoria append-only, restricciones explicitas de acceso al modulo de productos, detalle auditable de productos/workflows y trazabilidad de activaciones, retiros, evaluaciones, exportaciones e interacciones AI.
 - AI optionality: PASS. Ningun cambio del motor depende de AI para evaluar o registrar solicitudes.
 - Persistence compatibility: PASS. El modelo objetivo sigue siendo compatible con SQLite y prepara migracion futura a SQL Server.
 
@@ -114,19 +118,19 @@ frontend/
 1. Confirmar la adopcion del monolito modular de `specs/000-old-specification/docs/DDR.md` como arquitectura oficial del MVP.
 2. Cerrar el patron de contrato doble: contratos HTTP por producto en `api/` y contrato interno generico del motor en `domain/decision_engine/`.
 3. Definir el modelo administrativo minimo versionable para productos, workflows, catalogos de variables, parametros, reglas y estrategias de pipeline.
-4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad, matriz RBAC por rol/accion con segregacion de funciones para activaciones criticas, reglas explicitas de eliminacion por rol/estado, administracion persistida de perfiles/permisos con vigencia inmediata y autorizacion reevaluada por request, e interacciones AI trazables por modelo/template/payload.
+4. Definir eventos minimos de auditoria, snapshot minimo de evidencia para reproducibilidad, matriz RBAC por rol/accion con segregacion de funciones para activaciones criticas, reglas explicitas de eliminacion por rol/estado, diferencias normativas entre `delete` y `retire`, vistas administrativas por `active`/`draft`, detalle auditable obligatorio de producto/workflow, semantica de metadatos de aprobacion en `draft`, administracion persistida de perfiles/permisos con vigencia inmediata y autorizacion reevaluada por request, e interacciones AI trazables por modelo/template/payload.
 
 ### Phase 1 - Domain and persistence design
 
 1. Extender el modelo de datos actual con entidades administrativas de motor en vez de seguir hardcodeando runtimes en bootstrap.
 2. Definir las relaciones entre producto, workflow, version de workflow, variable, origen de variable, parametro, regla y estrategia de pipeline.
-3. Diseñar contratos API canonicos para administracion del motor y para operaciones runtime del MVP.
+3. Diseñar contratos API canonicos para administracion del motor y para operaciones runtime del MVP, incluyendo listados `active` por defecto, cambio a vista `draft`, detalle administrativo de producto/workflow, semantica diferenciada de `delete`/`retire`, metadatos de aprobacion vacios o `pendiente` en `draft`, y ocultamiento operativo de artefactos retirados o eliminados.
 4. Definir guia quickstart para validar administracion, evaluacion, solicitudes, detalle, exportacion, adjuntos y trazabilidad.
 
 ### Phase 2 - Backend implementation slices
 
 1. Slice A: persistencia y repositorios de administracion del motor.
-2. Slice B: endpoints administrativos, versionado, activacion gobernada, eliminacion gobernada y RBAC para productos, workflows, variables, parametros, estrategias de pipeline, catalogos, reglas y perfiles/permisos.
+2. Slice B: endpoints administrativos, versionado, activacion gobernada, eliminacion gobernada, diferenciacion de `delete`/`retire`, vistas `active`/`draft`, detalle auditable de producto/workflow, metadatos de aprobacion coherentes en `draft` y RBAC para productos, workflows, variables, parametros, estrategias de pipeline, catalogos, reglas y perfiles/permisos.
 3. Slice C: integracion de evaluaciones `PLD` con runtime persistido, autenticacion frontend y `DecisionTrace` real.
 4. Slice D: solicitudes de credito, detalle, historial de estado, bandeja, exportacion y adjuntos ZIP.
 5. Slice E: AI asistiva fuera del camino critico con fallback verificado y persistencia trazable de interacciones.
@@ -134,7 +138,7 @@ frontend/
 ### Phase 3 - Frontend MVP flows
 
 1. Login y contexto de usuario.
-2. Pantallas admin para productos, workflows, variables, parametros, estrategias de pipeline, catalogos y reglas.
+2. Pantallas admin para productos, workflows, variables, parametros, estrategias de pipeline, catalogos y reglas, con acceso restringido por rol, vista por defecto `active`, cambio explicito a `draft`, navegacion al detalle de producto/workflow, metadatos de aprobacion `pendiente` en `draft` y ocultamiento operativo de retirados o eliminados.
 3. Consulta cliente/campana por producto.
 4. Evaluacion y explicacion de resultados.
 5. Registro de solicitud, detalle, bandeja operativa, exportacion, adjuntos y timeline de auditoria.
@@ -143,7 +147,7 @@ frontend/
 
 1. Contratos OpenAPI y tests de mapeo por producto.
 2. Tests de determinismo, versionado, fallback AI, trazabilidad AI y trazabilidad de versiones efectivas.
-3. Validaciones end-to-end del flujo `PLD`, de administracion del motor, exportacion de bandeja y visualizacion de adjuntos ZIP.
+3. Validaciones end-to-end del flujo `PLD`, de administracion del motor, de vistas `active`/`draft`, de detalle auditable de producto/workflow, de semantica `delete`/`retire`, de metadatos de aprobacion en `draft`, de ocultamiento operativo de retirados/eliminados, exportacion de bandeja y visualizacion de adjuntos ZIP.
 4. Validacion de extensibilidad con un segundo producto no hardcodeado.
 5. Revision de observabilidad, autorizacion contra la matriz RBAC ampliada y la segregacion de funciones, compatibilidad SQLite, evidencia TDD por slice y objetivos p95 del MVP sobre la suite operativa base canonica.
 
@@ -160,13 +164,15 @@ frontend/
 9. **Usar una sola fuente de verdad de producto**. La tabla persistida de producto del MVP debe servir tanto al runtime del motor como a solicitudes de credito; no se mantendran dos registros paralelos con semantica divergente.
 10. **Incluir autenticacion frontend como parte del MVP operativo**. La restauracion de sesion y el acceso por rol se implementan como requisito operativo, no como detalle posterior.
 11. **Administrar perfiles y permisos fuera del codigo compartido**. La matriz inicial puede existir como bootstrap tecnico, pero la operacion normal debe resolver altas y bajas de permisos desde un modulo persistido, auditable y de aplicacion inmediata, con reevaluacion de autorizacion en cada request protegido.
+12. **Separar visibilidad operativa de persistencia historica en administracion**. La UI y APIs administrativas deben listar por defecto solo configuraciones `active`, permitir una vista explicita de `draft`, exponer detalle auditable de productos y workflows, y mantener ocultos los artefactos `retired` o eliminados sin perderlos en base de datos.
+13. **Distinguir baja logica de retiro gobernado**. `Delete` debe quedar modelado como baja logica auditada y `retire` como transicion del ciclo de vida; ambos deben persistirse, pero con reglas y efectos operativos distintos, incluyendo metadatos de aprobacion aun vacios mientras el artefacto siga en `draft`.
 
 ## Post-Design Constitution Check
 
 - Multiproduct boundaries: PASS. Los contratos runtime y administrativos propuestos separan identidad de producto, workflow y versiones publicadas.
 - Deterministic engine isolation: PASS. La persistencia nueva alimenta el motor, pero no mezcla UI ni HTTP dentro del dominio.
 - Versioning and governance: PASS. El diseño formaliza draft/active/retired, versionado inmutable para workflows activos y eliminacion gobernada por rol/estado para productos, workflows y reglas.
-- Security and audit impacts: PASS. El plan exige RBAC por accion, restricciones explicitas de eliminacion administrativa, administracion persistida de perfiles/permisos con vigencia inmediata, reevaluacion de autorizacion por request y eventos auditables para todas las operaciones administrativas clave y para interacciones AI relevantes.
+- Security and audit impacts: PASS. El plan exige RBAC por accion, restricciones explicitas de acceso al modulo de productos, listados administrativos filtrados por estado, restricciones de eliminacion administrativa, diferenciacion auditable entre `delete` y `retire`, metadatos de aprobacion coherentes para artefactos `draft`, administracion persistida de perfiles/permisos con vigencia inmediata, reevaluacion de autorizacion por request y eventos auditables para todas las operaciones administrativas clave y para interacciones AI relevantes.
 - AI optionality: PASS. La fase AI queda desacoplada y posterior al flujo critico.
 - Persistence compatibility: PASS. El diseño se apoya en tablas relacionales simples y payloads serializados compatibles con SQLite.
 

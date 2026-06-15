@@ -433,6 +433,69 @@ class RBACPermissionTests(unittest.TestCase):
 
         asyncio.run(run_test())
 
+    def test_plataforma_cannot_access_product_admin_module_even_with_persisted_product_permission(self):
+        from backend.app.infrastructure.db.models import Permission, Role, RolePermission
+        from backend.app.infrastructure.db.session import get_session_factory
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "plataforma")
+                headers = {"Authorization": f"Bearer {token}"}
+
+                with get_session_factory()() as session:
+                    plataforma_role = session.execute(
+                        select(Role).where(Role.code == "plataforma")
+                    ).scalar_one()
+                    permission = Permission(
+                        id=str(uuid4()),
+                        code="administrar_productos",
+                        name="Administrar productos",
+                        description="Permite operar productos del motor.",
+                        created_at=datetime.now(UTC),
+                    )
+                    session.add(permission)
+                    session.flush()
+                    session.add(
+                        RolePermission(
+                            id=str(uuid4()),
+                            role_id=plataforma_role.id,
+                            permission_id=permission.id,
+                            created_at=datetime.now(UTC),
+                        )
+                    )
+                    session.commit()
+
+                list_response = await client.get(
+                    "/api/v1/admin/engine/products",
+                    headers=headers,
+                )
+                create_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=headers,
+                    json={"productCode": "FORBIDDEN", "name": "No permitido"},
+                )
+                self.assertEqual(list_response.status_code, 403)
+                self.assertEqual(create_response.status_code, 403)
+
+        asyncio.run(run_test())
+
+    def test_admin_riesgos_can_access_product_admin_module_list(self):
+        from backend.app.main import app
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+                token = await self._login(client, "admin_riesgos")
+                response = await client.get(
+                    "/api/v1/admin/engine/products",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                self.assertEqual(response.status_code, 200)
+
+        asyncio.run(run_test())
+
 
 if __name__ == "__main__":
     unittest.main()

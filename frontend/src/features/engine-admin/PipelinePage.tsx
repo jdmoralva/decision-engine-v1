@@ -48,6 +48,9 @@ export function PipelinePage({ client, workspace, onWorkspaceChange, onNotice }:
   return (
     <section className="workspace-card">
       <h2>Pipeline</h2>
+      <p className="workspace-hint">
+        El pipeline se prepara en draft y luego se activa. Los pipelines retirados o eliminados no se muestran en esta vista operativa.
+      </p>
       <div className="action-row">
         <button className="primary-button" type="button" onClick={handleCreatePipeline} disabled={isSubmitting}>
           Crear pipeline draft
@@ -57,6 +60,7 @@ export function PipelinePage({ client, workspace, onWorkspaceChange, onNotice }:
         </button>
       </div>
       <p className="workspace-hint">Pipeline: {workspace.pipelineStrategyId ?? "pendiente"}</p>
+      <p className="workspace-hint">Workflow asociado: {workspace.workflowCode || "sin definir"}</p>
     </section>
   );
 }

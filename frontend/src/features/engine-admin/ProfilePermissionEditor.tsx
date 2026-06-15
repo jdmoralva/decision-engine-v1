@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type Props = {
   roleCode: string;
@@ -15,6 +15,10 @@ export function ProfilePermissionEditor({
 }: Props) {
   const [rawPermissions, setRawPermissions] = useState(initialPermissionCodes.join(", "));
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setRawPermissions(initialPermissionCodes.join(", "));
+  }, [initialPermissionCodes, roleCode]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
