@@ -114,6 +114,49 @@ class EngineAdminContractTests(EngineAdminApiTestCaseMixin, unittest.TestCase):
 
         asyncio.run(run_test())
 
+    def test_duplicate_variable_key_returns_validation_error(self):
+        async def run_test():
+            async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:
+                negocio_headers = await self.auth_headers(client, "negocio")
+
+                product_response = await client.post(
+                    "/api/v1/admin/engine/products",
+                    headers=negocio_headers,
+                    json={"productCode": "VARDUP", "name": "Variable Duplicate"},
+                )
+                self.assertEqual(product_response.status_code, 201, product_response.text)
+
+                first_response = await client.post(
+                    "/api/v1/admin/engine/products/VARDUP/variables",
+                    headers=negocio_headers,
+                    json={
+                        "variableKey": "validated_income",
+                        "name": "Ingreso validado",
+                        "businessMeaning": "Ingreso mensual validado",
+                        "dataType": "number",
+                        "required": True,
+                        "allowedSource": "campaign_db",
+                    },
+                )
+                self.assertEqual(first_response.status_code, 201, first_response.text)
+
+                second_response = await client.post(
+                    "/api/v1/admin/engine/products/VARDUP/variables",
+                    headers=negocio_headers,
+                    json={
+                        "variableKey": "validated_income",
+                        "name": "Ingreso validado",
+                        "businessMeaning": "Ingreso mensual validado",
+                        "dataType": "number",
+                        "required": True,
+                        "allowedSource": "campaign_db",
+                    },
+                )
+                self.assertEqual(second_response.status_code, 409, second_response.text)
+                self.assertEqual(second_response.json()["error"]["code"], "ENGINE_ADMIN_VALIDATION")
+
+        asyncio.run(run_test())
+
     def test_admin_product_list_and_detail_follow_active_and_draft_visibility_rules(self):
         async def run_test():
             async with AsyncClient(transport=self.build_transport(), base_url="http://testserver") as client:

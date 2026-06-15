@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.api.schemas.engine_admin import (
@@ -319,8 +320,14 @@ class EngineAdminService:
                 created_at=datetime.now(UTC),
             )
             session.add(variable)
-            session.commit()
-            session.refresh(variable)
+            try:
+                session.commit()
+                session.refresh(variable)
+            except IntegrityError as exc:
+                session.rollback()
+                raise EngineAdminValidationError(
+                    f"Variable '{payload.variableKey}' already exists for product '{product_code}'."
+                ) from exc
 
         self._write_audit(variable.id, "product_variable", "created", {"status": "draft"}, actor_id)
         return variable

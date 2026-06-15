@@ -14,15 +14,24 @@ export function VariablesPage({ client, workspace, onWorkspaceChange, onNotice }
 
   async function handleCreateVariable(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const variableKey = String(formData.get("variableKey") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
+    const businessMeaning = String(formData.get("businessMeaning") ?? "").trim();
+    const dataType = String(formData.get("dataType") ?? "").trim();
+    const allowedSource = String(formData.get("allowedSource") ?? "").trim();
+    const required = formData.get("required") === "on";
+
     setIsSubmitting(true);
     try {
       const variable = await client.createVariable(workspace.productCode, {
-        variableKey: "validated_income",
-        name: "Ingreso validado",
-        businessMeaning: "Ingreso aprobado para reglas.",
-        dataType: "number",
-        required: true,
-        allowedSource: "campaign_db",
+        variableKey,
+        name,
+        businessMeaning,
+        dataType,
+        required,
+        allowedSource,
       });
       onWorkspaceChange({ variableId: variable.id });
       onNotice(`Variable ${variable.variableKey} creada.`);
@@ -98,6 +107,43 @@ export function VariablesPage({ client, workspace, onWorkspaceChange, onNotice }
         Las variables y catalogos se administran sobre el producto actual. Los retirados o eliminados quedan fuera de esta vista operativa.
       </p>
       <form className="admin-form" onSubmit={handleCreateVariable}>
+        <label>
+          Clave de variable
+          <input name="variableKey" type="text" defaultValue="validated_income" />
+        </label>
+        <label>
+          Nombre
+          <input name="name" type="text" defaultValue="Ingreso validado" />
+        </label>
+        <label>
+          Significado de negocio
+          <textarea name="businessMeaning" defaultValue="Ingreso aprobado para reglas." />
+        </label>
+        <label>
+          Tipo de dato
+          <select name="dataType" defaultValue="number">
+            <option value="number">number</option>
+            <option value="integer">integer</option>
+            <option value="string">string</option>
+            <option value="boolean">boolean</option>
+          </select>
+        </label>
+        <label>
+          <input
+            name="required"
+            type="checkbox"
+            defaultChecked={true}
+          />
+          Requerida en runtime
+        </label>
+        <label>
+          Origen permitido
+          <select name="allowedSource" defaultValue="campaign_db">
+            <option value="campaign_db">campaign_db</option>
+            <option value="user_input">user_input</option>
+            <option value="both">both</option>
+          </select>
+        </label>
         <button className="primary-button" type="submit" disabled={isSubmitting}>
           Crear variable draft
         </button>
