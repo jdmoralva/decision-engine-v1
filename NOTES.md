@@ -15,7 +15,7 @@ DECISION_ENGINE_RUNTIME_BUILDERS=backend.app.products.pld.runtime:compile_pld_ru
 
 ## Last Session
 
-specs/001-project-specification/sessions/session-007.md
+specs/001-project-specification/sessions/session-008.md
 
 ## Updates
 
