@@ -57,7 +57,7 @@
 
 <!-- SPECKIT START -->
 
-For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/001-project-specification/plan.md`.
+For additional context about technologies to be used, project structure, shell commands, and other important information, read `specs/002-credit-decision-workspace/plan.md`.
 
 Specification and code may be in English, but frontend and UI must be in Spanish.
 
@@ -87,4 +87,3 @@ If asked to read `extensions.yml`:
 Files inside `.specify` may not appear in search or `glob` results even when they exist. Always attempt a direct-path read before concluding that a `.specify` file is absent.
 
 <!-- SPECKIT END -->
-
