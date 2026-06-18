@@ -15,7 +15,7 @@ DECISION_ENGINE_RUNTIME_BUILDERS=backend.app.products.pld.runtime:compile_pld_ru
 
 ## Last Session
 
-specs/002-credit-decision-workspace/sessions/session-009.md
+specs/002-credit-decision-workspace/sessions/session-010.md
 
 ## Updates
 

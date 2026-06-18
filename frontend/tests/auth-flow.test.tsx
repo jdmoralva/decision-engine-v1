@@ -1,40 +1,20 @@
 // @vitest-environment jsdom
 
 import React, { act } from "react";
-import ReactDOM from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../src/App";
-
-
-function jsonResponse(payload: unknown, status = 200): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
+import { saveStoredSession } from "../src/session-storage";
+import { createTestAppHost, jsonResponse, resetBrowserState } from "./test-utils";
 
 describe("auth flow", () => {
-  let container: HTMLDivElement;
-  let root: ReactDOM.Root;
-
   beforeEach(() => {
-    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-    localStorage.clear();
-    window.location.hash = "";
-    container = document.createElement("div");
-    document.body.appendChild(container);
-    root = ReactDOM.createRoot(container);
+    resetBrowserState();
   });
 
   afterEach(() => {
-    act(() => {
-      root.unmount();
-    });
-    container.remove();
     vi.restoreAllMocks();
-    localStorage.clear();
+    resetBrowserState();
   });
 
   it("logs in and persists the restored session", async () => {
@@ -57,13 +37,15 @@ describe("auth flow", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
+    const host = createTestAppHost();
+
     await act(async () => {
-      root.render(<App />);
+      await host.render(<App />);
     });
 
-    const usernameInput = container.querySelector('input[autocomplete="username"]') as HTMLInputElement;
-    const passwordInput = container.querySelector('input[autocomplete="current-password"]') as HTMLInputElement;
-    const submitButton = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const usernameInput = host.container.querySelector('input[autocomplete="username"]') as HTMLInputElement;
+    const passwordInput = host.container.querySelector('input[autocomplete="current-password"]') as HTMLInputElement;
+    const submitButton = host.container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
     await act(async () => {
       usernameInput.value = "analista";
@@ -73,8 +55,52 @@ describe("auth flow", () => {
       submitButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(container.textContent).toContain("Acceso correcto.");
-    expect(container.textContent).toContain("analista");
+    expect(window.location.hash).toBe("#/productos");
+    expect(host.container.textContent).toContain("Productos");
+    expect(host.container.textContent).toContain("PLD");
+    expect(host.container.textContent).toContain("analista");
     expect(localStorage.getItem("decision-engine.session")).toContain("token-123");
+
+    host.cleanup();
+  });
+
+  it("restores a valid stored session into the product catalog", async () => {
+    saveStoredSession({
+      accessToken: "token-admin",
+      me: {
+        id: "user-1",
+        username: "admin",
+        displayName: "Administrador",
+        roles: ["admin"],
+      },
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path === "/api/v1/me") {
+          return jsonResponse({
+            id: "user-1",
+            username: "admin",
+            display_name: "Administrador",
+            roles: ["admin"],
+          });
+        }
+
+        throw new Error(`Unexpected fetch: ${path}`);
+      }),
+    );
+
+    const host = createTestAppHost();
+    await host.render(<App />);
+    await act(async () => {});
+
+    expect(window.location.hash).toBe("#/productos");
+    expect(host.container.textContent).toContain("Productos");
+    expect(host.container.textContent).toContain("Hipotecario");
+    expect(host.container.textContent).toContain("Administrador");
+
+    host.cleanup();
   });
 });

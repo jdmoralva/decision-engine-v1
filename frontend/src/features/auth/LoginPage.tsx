@@ -18,6 +18,11 @@ export function LoginPage({ isSubmitting, error, onLogin }: LoginPageProps) {
   return (
     <div className="auth-layout">
       <form className="login-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Acceso</p>
+          <h2 className="login-title">Inicio de sesion</h2>
+        </div>
+
         <label className="field">
           <span>Usuario</span>
           <input
@@ -29,7 +34,7 @@ export function LoginPage({ isSubmitting, error, onLogin }: LoginPageProps) {
         </label>
 
         <label className="field">
-          <span>Password</span>
+          <span>Contrasena</span>
           <input
             autoComplete="current-password"
             type="password"

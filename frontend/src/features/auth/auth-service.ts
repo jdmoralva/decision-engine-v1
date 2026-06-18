@@ -44,10 +44,10 @@ export class AuthApiClient {
     const loginResponse = await this.fetcher("/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username: username.trim(), password }),
     });
     if (!loginResponse.ok) {
-      throw new Error("Credenciales invalidas. Verifica usuario y password.");
+      throw new Error("Credenciales invalidas. Verifica usuario y contrasena.");
     }
 
     const loginPayload = (await loginResponse.json()) as LoginResult;

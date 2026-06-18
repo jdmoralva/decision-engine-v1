@@ -13,6 +13,10 @@ export type StoredSession = {
 
 const SESSION_STORAGE_KEY = "decision-engine.session";
 
+export function getStoredSessionKey(): string {
+  return SESSION_STORAGE_KEY;
+}
+
 
 function isSessionMe(value: unknown): value is SessionMe {
   if (typeof value !== "object" || value === null) {

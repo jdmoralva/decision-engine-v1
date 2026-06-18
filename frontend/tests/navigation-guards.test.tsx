@@ -70,7 +70,7 @@ describe("navigation guards", () => {
       root.render(<App />);
     });
 
-    expect(window.location.hash).toBe("#/consultas");
+    expect(window.location.hash).toBe("#/productos");
     expect(container.textContent).not.toContain("Phase 3");
     expect(container.textContent).not.toContain("Motor");
   });
@@ -144,7 +144,81 @@ describe("navigation guards", () => {
       root.render(<App />);
     });
 
-    expect(window.location.hash).toBe("#/consultas");
+    expect(window.location.hash).toBe("#/productos");
     expect(container.textContent).not.toContain("Phase 3");
+  });
+
+  it("redirects users away from hidden service routes", async () => {
+    saveStoredSession({
+      accessToken: "token-analista",
+      me: {
+        id: "user-4",
+        username: "analista",
+        displayName: "Analista Uno",
+        roles: ["analista"],
+      },
+    });
+    window.location.hash = "#/productos/PLD/servicios/decision-engine";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path === "/api/v1/me") {
+          return jsonResponse({
+            id: "user-4",
+            username: "analista",
+            display_name: "Analista Uno",
+            roles: ["analista"],
+          });
+        }
+        throw new Error(`Unexpected fetch: ${path}`);
+      }),
+    );
+
+    await act(async () => {
+      root.render(<App />);
+    });
+
+    expect(window.location.hash).toBe("#/productos/PLD/servicios");
+    expect(container.textContent).toContain("Bandeja de solicitudes");
+    expect(container.textContent).not.toContain("Motor de decisiones");
+  });
+
+  it("allows admin_riesgos users into the decision engine route", async () => {
+    saveStoredSession({
+      accessToken: "token-riesgos",
+      me: {
+        id: "user-5",
+        username: "riesgos",
+        displayName: "Equipo Riesgos",
+        roles: ["admin_riesgos"],
+      },
+    });
+    window.location.hash = "#/productos/PLD/servicios/decision-engine";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path === "/api/v1/me") {
+          return jsonResponse({
+            id: "user-5",
+            username: "riesgos",
+            display_name: "Equipo Riesgos",
+            roles: ["admin_riesgos"],
+          });
+        }
+        throw new Error(`Unexpected fetch: ${path}`);
+      }),
+    );
+
+    await act(async () => {
+      root.render(<App />);
+    });
+
+    expect(window.location.hash).toBe("#/productos/PLD/servicios/decision-engine");
+    expect(container.textContent).toContain("Motor de decisiones");
+    expect(container.textContent).toContain("Workspace");
   });
 });

@@ -113,9 +113,9 @@ Resultado esperado:
 1. Iniciar sesión como `riesgos` o `admin`.
 2. Entrar a `PLD` > `Motor de decisiones`.
 3. Confirmar que el sidebar muestra `Reglas de Negocio`, `Parámetros` y `Data`.
-4. Abrir `workflows` y seleccionar un workflow o el flujo de ejemplo.
+4. Confirmar que la sección `workflows` muestra artefactos gobernados con estado UI `Aprobado` cuando el backend responde `active`.
 5. Seleccionar un nodo en el canvas.
-6. Mover el nodo, crear o eliminar una conexión y cambiar la selección.
+6. Mover el nodo, agregar o eliminar un nodo y cambiar la selección.
 7. Recargar la pestaña.
 
 Referencias:
@@ -128,13 +128,15 @@ Resultado esperado:
 - se renderizan sidebar, tabs superiores, canvas y panel derecho
 - el inspector refleja el nodo seleccionado
 - los cambios de posición/selección se mantienen dentro de la sesión
+- los workflows backend `active` se muestran como `Aprobado`
 - el workspace sigue presentándose en español
 
 ### Scenario E - Distinción entre backend real y prototipo local
 
 1. Desde el workspace, revisar una vista basada en workflow o perfiles que use datos backend reales.
-2. Revisar una vista `channels` o `testing` que aún sea prototipo local.
-3. Intentar cerrar sesión y volver a entrar.
+2. Revisar una vista `channels`, `testing` o `events` que aún sea prototipo local.
+3. Abrir el menú de perfil y ejecutar `cambiar contraseña` y `consultar permisos aprobados`.
+4. Intentar cerrar sesión y volver a entrar.
 
 Referencias:
 
@@ -144,6 +146,7 @@ Resultado esperado:
 
 - los datos backend reales vuelven a consultarse al abrir la sesión
 - los prototipos de sesión no se presentan como configuraciones aprobadas persistidas
+- `cambiar contraseña` y `consultar permisos aprobados` funcionan como interacciones locales visibles
 - al cerrar sesión se limpia el estado local sensible
 
 ## Validation Commands
@@ -157,6 +160,18 @@ npm run test
 npm run build
 ```
 
+Cobertura automatizada validada en esta fase:
+
+- `tests/auth-flow.test.tsx`
+- `tests/product-catalog-flow.test.tsx`
+- `tests/service-catalog-flow.test.tsx`
+- `tests/navigation-guards.test.tsx`
+- `tests/app-shell.test.tsx`
+- `tests/decision-workspace-flow.test.tsx`
+- `tests/decision-workspace-session.test.ts`
+- `tests/decision-workspace-catalogs.test.tsx`
+- `tests/decision-workspace-admin-sections.test.tsx`
+
 Cobertura mínima esperada:
 
 - login y restauración de sesión
@@ -164,6 +179,8 @@ Cobertura mínima esperada:
 - visibilidad de servicios por rol
 - navegación `productos -> servicios -> workspace`
 - selección y persistencia de sesión del canvas
+- channels, workflows, testing y events del workspace
+- acciones locales de perfil y secciones `Parámetros` / `Data`
 
 ### Backend smoke checks
 
@@ -184,3 +201,6 @@ Resultado esperado:
 - servicios visibles según rol autenticado
 - workspace visual funcional para `Motor de decisiones`
 - separación explícita entre contratos backend reales y prototipos locales de sesión
+- workflows backend `active` presentados como `Aprobado`
+- borradores del workspace preservados en `sessionStorage` durante la sesión
+- cierre de sesión limpiando estado autenticado y sensible del workspace

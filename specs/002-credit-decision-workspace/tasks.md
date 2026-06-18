@@ -42,11 +42,11 @@ description: "Task list for Plataforma Visual de Decisión de Crédito"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Create application shell and session context in `frontend/src/app/AppShell.tsx`, `frontend/src/app/session-context.tsx`, and `frontend/src/routes/app-router.tsx`
-- [ ] T005 [P] Create shared platform catalog types and adapters in `frontend/src/features/platform/catalog-types.ts`, `frontend/src/features/platform/service-visibility.ts`, and `frontend/src/features/platform/status-labels.ts`
-- [ ] T006 [P] Create seeded product and service catalog data in `frontend/src/features/platform/platform-seed-data.ts`
-- [ ] T007 [P] Create workspace session storage primitives in `frontend/src/features/decision-workspace/workspace-types.ts` and `frontend/src/features/decision-workspace/workspace-session.ts`
-- [ ] T008 Refactor top-level bootstrap to the new shell in `frontend/src/App.tsx`
+- [X] T004 Create application shell and session context in `frontend/src/app/AppShell.tsx`, `frontend/src/app/session-context.tsx`, and `frontend/src/routes/app-router.tsx`
+- [X] T005 [P] Create shared platform catalog types and adapters in `frontend/src/features/platform/catalog-types.ts`, `frontend/src/features/platform/service-visibility.ts`, and `frontend/src/features/platform/status-labels.ts`
+- [X] T006 [P] Create seeded product and service catalog data in `frontend/src/features/platform/platform-seed-data.ts`
+- [X] T007 [P] Create workspace session storage primitives in `frontend/src/features/decision-workspace/workspace-types.ts` and `frontend/src/features/decision-workspace/workspace-session.ts`
+- [X] T008 Refactor top-level bootstrap to the new shell in `frontend/src/App.tsx`
 
 **Checkpoint**: Foundation ready. Authenticated routing, product/service adapters, and workspace draft persistence primitives are available for story work.
 
@@ -62,15 +62,15 @@ description: "Task list for Plataforma Visual de Decisión de Crédito"
 
 > **NOTE**: Write these tests first, confirm they fail, then implement the story.
 
-- [ ] T009 [P] [US1] Extend login and session restore coverage in `frontend/tests/auth-flow.test.tsx`
-- [ ] T010 [P] [US1] Add product catalog journey coverage in `frontend/tests/product-catalog-flow.test.tsx`
+- [X] T009 [P] [US1] Extend login and session restore coverage in `frontend/tests/auth-flow.test.tsx`
+- [X] T010 [P] [US1] Add product catalog journey coverage in `frontend/tests/product-catalog-flow.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Update authenticated login and restore behavior in `frontend/src/features/auth/auth-service.ts`, `frontend/src/features/auth/LoginPage.tsx`, and `frontend/src/session-storage.ts`
-- [ ] T012 [P] [US1] Implement the product catalog UI in `frontend/src/features/product-catalog/ProductCatalogPage.tsx` and `frontend/src/features/product-catalog/ProductCard.tsx`
-- [ ] T013 [US1] Wire the `#/login` and `#/productos` routes in `frontend/src/routes/app-router.tsx` and `frontend/src/app/AppShell.tsx`
-- [ ] T014 [US1] Implement product quick actions, three-dot menu behavior, and desktop-first catalog styling in `frontend/src/features/product-catalog/ProductCatalogPage.tsx` and `frontend/src/styles.css`
+- [X] T011 [US1] Update authenticated login and restore behavior in `frontend/src/features/auth/auth-service.ts`, `frontend/src/features/auth/LoginPage.tsx`, and `frontend/src/session-storage.ts`
+- [X] T012 [P] [US1] Implement the product catalog UI in `frontend/src/features/product-catalog/ProductCatalogPage.tsx` and `frontend/src/features/product-catalog/ProductCard.tsx`
+- [X] T013 [US1] Wire the `#/login` and `#/productos` routes in `frontend/src/routes/app-router.tsx` and `frontend/src/app/AppShell.tsx`
+- [X] T014 [US1] Implement product quick actions, three-dot menu behavior, and desktop-first catalog styling in `frontend/src/features/product-catalog/ProductCatalogPage.tsx` and `frontend/src/styles.css`
 
 **Checkpoint**: User Story 1 should be fully functional and testable on its own.
 
@@ -84,14 +84,14 @@ description: "Task list for Plataforma Visual de Decisión de Crédito"
 
 ### Tests for User Story 2
 
-- [ ] T015 [P] [US2] Add role-based service catalog coverage in `frontend/tests/service-catalog-flow.test.tsx`
-- [ ] T016 [P] [US2] Extend guarded route coverage for product and service navigation in `frontend/tests/navigation-guards.test.tsx`
+- [X] T015 [P] [US2] Add role-based service catalog coverage in `frontend/tests/service-catalog-flow.test.tsx`
+- [X] T016 [P] [US2] Extend guarded route coverage for product and service navigation in `frontend/tests/navigation-guards.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Implement the service catalog UI, including placeholder-only delete affordances on service cards, in `frontend/src/features/service-catalog/ServiceCatalogPage.tsx` and `frontend/src/features/service-catalog/ServiceCard.tsx`
-- [ ] T018 [US2] Implement role visibility and Spanish service labels in `frontend/src/features/platform/service-visibility.ts` and `frontend/src/features/service-catalog/ServiceCatalogPage.tsx`
-- [ ] T019 [US2] Wire product-to-service navigation, breadcrumb state, and responsive services layout in `frontend/src/routes/app-router.tsx`, `frontend/src/app/AppShell.tsx`, and `frontend/src/styles.css`
+- [X] T017 [P] [US2] Implement the service catalog UI, including placeholder-only delete affordances on service cards, in `frontend/src/features/service-catalog/ServiceCatalogPage.tsx` and `frontend/src/features/service-catalog/ServiceCard.tsx`
+- [X] T018 [US2] Implement role visibility and Spanish service labels in `frontend/src/features/platform/service-visibility.ts` and `frontend/src/features/service-catalog/ServiceCatalogPage.tsx`
+- [X] T019 [US2] Wire product-to-service navigation, breadcrumb state, and responsive services layout in `frontend/src/routes/app-router.tsx`, `frontend/src/app/AppShell.tsx`, and `frontend/src/styles.css`
 
 **Checkpoint**: User Stories 1 and 2 should both work independently.
 
@@ -105,21 +105,21 @@ description: "Task list for Plataforma Visual de Decisión de Crédito"
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Add workspace shell and node interaction coverage in `frontend/tests/decision-workspace-flow.test.tsx`
-- [ ] T021 [P] [US3] Add session-backed workspace persistence coverage in `frontend/tests/decision-workspace-session.test.ts`
-- [ ] T022 [P] [US3] Add channel, testing, and events coverage in `frontend/tests/decision-workspace-catalogs.test.tsx`
-- [ ] T023 [P] [US3] Add parameters, data section, and profile action coverage in `frontend/tests/decision-workspace-admin-sections.test.tsx`
+- [X] T020 [P] [US3] Add workspace shell and node interaction coverage in `frontend/tests/decision-workspace-flow.test.tsx`
+- [X] T021 [P] [US3] Add session-backed workspace persistence coverage in `frontend/tests/decision-workspace-session.test.ts`
+- [X] T022 [P] [US3] Add channel, testing, and events coverage in `frontend/tests/decision-workspace-catalogs.test.tsx`
+- [X] T023 [P] [US3] Add parameters, data section, and profile action coverage in `frontend/tests/decision-workspace-admin-sections.test.tsx`
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Implement workspace reducer, seeded workflow model, and sub-workflow node support in `frontend/src/features/decision-workspace/workspace-reducer.ts`, `frontend/src/features/decision-workspace/workspace-context.tsx`, and `frontend/src/features/decision-workspace/workflow-seed-data.ts`
-- [ ] T025 [P] [US3] Implement the workspace shell UI in `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`, `frontend/src/features/decision-workspace/WorkspaceSidebar.tsx`, `frontend/src/features/decision-workspace/WorkspaceCanvas.tsx`, and `frontend/src/features/decision-workspace/NodeInspector.tsx`
-- [ ] T026 [US3] Implement session-backed selection, movement, add/remove node, connection, zoom, viewport, and execution-log actions in `frontend/src/features/decision-workspace/workspace-reducer.ts` and `frontend/src/features/decision-workspace/workspace-session.ts`
-- [ ] T027 [US3] Integrate backend workflow and profile reads with `active` to `Aprobado` UI mapping in `frontend/src/services/engine-admin-api.ts`, `frontend/src/features/platform/status-labels.ts`, and `frontend/src/features/decision-workspace/workspace-api-adapters.ts`
-- [ ] T028 [US3] Implement channels, `Aprobado` workflow selection backed by backend `active`, parameter multiselect, and compatibility validation states in `frontend/src/features/decision-workspace/ChannelPanel.tsx`, `frontend/src/features/decision-workspace/workspace-api-adapters.ts`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
-- [ ] T029 [US3] Implement workflows, testing, and events sections with session-local prototypes in `frontend/src/features/decision-workspace/WorkflowCatalogPanel.tsx`, `frontend/src/features/decision-workspace/TestingPanel.tsx`, `frontend/src/features/decision-workspace/EventsPanel.tsx`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
-- [ ] T030 [US3] Implement `Parámetros` and `Data` section panels with risk-role edit restrictions and placeholder governance messaging in `frontend/src/features/decision-workspace/ParametersPanel.tsx`, `frontend/src/features/decision-workspace/DataPanel.tsx`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
-- [ ] T031 [US3] Implement profile actions with mock/local behavior for `cambiar contraseña` and `consultar permisos aprobados`, plus real logout, Spanish submodule navigation, and workspace responsive styling in `frontend/src/features/decision-workspace/ProfileMenu.tsx`, `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`, and `frontend/src/styles.css`
+- [X] T024 [P] [US3] Implement workspace reducer, seeded workflow model, and sub-workflow node support in `frontend/src/features/decision-workspace/workspace-reducer.ts`, `frontend/src/features/decision-workspace/workspace-context.tsx`, and `frontend/src/features/decision-workspace/workflow-seed-data.ts`
+- [X] T025 [P] [US3] Implement the workspace shell UI in `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`, `frontend/src/features/decision-workspace/WorkspaceSidebar.tsx`, `frontend/src/features/decision-workspace/WorkspaceCanvas.tsx`, and `frontend/src/features/decision-workspace/NodeInspector.tsx`
+- [X] T026 [US3] Implement session-backed selection, movement, add/remove node, connection, zoom, viewport, and execution-log actions in `frontend/src/features/decision-workspace/workspace-reducer.ts` and `frontend/src/features/decision-workspace/workspace-session.ts`
+- [X] T027 [US3] Integrate backend workflow and profile reads with `active` to `Aprobado` UI mapping in `frontend/src/services/engine-admin-api.ts`, `frontend/src/features/platform/status-labels.ts`, and `frontend/src/features/decision-workspace/workspace-api-adapters.ts`
+- [X] T028 [US3] Implement channels, `Aprobado` workflow selection backed by backend `active`, parameter multiselect, and compatibility validation states in `frontend/src/features/decision-workspace/ChannelPanel.tsx`, `frontend/src/features/decision-workspace/workspace-api-adapters.ts`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
+- [X] T029 [US3] Implement workflows, testing, and events sections with session-local prototypes in `frontend/src/features/decision-workspace/WorkflowCatalogPanel.tsx`, `frontend/src/features/decision-workspace/TestingPanel.tsx`, `frontend/src/features/decision-workspace/EventsPanel.tsx`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
+- [X] T030 [US3] Implement `Parámetros` and `Data` section panels with risk-role edit restrictions and placeholder governance messaging in `frontend/src/features/decision-workspace/ParametersPanel.tsx`, `frontend/src/features/decision-workspace/DataPanel.tsx`, and `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`
+- [X] T031 [US3] Implement profile actions with mock/local behavior for `cambiar contraseña` and `consultar permisos aprobados`, plus real logout, Spanish submodule navigation, and workspace responsive styling in `frontend/src/features/decision-workspace/ProfileMenu.tsx`, `frontend/src/features/decision-workspace/DecisionWorkspacePage.tsx`, and `frontend/src/styles.css`
 
 **Checkpoint**: All three user stories should now be independently functional.
 
@@ -129,10 +129,10 @@ description: "Task list for Plataforma Visual de Decisión de Crédito"
 
 **Purpose**: Final validation, documentation alignment, and build/test hardening across the feature.
 
-- [ ] T032 [P] Update validation notes and expected evidence in `specs/002-credit-decision-workspace/quickstart.md`
-- [ ] T033 Run and fix frontend regression coverage in `frontend/tests/auth-flow.test.tsx`, `frontend/tests/product-catalog-flow.test.tsx`, `frontend/tests/service-catalog-flow.test.tsx`, `frontend/tests/decision-workspace-flow.test.tsx`, `frontend/tests/decision-workspace-session.test.ts`, `frontend/tests/decision-workspace-catalogs.test.tsx`, and `frontend/tests/decision-workspace-admin-sections.test.tsx`
-- [ ] T034 [P] Run and fix build/config compatibility in `frontend/package.json`, `frontend/vite.config.ts`, `frontend/vite.config.js`, and `frontend/vite.config.d.ts`
-- [ ] T035 [P] Run backend auth and RBAC smoke alignment in `backend/tests/test_auth.py`, `backend/tests/test_rbac.py`, and `backend/tests/contract/test_engine_admin_api.py`
+- [X] T032 [P] Update validation notes and expected evidence in `specs/002-credit-decision-workspace/quickstart.md`
+- [X] T033 Run and fix frontend regression coverage in `frontend/tests/auth-flow.test.tsx`, `frontend/tests/product-catalog-flow.test.tsx`, `frontend/tests/service-catalog-flow.test.tsx`, `frontend/tests/decision-workspace-flow.test.tsx`, `frontend/tests/decision-workspace-session.test.ts`, `frontend/tests/decision-workspace-catalogs.test.tsx`, and `frontend/tests/decision-workspace-admin-sections.test.tsx`
+- [X] T034 [P] Run and fix build/config compatibility in `frontend/package.json`, `frontend/vite.config.ts`, `frontend/vite.config.js`, and `frontend/vite.config.d.ts`
+- [X] T035 [P] Run backend auth and RBAC smoke alignment in `backend/tests/test_auth.py`, `backend/tests/test_rbac.py`, and `backend/tests/contract/test_engine_admin_api.py`
 
 ---
 
